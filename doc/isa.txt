@@ -1,0 +1,67 @@
+ROSE is stack machine. All instructions have zero or one argument,
+although there might be implicit arguments on stack.
+
+All instructions are 2 byte long. First byte is opcode, and second one
+is operand (or it is not used).
+Any instruction name in this document is prefixed with "%" sign. Any operand
+reference is prefixed with "$" sign. For example, "$data" record means that
+instruction under consideration contains operand with data index (that is,
+index into data table). Prefix "." means segment name (".data", for example).
+@top is stack top word. @base is stack frame base.
+
+				Working with data
+
+The only data type is 32-bit signed integer. Data are one of the following
+types:
+	* constants are placed in .const; [%getc]
+	* data are placed in .data. It is read/write storage, which exists while
+	  the module instance does; [%getd, %putd]
+	* local variables are placed in .stack. Procedure arguments are local
+	  variables too. Their life time is current procedure. [%gets, %puts]
+
+				Execution flow
+
+There is three jump types:
+	* near jump. It's destination must be no more than 127 instructions from
+	  jump instruction; [%jump]
+	* conditional jumps. They all are near jumps too, but jump happens only
+	  on some condition. They pops one stack word [%jumpz, %jumpl, %jumple] or
+	  two stack words [%jumpeq] and makes jump on some condition;
+	* far jump can make jump to any address, but there must be no more than
+	  255 far jumps on module.
+
+				Procedures
+
+They organize execution flow too, but procedure is an independent code
+object, and there are more complicated rules.
+
+Every code is executed in some procedure context. Any procedure belongs to
+some module, so there is module context too.
+There is two procedure call types:
+	* near call is for modules's own procedure;
+	* far call is for procedure in another module.
+Every procedure has it's own stack frame, containing procedure arguments,
+local variables and instruction operands. Any procedure has access only to
+it's own frame. So, near call influences stack addresses.
+Far call causes also current module change, meaning all current segments
+reload. So far call influences also data, constants, far jump addresses and
+all procedure calls.
+
+To make procedure call, user pushes it's arguments on stack. First argument
+must be reference to module object, if procedure uses module data or if it is
+far call. Otherwise, this is not necessary. Then call instruction executes.
+[%call, %farcall]
+To return execution flow, one must use return instruction. [%return, %retp]
+It returns execution flow to instruction just after last call. Stack is
+returned to the same state, but if it is procedure with return value, is must
+be placed on @base (1st argument place), and return will leave it on stack
+top.
+
+				Objects
+
+Object is a module instance. It has it's own data and other module segments
+associated with it. It must be created and deleted then. [%new, %delete]
+
+				Miscellaneous
+
+NOP instruction might be used for alignment purpose. [%nop]

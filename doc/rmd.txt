@@ -1,0 +1,60 @@
+RMD stands for ROSE module, main ROSE binary format.
+
+Module includes following sections:
+
+1.  #head  - general module information and other sections location;
+2.  #exp   - exported procedures;
+3.  #ptbl  - every procedure location and description;
+4.  #mtbl  - imported module list;
+5.  #imp   - imported procedures;
+6.  #const - table of constants;
+7.  #addr  - table of some text addresses;
+8.  #text  - all instructions in all procedures;
+9.  #sym   - all loadable symbols;
+10. #str   - unicode text strings.
+11. #debug - debug information;
+
+Sections #debug and #str might be ommited.
+
+#head:
+	* name   - #sym string with short module name;
+	* descr  - #str string with module description;
+	* time   - module create date and time;
+	* RMDver - RMD format version;
+	* ver    - module version;
+	* placement for all sections.
+
+#exp:
+	* name    - #sym string with procedure export name;
+	* proto   - #sym string with prototype code.
+	* idx     - index into #ptbl;
+	* descr   - index into #str to description.
+
+#ptbl:
+	* addr   - offset in #text;
+
+#mtbl:
+	* name    - #sym string with module full name;
+	* version - required module version;
+	* sum     - expected module control sum.
+sum might be ommited.
+
+#imp:
+	* name   - #sym string with procedure name;
+	* module - #mtbl index for module exporting this procedure;
+	* slot   - index into #exp of proc's module;
+	* addr   - cached procedure offset in it's module.
+addr and slot might be ommited.
+
+#const and #addr are plain arrays of offsets in corresponding sections.
+
+#text is array of 2-byte words.
+
+#sym is byte array with null-terminated C-strings.
+
+#str is an unicode strings section.
+
+#debug contains debug information, format is unspecified yet.
+
+Null offset into any section is not allowed and indicates value absence.
+

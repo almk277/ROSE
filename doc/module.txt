@@ -1,0 +1,31 @@
+Every module has its own name and path, just as any file.
+Full name includes path and name and must be unique.
+This reflects module file placement in ROSE special directories.
+
+For example, if ROSE module directory is /usr/share/rose/module,
+and some module named 'example.rom' is placed in directory
+/usr/share/rose/module/base/test/', then module path is
+'base/test', and the full name is 'base/test/example'.
+
+Module can contain up to 255 procedures. Every procedure might have:
+	- up to 255 jump addresses;
+	- up to 255 constants;
+	- up to 255 variables;
+Module also can import up to 255 procedures from 255 or less modules.
+
+In general, module contains data and code. All data are private, that is
+might be used only inside this module procedure. Procedure itself might be
+public (accessible by other modules), or private.
+
+Module has a version, which is described by two numbers: major and minor.
+If new API is incompatible with previous one, ABI is broken. In this
+case, major number is increased, and minor number is 0.  Otherwise,
+if old API is still available, ABI is the same. In this case, major
+number remains the same, and minor number is increased.
+When module depends on another module M, it depends on M version as
+well. M, currently found on system, must have the same major number,
+and minor number greater or equal to one stored as dependency. Otherwise,
+M will fail to load.
+
+New module instance (object) can be created and deleted with special
+instructions. This includes new data set, but other segments are shared.

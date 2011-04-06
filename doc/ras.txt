@@ -1,0 +1,38 @@
+				ROSE Assembler directives
+
+There is three section types: constants, data and text. Every section begins
+with special directive and ends with next such directive.
+
+.const
+	Declares #const section. Constants are placed one per line in form
+	'name = value'.
+
+.data
+	Declares #data section. Data variables are placed one per line as names.
+
+.sub <name>
+	Declares #text section with procedure <name>. Instructions and non-section
+	directives may be used here.
+
+.module <name-maj.min>
+	Declares current module name and version.
+
+.import <name-maj.min>
+	Imports module with given name and version.
+
+.export
+	Declares current procedure as public.
+
+.extern <name@module>
+	Imports procedure with <name> from <module> (previously imported with
+	.import).
+
+.var <name>
+	Declares local variable for current procedure.
+
+.arg <name>
+	Declares procedure argument.
+
+.entry <name>
+	Declares procedure with <name> as module entry point.
+

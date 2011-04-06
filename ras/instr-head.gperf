@@ -1,0 +1,9 @@
+%{
+#include "instr.h"
+%}
+%define lookup-function-name rose_instr_find
+%includes
+%readonly-tables
+%struct-type
+struct RoseInstruction;
+%%
