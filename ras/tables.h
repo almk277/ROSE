@@ -1,4 +1,4 @@
-/* various file tables */
+/* various RMD tables */
 
 #ifndef TABLES_H
 #define TABLES_H

@@ -54,15 +54,6 @@ void dir_sub(char *args)
 	set_current_section(SECT_PROC, "procedure");
 }
 
-void dir_entry(char *args)
-{
-	int proc = proc_find(args);
-	if(proc == -1)
-		error("unknown procedure");
-	header.entry = proc;
-	debug_line("entry procedure: %s", args);
-}
-
 void dir_arg(char *args)
 {
 	if(!*args)

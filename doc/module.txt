@@ -29,3 +29,5 @@ M will fail to load.
 
 New module instance (object) can be created and deleted with special
 instructions. This includes new data set, but other segments are shared.
+
+Module entry point is procedure named 'main'.

@@ -1,4 +1,4 @@
-/* Works with #text, #ptbl and #addr */
+/* Works with #text, #ptbl, #addr and #exp */
 
 #ifndef TEXT_H
 #define TEXT_H

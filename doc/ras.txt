@@ -33,6 +33,3 @@ with special directive and ends with next such directive.
 .arg <name>
 	Declares procedure argument.
 
-.entry <name>
-	Declares procedure with <name> as module entry point.
-

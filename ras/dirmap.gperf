@@ -10,7 +10,6 @@ struct Directive;
 const,  dir_const,
 data,   dir_data,
 sub,    dir_sub,
-entry,  dir_entry,
 arg,    dir_arg,
 var,    dir_var,
 import, dir_import,

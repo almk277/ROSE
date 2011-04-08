@@ -11,6 +11,7 @@
 #define MAX_WORD_LEN            16
 #define COMMENT_SIGN            '#'
 #define DEFAULT_OUT_FILE_NAME   "out.rmd"
+#define MAX_LINE_LEN      128
 
 static FILE *input;
 static FILE *output;
@@ -78,13 +79,10 @@ static void parse_line(char *line)
 static void read_source()
 {
 	static char buf[MAX_LINE_LEN];
-	buf[MAX_LINE_LEN - 1] = 'X';
 	while(fgets(buf, sizeof buf, input)) {
 		char *start;
 		char *comment, *newline;
 		++lineno;
-		if(buf[MAX_LINE_LEN - 1] != 'X')
-			error("line is too long");
 		comment = strchr(buf, COMMENT_SIGN);
 		if(comment)
 			*comment = '\0';

@@ -1,6 +1,7 @@
 all: ras
 DESCR = ../doc/isa.dsc
 
+CPPFLAGS += -I../include
 CFLAGS += -Wall -g
 
 ras: main.o common.o dirmap.o direct.o str.o mm.o hash.o section.o tables.o \
@@ -20,4 +21,8 @@ clean:
 	rm -f *.o ras
 
 clean-all: clean
-	rm -f dirmap.c instr.c instr.gperf
+	rm -f dirmap.c instr.c instr.gperf tags
+
+tags: *.c
+	ctags *.c
+
