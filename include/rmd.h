@@ -6,14 +6,12 @@
 typedef struct RMDHeader {
 	unsigned char ident[4];    /* signature */
 	unsigned char rmd_ver[2];  /* ROSE version */
-	unsigned char version[2];  /* module version */
 	uint16_t name;             /* module name */
-	uint8_t entry;             /* entry procedure */
-	uint8_t flags;             /* various flags */
-	/* section offsets */
+	unsigned char version[2];  /* module version */
+	uint16_t flags;            /* various flags */
 	uint32_t exp;              /* export table offset */
-	uint32_t mtbl;             /* module table offset */
 	uint32_t ptbl;             /* procedure table offset */
+	uint32_t mtbl;             /* module table offset */
 	uint32_t imp;              /* import table offset */
 	uint32_t addr;             /* address table offset */
 	uint32_t consts;           /* constant table offset */
@@ -34,11 +32,6 @@ typedef struct RMDHeader {
 #define RMD_H_VER_MAJ       0
 #define RMD_H_VER_MIN       1
 
-/* #ptbl entry */
-typedef struct RMDProcedure {
-	uint32_t addr;
-} RMDProcedure;
-
 /* #exp entry */
 typedef struct RMDExport {
 	uint16_t name;
@@ -46,6 +39,11 @@ typedef struct RMDExport {
 	uint32_t descr;
 	uint8_t idx;
 } RMDExport;
+
+/* #ptbl entry */
+typedef struct RMDProcedure {
+	uint32_t addr;
+} RMDProcedure;
 
 /* #mtbl entry */
 typedef struct RMDModule {
