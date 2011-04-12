@@ -10,7 +10,8 @@ There is segmented memory model. Segments are:
 	9.  .addr - text addresses table;
 	10. .text - program instructions;
 	11. .data - initially zero-filled variable table;
-	12. .proc - internal procedure stack.
+	12. .proc - internal procedure stack;
+	13. .sym - runtime symbol table.
 
 .heap is a global segment for entire environment.
 Every thread has it's own .stack and .proc.

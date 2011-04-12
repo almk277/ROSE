@@ -4,20 +4,21 @@
 #include <stdint.h>
 
 typedef struct RMDHeader {
-	unsigned char ident[4];    /* signature */
-	unsigned char rmd_ver[2];  /* ROSE version */
-	uint16_t name;             /* module name */
-	unsigned char version[2];  /* module version */
-	uint16_t flags;            /* various flags */
-	uint32_t exp;              /* export table offset */
-	uint32_t ptbl;             /* procedure table offset */
-	uint32_t mtbl;             /* module table offset */
-	uint32_t imp;              /* import table offset */
-	uint32_t addr;             /* address table offset */
-	uint32_t consts;           /* constant table offset */
-	uint32_t text;             /* text segment offset */
-	uint32_t sym;              /* symbol segment offset */
-	uint32_t str;              /* string segment offset */
+	unsigned char ident[4];    /* signature               */
+	unsigned char rmd_ver[2];  /* ROSE version            */
+	uint16_t name;             /* module name             */
+	unsigned char version[2];  /* module version          */
+	uint8_t flags;             /* various flags           */
+	uint8_t data_cnt;          /* data count              */
+	uint32_t exp;              /* export table offset     */
+	uint32_t ptbl;             /* procedure table offset  */
+	uint32_t mtbl;             /* module table offset     */
+	uint32_t imp;              /* import table offset     */
+	uint32_t addr;             /* address table offset    */
+	uint32_t consts;           /* constant table offset   */
+	uint32_t text;             /* text segment offset     */
+	uint32_t sym;              /* symbol segment offset   */
+	uint32_t str;              /* string segment offset   */
 } RMDHeader;
 
 /* RMD signature */
