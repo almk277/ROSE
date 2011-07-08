@@ -1,0 +1,5 @@
+ras/dirmap.c
+ras/instr.c
+ras/instr.gperf
+tags
+.exrc
