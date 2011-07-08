@@ -27,6 +27,7 @@ RMDHeader header = {
 		ROSE_VERSION_MAJ,
 		ROSE_VERSION_MIN
 	},
+	0,
 	{ 0, 0 }
 };
 
