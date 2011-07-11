@@ -1,24 +1,30 @@
 .PHONY		: all clean debug
 
-CXXFLAGS += -Wall
+CPPFLAGS += -I../include
+CXXFLAGS += -Wall -g
 
-all			: rose text2int tags
+all			: rose
 
-rose		: main.o debug.o stack.o isa.o text.o data.o\
-				module.o opcode.o file.o instr.o segment.o thread.o
+rose		: main.o module.o
 	$(CXX) $(LDFLAGS) -o $@ $^
 
-ras			: ras.o
-
-text2int	: text2int.o
+isa.o		: isa.cpp isa.h
+isa.h		: isa_decl.h
+opcode.o	: opcode.cpp opc_table.c
 
 clean		:
-	$(RM) *.o rose ras text2int
+	$(RM) *.o rose isa_decl.h opc_table.c tags
 
-debug		: CFLAGS += -g
-debug		: CPPFLAGS += -g
+debug		: CXXFLAGS += -g
 debug		: LDFLAGS += -g
 debug		: rose
 
 tags		: *.cpp
 	ctags *.cpp
+
+isa_decl.h	: isa.cpp
+	perl instr.pl
+
+opc_table.c	: isa.cpp
+	perl instr.pl
+
