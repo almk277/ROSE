@@ -1,21 +1,31 @@
-#ifndef SEGMENT_H
-#define SEGMENT_H
+#ifndef ROSE_SEGMENT_H
+#define ROSE_SEGMENT_H
 
-#include <stdint.h>
+#include <fstream>
+#include <string>
 
-template <typename T>
+// Common memory segment
 class Segment {
 	public:
-		//T *start() const { return _start; }
-		void place(const char *start, uint32_t len)
-		{
-			_start = reinterpret_cast<T *>(start);
-			_length = len;
-		}
+		Segment(const std::string& type): _start(0), _size(0), name(type)  {}
+		virtual ~Segment() { free(); }
+		void allocate(int size) throw(std::bad_alloc);
+		void free();
+		virtual int entsize() const = 0;
+		void set_size(int val) { _size = val; }
+		int size() const { return _size; }
+	protected:
+		char *_start;
 	private:
-		T *_start;
-		uint32_t _length;
+		Segment(const Segment&);	// Not allowed
+		int length;
+		int _size;
+		const std::string name;
+
+	friend std::ifstream& operator>>(std::ifstream& stream, Segment&) throw(std::string);
 };
+
+std::ifstream& operator>>(std::ifstream& stream, Segment&) throw(std::string);
 
 #endif
 

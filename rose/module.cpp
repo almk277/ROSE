@@ -1,37 +1,54 @@
 #include "module.h"
-#include <fstream>
+#include "debug.h"
+#include <string.h>
+#include <stdint.h>
 
-Module::Module()
+Module::Module(const std::string& fname) throw(ModuleException):
+	name(fname), file(fname.c_str(), ios::in | ios::binary)
+{
+	if(!file.is_open())
+		throw ModuleException(RMOD_OPEN);
+	read_header();
+	read_segment(text, header.text);
+	read_segment(sym_table, header.symbols);
+	read_segment(proc_table, header.proc);
+	read_segment(mod_table, header.modules);
+	read_segment(var_table, header.var);
+	create_imp_tbl();
+}
+
+Module::~Module()
 {
 }
 
-//inline void *addr(uint32_t a)
-//{
-	//return &_body[sizeof _header];
-//}
-
-void Module::load(const std::string& filename) throw(LoadException)
+bool Module::check_signature(const unsigned char *given)
 {
-	std::ifstream file(filename.c_str(),
-			std::ifstream::in | std::ifstream::binary);
-	if(!file.is_open())
-		throw LoadException(LoadException::OPEN);
-	_filename = filename;
-	file.read(&_header, sizeof _header);
-	if(!file.good())
-		throw LoadException(LoadException::READ);
-	_size = _header.str - sizeof _header;
-	try {
-		_body = new char[_size];
-	} catch(std::bad_alloc& exc) {
-		throw LoadException(LoadException::MEMORY);
-	}
-	file.read(&_body, _size);
-	if(!file.good())
-		throw LoadException(LoadException::READ);
+	static char signature[] = H_IDENT_INIT;
+	return memcmp(signature, given, sizeof signature) == 0;
+}
 
-	_exp.place(&_body[0], _header.ptbl);
-	_ptbl.place(&_body[_header.ptbl], _header.mtbl - _header.ptbl);
-	_mtbl.place(&_body[_header.mtbl], _header.imp - _header.ptbl);
+void Module::read_header()
+{
+	file.read(reinterpret_cast<char *>(&header), sizeof header);
+	if(!file)
+		throw ModuleException(RMOD_SHORT);
+	if(!check_signature(header.ident))
+		throw ModuleException(RMOD_SIGN);
+}
+
+void Module::read_segment(Segment& segment, const Section& section)
+{
+	if(section.size != 0) {
+		segment.allocate(section.size);
+		file.seekg(section.offset);
+		file >> segment;
+		segment.set_size(section.size / segment.entsize());
+	}
+}
+
+void Module::create_imp_tbl()
+{
+	for(int i = 0; i != mod_table.size(); ++i)
+		std::cout << getname(mod_table[i].name) << std::endl;
 }
 
