@@ -1,3 +1,4 @@
+*.o
 ras/dirmap.c
 ras/instr.c
 ras/instr.gperf
