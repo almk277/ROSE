@@ -19,6 +19,7 @@ typedef struct RMDHeader {
 	uint32_t text;             /* text segment offset     */
 	uint32_t sym;              /* symbol segment offset   */
 	uint32_t str;              /* string segment offset   */
+	char pad[16];              /* place for expanding     */
 } RMDHeader;
 
 /* RMD signature */
