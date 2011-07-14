@@ -16,17 +16,22 @@
 static FILE *input;
 static FILE *output;
 
+static const char *out_file_name = DEFAULT_OUT_FILE_NAME;
+
 static void out_help(void)
 {
-	puts(
-			"ROSE assembler"
-		);
+	fputs(
+			"ROSE assembler\n"
+			"-h -- this help message\n"
+			"-o file_name -- place output in file 'file_name'\n"
+			"-v -- verbose mode. Might be used multiple times\n"
+		, stdout);
 }
 
 static void cmd_parse(int argc, char *argv[])
 {
 	int opt;
-	while((opt = getopt(argc, argv, "vh")) != -1) {
+	while((opt = getopt(argc, argv, "o:vh")) != -1) {
 		switch(opt) {
 			case 'v':
 				++verbose;
@@ -34,6 +39,9 @@ static void cmd_parse(int argc, char *argv[])
 			case 'h':
 				out_help();
 				exit(0);
+			case 'o':
+				out_file_name = optarg;
+				break;
 		}
 	}
 	if(argc <= optind || !strcmp(argv[optind], "-"))
@@ -46,9 +54,9 @@ static void cmd_parse(int argc, char *argv[])
 			exit(1);
 		}
 	}
-	output = fopen(DEFAULT_OUT_FILE_NAME, "w");
+	output = fopen(out_file_name, "w");
 	if(!output)
-		error("can not create file "DEFAULT_OUT_FILE_NAME);
+		error("can not create file %s", out_file_name);
 }
 
 static void finish(void)
