@@ -76,5 +76,8 @@ void exp_print(void);
 /* dumps #exp to file */
 void exp_write(FILE *file);
 
+/* #exp length */
+size_t exp_length(void);
+
 #endif
 

@@ -255,3 +255,8 @@ void exp_write(FILE *file)
 		file_write_error();
 }
 
+size_t exp_length(void)
+{
+	return exp_hash.count * sizeof(RMDExport);
+}
+
