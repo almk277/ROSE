@@ -64,7 +64,7 @@ garbage, except for data which is filled with zeroes.
 |  varN  |          with floating head. So, BP is constant during procedure
 |--------|          execution, and SP is variable.
 |  ...   |           .proc
-|--------|          -------           There is another stack, procedure stack
+|--------|          -------           There is also procedure stack
 |  var1  |          | RET | <- PSP    .proc. It's head pointer is PSP.
 |--------|          |-----|           This stack is not accessible by program
 |  argN  |          | OSP |           directly, it is used by procedure call
