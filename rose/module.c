@@ -1,4 +1,5 @@
 #include "module.h"
+#include "ptbl.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -8,6 +9,8 @@
 /* returns if maj1.min1 is less than maj2.min2 */
 #define VERSION_LESS(maj1, min1, maj2, min2) \
 	(maj1 < maj2 || (maj1 == maj2 && min1 <= min2))
+
+#define SEG_INIT ptbl_init(module->seg.ptbl, ofs_start + h->exp, (h->mtbl - h->ptbl));
 
 static size_t load_size(const RMDHeader *header)
 {
@@ -25,7 +28,7 @@ int verify_ident(const unsigned char ident[4])
 	return memcmp(ident, correct_ident, sizeof ident) == 0;
 }
 
-int verify_version(const unsigned char version[2])
+int verify_rmd_version(const unsigned char version[2])
 {
 	/* hack to get rid of gcc warning */
 	const int min_version_lo = RMD_MIN_VERSION_LO;
@@ -56,7 +59,7 @@ Module *module_load(const char *name, int *error)
 		*error = RMD_BAD_IDENT;
 		goto close;
 	}
-	if(!verify_version(h.rmd_ver)) {
+	if(!verify_rmd_version(h.rmd_ver)) {
 		*error = RMD_BAD_VERSION;
 		goto close;
 	}
@@ -74,7 +77,7 @@ static void *section_address(const Module *module, uint32_t offset)
 
 static Module *create_module(RMDHeader *h, FILE *f, int *error)
 {
-	char *start;
+	char *start, *ofs_start;
 	const size_t size = load_size(h);
 	Module *module = malloc(sizeof(Module) + size);
 	if(!module) {
@@ -87,16 +90,18 @@ static Module *create_module(RMDHeader *h, FILE *f, int *error)
 		free(module);
 		return NULL;
 	}
-	module->seg.exp    = section_address(module, h->exp);
-	module->seg.ptbl   = section_address(module, h->ptbl);
+	ofs_start = start - sizeof(RMDHeader);
+
+	exp_init(&module->seg.exp, ofs_start, h);
+	ptbl_init(&module->seg.ptbl, ofs_start, h);
 	module->seg.mtbl   = section_address(module, h->mtbl);
 	module->seg.imp    = section_address(module, h->imp);
 	module->seg.consts = section_address(module, h->consts);
 	module->seg.addr   = section_address(module, h->addr);
-	module->seg.text   = section_address(module, h->text);
-	module->seg.sym    = section_address(module, h->sym);
+	text_init(&module->seg.text, ofs_start, h);
+	sym_init(&module->seg.sym, ofs_start, h);
 
-	module->name = &module->seg.sym[h->name];
+	module->name = sym_get(&module->seg.sym, h->name);
 	module->version[0] = h->version[0];
 	module->version[1] = h->version[1];
 
@@ -106,5 +111,16 @@ static Module *create_module(RMDHeader *h, FILE *f, int *error)
 void module_unload(Module *self)
 {
 	free(self);
+}
+
+const int module_find_proc(const Module *m, const char *name)
+{
+	int i;
+	for(i = 0; i != m->seg.exp.size; ++i) {
+		RMDExport *e = exp_get(&m->seg.exp, i);
+		if(strcmp(sym_get(&m->seg.sym, e->name), name) == 0)
+			return i;
+	}
+	return -1;
 }
 
