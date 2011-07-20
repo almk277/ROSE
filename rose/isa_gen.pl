@@ -15,7 +15,7 @@ sub func_stub
 "/* $comment */
 static void isa_$name(Thread *t)
 {
-	NOT_IMPLEMENTED;
+	NOT_IMPLEMENTED(\"$name\");
 }
 
 ";

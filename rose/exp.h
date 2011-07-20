@@ -17,5 +17,10 @@ static inline RMDExport *exp_get(const Exp *exp, int idx)
 	return &exp->start[idx];
 }
 
+static inline uint8_t exp_idx_get(const Exp *exp, int idx)
+{
+	return exp_get(exp, idx)->idx;
+}
+
 #endif
 

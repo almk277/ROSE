@@ -62,7 +62,9 @@ int verify_ident(const unsigned char ident[4]);
 /* Returns a given ROSE version is supported */
 int verify_rmd_version(const unsigned char version[2]);
 
-const int module_find_proc(const Module *m, const char *name);
+int module_find_proc(const Module *m, const char *name);
+
+uint8_t *module_proc_addr(const Module *m, int idx);
 
 #endif
 

@@ -1,23 +1,43 @@
 #include "module.h"
+#include "thread.h"
 #include <stdio.h>
 
-int main(void)
+static int file_error(const char *name, int error)
+{
+	const char *msg;
+	switch(error) {
+		case RMD_FILE:
+			msg = "can not open file"; break;
+		case RMD_READ:
+			msg = "can not read file"; break;
+		case RMD_NO_MEMORY:
+			msg = "out of memory"; break;
+		case RMD_BAD_IDENT:
+			msg = "file has no ROSE signature"; break;
+		case RMD_BAD_VERSION:
+			msg = "unsupported module version"; break;
+		default:
+			msg = "unknown error";
+	}
+	fprintf(stderr, "%s: %s\n", name, msg);
+	return 1;
+}
+
+int main(int argc, char *argv[])
 {
 	int err;
-	int p;
-	Module *m = module_load("../sources/out.rmd", &err);
-	if(!m) {
-		printf("error = %d\n", err);
-		perror("module_load");
-		return 1;
-	}
+	const char *fname = (argc == 1) ? "out.rmd" : argv[1];
+	Module *m;
+	Thread t;
+
+	thread_init(&t);
+   	m = module_load(fname, &err);
+	if(!m)
+		return file_error(fname, err);
 	printf("module '%s' with version %hhu.%hhu\n", m->name,
 			m->version[0], m->version[1]);
-	p = module_find_proc(m, "main");
-	if(p == -1)
-		puts("main not found");
-	else
-		puts("main");
+
+	thread_start(&t, m);
 	module_unload(m);
 	return 0;
 }

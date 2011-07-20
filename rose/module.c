@@ -113,7 +113,7 @@ void module_unload(Module *self)
 	free(self);
 }
 
-const int module_find_proc(const Module *m, const char *name)
+int module_find_proc(const Module *m, const char *name)
 {
 	int i;
 	for(i = 0; i != m->seg.exp.size; ++i) {
@@ -122,5 +122,11 @@ const int module_find_proc(const Module *m, const char *name)
 			return i;
 	}
 	return -1;
+}
+
+uint8_t *module_proc_addr(const Module *m, int idx)
+{
+	RMDProcedure *p = ptbl_get(&m->seg.ptbl, idx);
+	return text_addr(&m->seg.text, p->addr);
 }
 
