@@ -46,9 +46,10 @@ while(<DSC>) {
 	}
 	if(/(\w+)\s+(\w)\s+(0[xX][\dA-F]{2})\s+(.*)$/) {
 		my $idx = hex $3; # instruction code
+		defined($names[$idx]) and die "$1 and $names[$idx] have opcode $idx";
 		$names[$idx] = $1;
 		if(!defined($funclist{$1})) {
-			print FUNC func_stub($1, $4);
+			print FUNC func_stub($1, "[$2] $4");
 		}
 	} else {
 		die "$dsc_name: Can not parse string: $_\n";
