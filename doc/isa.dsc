@@ -28,6 +28,7 @@ delete    n        0x51    deletes object referenced by $top and pops $top
 exit      n        0x05    stops the program
 farcall   f        0x42    makes far procedure call
 farjump   a        0x21    jumps to given address
+getb      i        0x15    pushes constant on stack
 getc      c        0x10    pushes constant on stack
 getd      d        0x11    pushes module variable on stack
 gets      s        0x13    pushes local variable on stack
