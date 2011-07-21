@@ -15,7 +15,7 @@ typedef struct RMDHeader {
 	uint32_t mtbl;             /* module table offset     */
 	uint32_t imp;              /* import table offset     */
 	uint32_t addr;             /* address table offset    */
-	uint32_t consts;           /* constant table offset   */
+	uint32_t cnst;             /* constant table offset   */
 	uint32_t text;             /* text segment offset     */
 	uint32_t sym;              /* symbol segment offset   */
 	uint32_t str;              /* string segment offset   */
@@ -29,14 +29,14 @@ typedef struct RMDHeader {
 #define RMD_H_IDENT4		0x1F
 
 /* Segment sizes in bytes */
-#define RMD_SEG_EXP_SIZE(head)     ((head).ptbl   - (head).exp)
-#define RMD_SEG_PTBL_SIZE(head)    ((head).mtbl   - (head).ptbl)
-#define RMD_SEG_MTBL_SIZE(head)    ((head).imp    - (head).mtbl)
-#define RMD_SEG_IMP_SIZE(head)     ((head).addr   - (head).imp)
-#define RMD_SEG_ADDR_SIZE(head)    ((head).consts - (head).addr)
-#define RMD_SEG_CONSTS_SIZE(head)  ((head).text   - (head).consts)
-#define RMD_SEG_TEXT_SIZE(head)    ((head).sym    - (head).text)
-#define RMD_SEG_SYM_SIZE(head)     ((head).str    - (head).sym)
+#define RMD_SEG_EXP_SIZE(head)     ((head).ptbl - (head).exp)
+#define RMD_SEG_PTBL_SIZE(head)    ((head).mtbl - (head).ptbl)
+#define RMD_SEG_MTBL_SIZE(head)    ((head).imp  - (head).mtbl)
+#define RMD_SEG_IMP_SIZE(head)     ((head).addr - (head).imp)
+#define RMD_SEG_ADDR_SIZE(head)    ((head).cnst - (head).addr)
+#define RMD_SEG_CONSTS_SIZE(head)  ((head).text - (head).cnst)
+#define RMD_SEG_TEXT_SIZE(head)    ((head).sym  - (head).text)
+#define RMD_SEG_SYM_SIZE(head)     ((head).str  - (head).sym)
 
 /* #exp entry */
 typedef struct RMDExport {

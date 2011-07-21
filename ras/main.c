@@ -125,15 +125,15 @@ static void make_header(void)
 {
 	if(header.name == 0)
 		error("module name was not specified");
-	header.exp    = sizeof(RMDHeader);
-	header.ptbl   = header.exp    + exp_length();
-	header.mtbl   = header.ptbl   + proc_length();
-	header.imp    = header.mtbl   + module_length();
-	header.addr   = header.imp    + imp_length();
-	header.consts = header.addr   + addr_length();
-	header.text   = header.consts + const_length();
-	header.sym    = header.text   + text_length();
-	header.str    = header.sym    + sym_length();
+	header.exp  = sizeof(RMDHeader);
+	header.ptbl = header.exp  + exp_length();
+	header.mtbl = header.ptbl + proc_length();
+	header.imp  = header.mtbl + module_length();
+	header.addr = header.imp  + imp_length();
+	header.cnst = header.addr + addr_length();
+	header.text = header.cnst + const_length();
+	header.sym  = header.text + text_length();
+	header.str  = header.sym  + sym_length();
 }
 
 static void write_rmd(void)
