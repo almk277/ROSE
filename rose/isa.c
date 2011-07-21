@@ -2,6 +2,9 @@
 #include <stdio.h>
 
 #define NOT_IMPLEMENTED(name)	printf("%s: not implemented\n", name)
+#define ST        (&t->stack)
+#define TX        (t->text)
+#define OP        (t->operand)
 
 #include "isa_desc.c"
 

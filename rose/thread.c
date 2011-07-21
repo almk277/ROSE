@@ -1,5 +1,6 @@
 #include "thread.h"
 #include "isa.h"
+#include "compiler.h"
 
 void thread_init(Thread *t)
 {
@@ -21,7 +22,7 @@ void thread_set_module(Thread *t, Module *m)
 int thread_start(Thread *t, Module *m)
 {
 	int exp_ent, ptbl_ent;
-	uint8_t *start;
+	uint32_t start;
 
 	thread_set_module(t, m);
 	t->status = THS_RUNNING;
@@ -31,11 +32,13 @@ int thread_start(Thread *t, Module *m)
 	ptbl_ent = exp_idx_get(&m->seg.exp, exp_ent);
 	start = module_proc_addr(m, ptbl_ent);
 	text_goto(t->text, start);
-	while(t->status == THS_RUNNING) {
+
+	while(likely(t->status == THS_RUNNING)) {
 		uint8_t opcode = text_fetch(t->text);
 		t->operand = text_fetch(t->text);
 		instr_run(opcode, t);
 	}
+
 	return THS_EXIT;
 }
 

@@ -18,13 +18,12 @@ void stack_init(Stack *stack);
 
 static inline void stack_push(Stack *stack, int32_t elem)  
 {
-	++stack->sp;
-	*stack->sp = elem;
+	*++stack->sp = elem;
 }
 
-static inline void stack_pop(Stack *stack)
+static inline int32_t stack_pop(Stack *stack)
 {
-	--stack->sp;
+	return *(stack--)->sp;
 }
 
 static inline int32_t stack_at(const Stack *stack, int ofs)
@@ -40,6 +39,11 @@ static inline int32_t *stack_at_p(const Stack *stack, int ofs)
 static inline int32_t stack_top(const Stack *stack)
 {
 	return *stack->sp;
+}
+
+static inline int32_t *stack_top_p(const Stack *stack)
+{
+	return stack->sp;
 }
 
 void stack_debug(const Stack *stack);

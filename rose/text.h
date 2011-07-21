@@ -25,9 +25,15 @@ static inline uint8_t text_fetch(Text *text)
 	return *text->pc++;
 }
 
-static inline void text_goto(Text *text, uint8_t *addr)
+static inline void text_goto(Text *text, uint32_t addr)
 {
-	text->pc = addr;
+	text->pc = text->start + addr;
+}
+
+static inline void text_jump_ofs(Text *text, uint8_t ofs)
+{
+	int8_t _ofs = (int8_t)ofs;
+	text->pc += 2 * _ofs;
 }
 
 #endif

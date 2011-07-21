@@ -96,8 +96,8 @@ static Module *create_module(RMDHeader *h, FILE *f, int *error)
 	ptbl_init(&module->seg.ptbl, ofs_start, h);
 	module->seg.mtbl   = section_address(module, h->mtbl);
 	module->seg.imp    = section_address(module, h->imp);
-	module->seg.consts = section_address(module, h->consts);
-	module->seg.addr   = section_address(module, h->addr);
+	cnst_init(&module->seg.cnst, ofs_start, h);
+	addr_init(&module->seg.addr, ofs_start, h);
 	text_init(&module->seg.text, ofs_start, h);
 	sym_init(&module->seg.sym, ofs_start, h);
 
@@ -124,9 +124,8 @@ int module_find_proc(const Module *m, const char *name)
 	return -1;
 }
 
-uint8_t *module_proc_addr(const Module *m, int idx)
+uint32_t module_proc_addr(const Module *m, int idx)
 {
-	RMDProcedure *p = ptbl_get(&m->seg.ptbl, idx);
-	return text_addr(&m->seg.text, p->addr);
+	return ptbl_get(&m->seg.ptbl, idx)->addr;
 }
 

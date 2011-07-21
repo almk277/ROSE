@@ -6,6 +6,8 @@
 #include "rmd.h"
 #include "exp.h"
 #include "ptbl.h"
+#include "cnst.h"
+#include "addr.h"
 #include "text.h"
 #include "sym.h"
 
@@ -17,8 +19,8 @@ struct ModuleSegments {
 	Ptbl ptbl;
 	const RMDModule *mtbl;
 	const RMDImport *imp;
-	const uint32_t *consts;
-	const uint32_t *addr;
+	Cnst cnst;
+	Addr addr;
 	Text text;
 	Sym sym;
 };
@@ -64,7 +66,7 @@ int verify_rmd_version(const unsigned char version[2]);
 
 int module_find_proc(const Module *m, const char *name);
 
-uint8_t *module_proc_addr(const Module *m, int idx);
+uint32_t module_proc_addr(const Module *m, int idx);
 
 #endif
 
