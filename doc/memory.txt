@@ -1,22 +1,21 @@
 There is segmented memory model. Segments are:
 	1.  .heap - area for dynamic memory allocating;
 	2.  .stack - current data and procedure frame;
-	3.  .head - module header;
-	4.  .ptbl - procedure table;
-	5.  .mtbl - module table;
-	6.  .imp - import table;
-	7.  .exp - export table.
-	8.  .const - module constants table;
-	9.  .addr - text addresses table;
-	10. .text - program instructions;
-	11. .data - initially zero-filled variable table;
-	12. .proc - internal procedure stack;
-	13. .sym - runtime symbol table.
+	3.  .ptbl - procedure table;
+	4.  .mtbl - module table;
+	5.  .imp - import table;
+	6.  .exp - export table.
+	7.  .const - module constant table;
+	8.  .addr - text address table;
+	9.  .text - program instructions;
+	10. .data - initially zero-filled variable table;
+	11. .proc - internal procedure stack;
+	12. .sym - runtime symbol table;
+	13. .str - data constant pool.
 
 .heap is a global segment for entire environment.
 Every thread has it's own .stack and .proc.
-.head, .const, .addr, .text, .ptbl, .mtbl, .imp and .exp are
-created for every module.
+.const, .addr, .text, .ptbl, .mtbl, .imp and .exp are module-local.
 .data is created for every module instance.
 
 ------------------------------------------------------------
@@ -35,7 +34,7 @@ created for every module.
 |   |                    Module                        |   |
 |   |                                                  |   |
 |   | ------------  ----------  ------------ --------- |   |
-|   | |  .head   |  | .ptbl  |  |  .mtbl   | | .imp  | |   |
+|   | |  .str    |  | .ptbl  |  |  .mtbl   | | .imp  | |   |
 |   | ------------  ----------  ------------ --------- |   |
 |   |                                                  |   |
 |   | ------------  ----------  ------------ --------- |   |

@@ -11,14 +11,13 @@ Module includes following sections:
 7.  #addr  - table of some text addresses;
 8.  #text  - all instructions in all procedures;
 9.  #sym   - all loadable symbols;
-10. #str   - unicode text strings.
-11. #debug - debug information;
+10. #str   - constant pool;
+11. #debug - debug information.
 
-Sections #debug and #str might be ommited.
+Section #debug might be ommited.
 
 #head:
 	* name   - #sym string with short module name;
-	* descr  - #str string with module description;
 	* time   - module create date and time;
 	* RMDver - RMD format version;
 	* ver    - module version;
@@ -28,7 +27,6 @@ Sections #debug and #str might be ommited.
 	* name    - #sym string with procedure export name;
 	* proto   - #sym string with prototype code.
 	* idx     - index into #ptbl;
-	* descr   - index into #str to description.
 
 #ptbl:
 	* addr   - offset in #text;
@@ -52,7 +50,7 @@ addr and slot might be ommited.
 
 #sym is byte array with null-terminated C-strings.
 
-#str is an unicode strings section.
+#str is a constant array (string) pool.
 
 #debug contains debug information, format is unspecified yet.
 

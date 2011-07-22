@@ -19,6 +19,7 @@ typedef struct RMDHeader {
 	uint32_t text;             /* text segment offset     */
 	uint32_t sym;              /* symbol segment offset   */
 	uint32_t str;              /* string segment offset   */
+	uint32_t end;              /* last sector end offset  */
 	char pad[16];              /* for future expanding    */
 } RMDHeader;
 
@@ -37,12 +38,12 @@ typedef struct RMDHeader {
 #define RMD_SEG_CONSTS_SIZE(head)  ((head).text - (head).cnst)
 #define RMD_SEG_TEXT_SIZE(head)    ((head).sym  - (head).text)
 #define RMD_SEG_SYM_SIZE(head)     ((head).str  - (head).sym)
+#define RMD_SEG_STR_SIZE(head)     ((head).end  - (head).str)
 
 /* #exp entry */
 typedef struct RMDExport {
 	uint16_t name;
 	uint16_t proto;
-	uint32_t descr;
 	uint8_t idx;
 } RMDExport;
 
