@@ -2,9 +2,8 @@
 #define ROSE_STACK_H
 
 #include "debug.h"
+#include "conf.h"
 #include <stdint.h>
-
-#define STACK_SIZE   1024
 
 typedef struct Stack Stack;
 
