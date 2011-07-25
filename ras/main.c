@@ -134,6 +134,7 @@ static void make_header(void)
 	header.text = header.cnst + const_length();
 	header.sym  = header.text + text_length();
 	header.str  = header.sym  + sym_length();
+	header.end  = header.str  + str_length();
 }
 
 static void write_rmd(void)

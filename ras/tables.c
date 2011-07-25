@@ -241,3 +241,8 @@ void header_write(FILE *file)
 		file_write_error();
 }
 
+size_t str_length(void)
+{
+	return 0;
+}
+

@@ -97,5 +97,8 @@ void header_print(void);
 /* dumps header to file */
 void header_write(FILE *file);
 
+/* #str length */
+size_t str_length(void);
+
 #endif
 
