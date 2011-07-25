@@ -40,11 +40,13 @@ jumpl     o        0x23    pops $top and jumps to ($ip + $op) if $top is \
 jumple    o        0x25    pops $top and jumps to ($ip + $op) if $top is \
                            less or equal to zero
 jumpz     o        0x22    pops $top and jumps to ($ip + $op) if $top is zero
+loadarr   n        0x57    pushes reference to array with .str address $top
 new       m        0x50    creates new module object and pushes reference to \
                            it on stack
 nop       n        0x01    nop does nothing
 out       u        0x70    pops stack word and outputs it in given file
-push      i        0x15    pushes constant on stack
+pushc     i        0x15    pushes constant on stack
+pushcsh   i        0x16    makes $top = ($top << 8) | $op
 putd      d        0x12    pops stack word into module variable
 puts      s        0x14    pops stack word into local variable
 return    n        0x45    returns execution from current procedure with \

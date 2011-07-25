@@ -13,7 +13,9 @@ index into data table). Prefix "." means segment name (".data", for example).
 
 The only data type is 32-bit signed integer. Data are one of the following
 types:
+	* embedded constants are instruction operands; [%pushc, %pushcsh]
 	* constants are placed in .const; [%getc]
+	* constant initialized arrays are placed in .str; [%loadarr]
 	* data are placed in .data. It is read/write storage, which exists while
 	  the module instance does; [%getd, %putd]
 	* local variables are placed in .stack. Procedure arguments are local

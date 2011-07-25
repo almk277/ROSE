@@ -11,7 +11,7 @@ Module includes following sections:
 7.  #addr  - table of some text addresses;
 8.  #text  - all instructions in all procedures;
 9.  #sym   - all loadable symbols;
-10. #str   - constant pool;
+10. #str   - constant array pool;
 11. #debug - debug information.
 
 Section #debug might be ommited.
@@ -50,7 +50,9 @@ addr and slot might be ommited.
 
 #sym is byte array with null-terminated C-strings.
 
-#str is a constant array (string) pool.
+#str:
+	* len - array length;
+	* str - array of bytes.
 
 #debug contains debug information, format is unspecified yet.
 

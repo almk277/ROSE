@@ -67,5 +67,11 @@ typedef struct RMDImport {
 	uint32_t addr;
 } RMDImport;
 
+/* #str entry */
+typedef struct RMDString {
+	uint32_t len;
+	const char str[1];
+};
+
 #endif
 
