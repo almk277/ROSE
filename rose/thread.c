@@ -1,6 +1,6 @@
 #include "thread.h"
-#include "isa.h"
 #include "compiler.h"
+#include "isa.c"
 
 void thread_init(Thread *t)
 {

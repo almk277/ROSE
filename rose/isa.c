@@ -22,8 +22,5 @@ static const Instr instr_set[] = {
 #include "isa_tbl.c"
 };
 
-void instr_run(int idx, Thread *t)
-{
-	instr_set[idx](t);
-}
+#define instr_run(idx, thread)  instr_set[idx](thread)
 

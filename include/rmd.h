@@ -71,7 +71,7 @@ typedef struct RMDImport {
 typedef struct RMDString {
 	uint32_t len;
 	const char str[1];
-};
+} RMDString;
 
 #endif
 
