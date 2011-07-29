@@ -10,6 +10,15 @@ struct Array {
 	char array[ARRAY_LEN];
 };
 
+/* Checks if tbl of type Storage* has at least size bytes free,
+ * enlarges tbl if not */
+#define CHECK_SPACE(tbl, size) do { \
+	if(!tbl->current || (ARRAY_LEN - tbl->current->len) < size) { \
+		tbl->current = array_new(); \
+		SIMPLEQ_INSERT_TAIL(&tbl->head, tbl->current, entry); \
+	} \
+} while(0)
+
 static Array *array_new(void)
 {
 	Array *a = malloc(sizeof *a);
@@ -22,21 +31,47 @@ static Array *array_new(void)
 static void array_add_str(Array *a, const char *str, size_t len)
 {
 	strcpy(&a->array[a->len], str);
-	a->len += (len + 1);
+	a->len += len;
 }
 
 uint16_t storage_add_str(Storage *tbl, const char *str)
 {
 	uint16_t addr = tbl->len;
-	size_t len = strlen(str);
-	Array *a = tbl->current;
-	if(!a || (ARRAY_LEN - a->len) <= len) {
-		tbl->current = a = array_new();
-		SIMPLEQ_INSERT_TAIL(&tbl->head, a, entry);
-	}
-	array_add_str(a, str, len);
-	tbl->len += (len + 1);
+	size_t len = strlen(str) + 1;
+	CHECK_SPACE(tbl, len);
+	array_add_str(tbl->current, str, len);
+	tbl->len += len;
 	return addr;
+}
+
+void storage_add_instr(Storage *tbl, uint8_t opcode, uint8_t oper)
+{
+	Array *a;
+	CHECK_SPACE(tbl, 2);
+	a = tbl->current;
+	a->array[a->len++] = opcode;
+	a->array[a->len++] = oper;
+	tbl->len += 2;
+}
+
+uint32_t *storage_skip32(Storage *tbl)
+{
+	uint32_t *addr;
+	Array *a;
+	CHECK_SPACE(tbl, 4);
+	a = tbl->current;
+	addr = (uint32_t *)&a->array[a->len];
+	a->len += 4;
+	return addr;
+}
+
+void storage_add_byte(Storage *tbl, char byte)
+{
+	Array *a;
+	CHECK_SPACE(tbl, 1);
+	a = tbl->current;
+	a->array[a->len++] = byte;
+	++tbl->len;
 }
 
 static void strarray_print(const Array *a)
@@ -57,18 +92,6 @@ void storage_print_str(const Storage *tbl)
 		strarray_print(a);
 	}
 	putchar('\n');
-}
-
-void storage_add_instr(Storage *tbl, uint8_t opcode, uint8_t oper)
-{
-	Array *a = tbl->current;
-	if(!a || a->len == ARRAY_LEN / 2) {
-		tbl->current = a = array_new();
-		SIMPLEQ_INSERT_TAIL(&tbl->head, a, entry);
-	}
-	a->array[a->len++] = opcode;
-	a->array[a->len++] = oper;
-	tbl->len += 2;
 }
 
 char *storage_current(const Storage *tbl)
