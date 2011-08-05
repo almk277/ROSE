@@ -19,6 +19,11 @@ static inline Pointer addrtbl_get(const AddrTbl *tbl, uint32_t idx)
 	return tbl->tbl[idx];
 }
 
+static inline Pointer *addrtbl_addr(AddrTbl *tbl, uint32_t idx)
+{
+	return &tbl->tbl[idx];
+}
+
 static inline int addrtbl_is_full(const AddrTbl *tbl)
 {
 	return tbl->top == ADDRTBL_SIZE - 1;

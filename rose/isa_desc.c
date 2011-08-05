@@ -29,7 +29,7 @@ static void isa_delete(Thread *t)
 /* [n] stops the program */
 static void isa_exit(Thread *t)
 {
-	t->status =THS_EXIT;
+	t->status = THS_EXIT;
 }
 
 /* [f] makes far procedure call */
@@ -110,6 +110,12 @@ static void isa_jumpz(Thread *t)
 		text_jump_ofs(TX, OP);
 }
 
+/* [c] pushes reference to array with address $op */
+static void isa_loadstr(Thread *t)
+{
+	NOT_IMPLEMENTED("loadstr");
+}
+
 /* [m] creates new module object and pushes reference to it on stack */
 static void isa_new(Thread *t)
 {
@@ -132,9 +138,17 @@ static void isa_out(Thread *t)
 }
 
 /* [i] pushes constant on stack */
-static void isa_push(Thread *t)
+static void isa_pushc(Thread *t)
 {
 	stack_push(ST, OP);
+}
+
+/* [i] makes $top = ($top << 8) | $op */
+static void isa_pushcsh(Thread *t)
+{
+	int32_t top = stack_top(ST);
+	top = (top << 8) | OP;
+	*stack_top_p(ST) = top;
 }
 
 /* [d] pops stack word into module variable */
@@ -170,5 +184,23 @@ static void isa_sub(Thread *t)
 	/* FIXME overflow */
 	int32_t a  = a1 - a2;
 	stack_push(ST, a);
+}
+
+/* [n] gets array length: $top = length($top) */
+static void isa_strlen(Thread *t)
+{
+	NOT_IMPLEMENTED("strlen");
+}
+
+/* [n] pushes $top on stack again */
+static void isa_dup(Thread *t)
+{
+	stack_push(ST, stack_top(ST));
+}
+
+/* [u] writes to given file array $top bytes from array $top[-1] */
+static void isa_write(Thread *t)
+{
+	NOT_IMPLEMENTED("write");
 }
 

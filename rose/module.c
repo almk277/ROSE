@@ -14,7 +14,7 @@
 
 static size_t load_size(const RMDHeader *header)
 {
-	return header->str - sizeof(RMDHeader);
+	return header->end - sizeof(RMDHeader);
 }
 
 int verify_ident(const unsigned char ident[4])
@@ -100,6 +100,7 @@ static Module *create_module(RMDHeader *h, FILE *f, int *error)
 	addr_init(&module->seg.addr, ofs_start, h);
 	text_init(&module->seg.text, ofs_start, h);
 	sym_init(&module->seg.sym, ofs_start, h);
+	str_init(&module->seg.str, ofs_start, h);
 
 	module->name = sym_get(&module->seg.sym, h->name);
 	module->version[0] = h->version[0];

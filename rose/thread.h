@@ -20,9 +20,9 @@ void thread_init(Thread *t);
 void thread_debug(const Thread *t);
 
 enum ThreadStatus {
+	THS_RUNNING = 0,
 	THS_EXIT,
 	THS_NOENTRY,
-	THS_RUNNING,
 	THS_INV_OPCODE,
 };
 

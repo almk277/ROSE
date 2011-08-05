@@ -10,6 +10,7 @@
 #include "addr.h"
 #include "text.h"
 #include "sym.h"
+#include "str.h"
 
 /* ROSE module descriptor */
 typedef struct Module Module;
@@ -23,6 +24,7 @@ struct ModuleSegments {
 	Addr addr;
 	Text text;
 	Sym sym;
+	Str str;
 };
 
 struct Module {
