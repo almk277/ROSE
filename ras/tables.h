@@ -106,6 +106,9 @@ void str_add_char(uint32_t *str_len, char c);
 /* #str length */
 size_t str_length(void);
 
+/* returns address of a string with given name, or (uint32_t)-1 if not found */
+uint32_t str_find(const char *name);
+
 /* debug output for #str */
 void str_print(void);
 

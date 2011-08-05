@@ -90,6 +90,7 @@ static long parse_byte(char **pos)
 {
 	long val;
 	if(**pos == '\'') {
+		/* escaped char */
 		int escaped = (*pos)[1] == '\\';
 		if(escaped)
 			++*pos;
@@ -99,11 +100,25 @@ static long parse_byte(char **pos)
 		if((*pos)[2] != '\'')
 			error("closing ' expected");
 		*pos += 3;
+	} else if(isalpha(**pos)) {
+		/* name */
+		uint32_t addr;
+		char *tail = *pos;
+		go_to_word_end(&tail);
+		if(*tail)
+			*tail++ = 0;
+		addr = str_find(*pos);
+		if(addr == (uint32_t)-1)
+			error("string name '%s' not found", *pos);
+		val = addr;
 	} else {
+		/* number */
 		char *end;
 		val = strtol(*pos, &end, 0);
 		if(end == *pos)
 			error("number expected");
+		if(val < INT32_MIN || val > INT32_MAX)
+			error("constant value out of range");
 		*pos = end;
 	}
 	return val;
@@ -117,8 +132,6 @@ static void in_sect_const(char *keyword, char *args)
 		error("'=' expected after '%s'", keyword);
 	pass_spaces(&args);
 	val = parse_byte(&args);
-	if(val < INT32_MIN || val > INT32_MAX)
-		error("constant value out of range");
 	check_word_is_last(args, "after constant");
 	/*pass_spaces(&args);*/
 	/*if(*args)*/

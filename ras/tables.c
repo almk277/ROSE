@@ -264,6 +264,14 @@ size_t str_length(void)
 	return str_sect.len;
 }
 
+uint32_t str_find(const char *name)
+{
+	const HashEntry *e = hash_find(&str_hash, name);
+	if(e)
+		return e->data;
+	return (uint32_t)-1;
+}
+
 static void str_print1(const HashEntry *e)
 {
 	printf("%s: >>", e->name);
