@@ -3,22 +3,15 @@
 There is three section types: constants, data and text. Every section begins
 with special directive and ends with next such directive.
 
+.arg <name>
+	Declares procedure argument.
+
 .const
 	Declares #const section. Constants are placed one per line in form
 	'name = value'.
 
 .data
 	Declares #data section. Data variables are placed one per line as names.
-
-.sub <name>
-	Declares #text section with procedure <name>. Instructions and non-section
-	directives may be used here.
-
-.module <name-maj.min>
-	Declares current module name and version.
-
-.import <name-maj.min>
-	Imports module with given name and version.
 
 .export
 	Declares current procedure as public.
@@ -27,9 +20,19 @@ with special directive and ends with next such directive.
 	Imports procedure with <name> from <module> (previously imported with
 	.import).
 
+.import <name-maj.min>
+	Imports module with given name and version.
+
+.module <name-maj.min>
+	Declares current module name and version.
+
+.str <name>
+	Declares #str section, begins a string with <name>.
+
+.sub <name>
+	Declares #text section with procedure <name>. Instructions and non-section
+	directives may be used here.
+
 .var <name>
 	Declares local variable for current procedure.
-
-.arg <name>
-	Declares procedure argument.
 

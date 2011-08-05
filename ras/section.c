@@ -10,6 +10,7 @@
 static void in_sect_none(char *keyword, char *args);
 static void in_sect_proc(char *keyword, char *args);
 static void in_sect_const(char *keyword, char *args);
+static void in_sect_str(char *keyword, char *agrs);
 static void in_sect_data(char *keyword, char *args);
 
 enum SectionType cur_sect = SECT_NONE;
@@ -19,6 +20,7 @@ static void (*section_parse[])(char *, char*) = {
 	in_sect_none,
 	in_sect_proc,
 	in_sect_const,
+	in_sect_str,
 	in_sect_data,
 };
 
@@ -50,13 +52,25 @@ static void in_sect_proc(char *keyword, char *args)
 	if(!in)
 		error("unknown instruction '%s'", keyword);
 	tail = args;
-	go_to_space(&tail);
-	pass_spaces(&tail);
-	if(*tail)
-		unexpect_sym("after instruction");
+	check_word_is_last(args, "after insruction");
+	/*go_to_space(&tail);*/
+	/*pass_spaces(&tail);*/
+	/*if(*tail)*/
+		/*unexpect_sym("after instruction");*/
 	oper = proc_read(in->operand, args);
 	text_add(in->opcode, oper);
 	debug_line(".text: %s -> '%s'", keyword, args);
+}
+
+static void in_sect_data(char *keyword, char *args)
+{
+	check_name(keyword);
+	check_word_is_last(args, "after data name");
+	/*pass_spaces(&args);*/
+	/*if(*args)*/
+		/*unexpect_sym("after data name");*/
+	data_add(keyword);
+	debug_line(".data: %s", keyword);
 }
 
 static int escaped_char(int ch)
@@ -72,47 +86,57 @@ static int escaped_char(int ch)
 	return ch;
 }
 
+static long parse_byte(char **pos)
+{
+	long val;
+	if(**pos == '\'') {
+		int escaped = (*pos)[1] == '\\';
+		if(escaped)
+			++*pos;
+		if((*pos)[1] == 0)
+			error("character expected");
+		val = escaped ? escaped_char((*pos)[1]) : (*pos)[1];
+		if((*pos)[2] != '\'')
+			error("closing ' expected");
+		*pos += 3;
+	} else {
+		char *end;
+		val = strtol(*pos, &end, 0);
+		if(end == *pos)
+			error("number expected");
+		*pos = end;
+	}
+	return val;
+}
+
 static void in_sect_const(char *keyword, char *args)
 {
 	long val;
 	check_name(keyword);
-	if(*args != '=')
-		error("= expected");
-	++args;
+	if(*args++ != '=')
+		error("'=' expected after '%s'", keyword);
 	pass_spaces(&args);
-	if(*args == '\'') {
-		int escaped = args[1] == '\\';
-		if(escaped)
-			++args;
-		if(args[1] == 0)
-			error("character expected");
-		val = escaped ? escaped_char(args[1]) : args[1];
-		if(args[2] != '\'')
-			error("closing ' expected");
-		args += 3;
-	} else {
-		char *end;
-		val = strtol(args, &end, 0);
-		if(end == args)
-			error("number expected after '='");
-		if(val <= INT32_MIN || val >= INT32_MAX)
-			error("constant value out of range");
-		args = end;
-	}
-	pass_spaces(&args);
-	if(*args)
-		unexpect_sym("after constant");
+	val = parse_byte(&args);
+	if(val < INT32_MIN || val > INT32_MAX)
+		error("constant value out of range");
+	check_word_is_last(args, "after constant");
+	/*pass_spaces(&args);*/
+	/*if(*args)*/
+		/*unexpect_sym("after constant");*/
 	const_add(keyword, val);
 	debug_line(".const: %s -> %ld", keyword, val);
 }
 
-static void in_sect_data(char *keyword, char *args)
+static void in_sect_str(char *keyword, char *args)
 {
-	check_name(keyword);
-	pass_spaces(&args);
+	char byte;
+	long val = parse_byte(&keyword);
+	if(val < 0 || val > 255)
+		error("byte is out of range");
+	byte = (char)val;
+	str_add_char(array_len, byte);
 	if(*args)
-		unexpect_sym("after data name");
-	data_add(keyword);
-	debug_line(".data: %s", keyword);
+		unexpect_sym("after constant");
+	debug_line(".str: %hhd", byte);
 }
 

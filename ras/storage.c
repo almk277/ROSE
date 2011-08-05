@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <ctype.h>
 
 struct Array {
 	SIMPLEQ_ENTRY(Array) entry;
@@ -54,15 +55,17 @@ void storage_add_instr(Storage *tbl, uint8_t opcode, uint8_t oper)
 	tbl->len += 2;
 }
 
-uint32_t *storage_skip32(Storage *tbl)
+uint32_t *storage_skip32(Storage *tbl, uint32_t *addr)
 {
-	uint32_t *addr;
+	uint32_t *addr32;
 	Array *a;
+	*addr = tbl->len;
 	CHECK_SPACE(tbl, 4);
 	a = tbl->current;
-	addr = (uint32_t *)&a->array[a->len];
+	addr32 = (uint32_t *)&a->array[a->len];
 	a->len += 4;
-	return addr;
+	tbl->len += 4;
+	return addr32;
 }
 
 void storage_add_byte(Storage *tbl, char byte)
@@ -92,6 +95,34 @@ void storage_print_str(const Storage *tbl)
 		strarray_print(a);
 	}
 	putchar('\n');
+}
+
+void storage_print_array(const Storage *tbl, uint32_t addr)
+{
+	Array *a = SIMPLEQ_FIRST(&tbl->head);
+	uint32_t i;
+	uint32_t len;
+	/* evaluate array we need and make it a */
+	int array_idx = addr / ARRAY_LEN;
+	/* string offset in the resulted array */
+	uint32_t pos = addr - ARRAY_LEN * array_idx;
+	for(i = 0; i != array_idx; ++i)
+		a = SIMPLEQ_NEXT(a, entry);
+	len = *(uint32_t *)&a->array[pos];
+	printf("[%u]", len);
+	pos += 4; /* pass string length */
+	for(i = 0; i != len; ++i) {
+		char byte;
+		if(pos == a->len) {
+			a = SIMPLEQ_NEXT(a, entry);
+			pos = 0;
+		}
+		byte = a->array[pos];
+		printf("%hhd", byte);
+		if(isprint(byte))
+			printf("('%c')", byte);
+		++pos;
+	}
 }
 
 char *storage_current(const Storage *tbl)

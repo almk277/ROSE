@@ -37,14 +37,6 @@ void dir_data(char *args)
 	set_current_section(SECT_DATA, "data");
 }
 
-static void check_word_is_last(char *word, const char *msg)
-{
-	go_to_space(&word);
-	pass_spaces(&word);
-	if(*word)
-		unexpect_sym(msg);
-}
-
 void dir_sub(char *args)
 {
 	if(!*args)
@@ -116,5 +108,21 @@ void dir_extern(char *args)
 	imp_add(args);
 	check_word_is_last(args, "after procedure name");
 	debug_line("extern: '%s'", args);
+}
+
+void dir_str(char *args)
+{
+	char *tail = args;
+	go_to_word_end(&tail);
+	if(*tail) {
+		*tail++ = 0;
+		pass_spaces(&tail);
+		if(*tail)
+			unexpect_sym("after string name");
+	}
+	check_name(args);
+	array_len = str_add_string(args);
+	debug_line("string '%s' added", args);
+	set_current_section(SECT_STR, "str");
 }
 

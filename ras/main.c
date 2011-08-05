@@ -119,6 +119,7 @@ static void debug_print(void)
 	text_print();
 	sym_print();
 	data_print();
+	str_print();
 }
 
 static void make_header(void)
@@ -149,6 +150,7 @@ static void write_rmd(void)
 	addr_write(output);
 	text_write(output);
 	sym_write(output);
+	str_write(output);
 }
 
 int main(int argc, char *argv[])

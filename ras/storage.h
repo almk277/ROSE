@@ -38,11 +38,14 @@ void storage_add_instr(Storage *tbl, uint8_t opcode, uint8_t oper);
 /* returns current storage position address */
 char *storage_current(const Storage *tbl);
 
-/* skips 32 bits and returns pointer to it */
-uint32_t *storage_skip32(Storage *tbl);
+/* skips 32 bits and returns pointer to it. Writes current offset to addr */
+uint32_t *storage_skip32(Storage *tbl, uint32_t *addr);
 
 /* adds byte to tbl */
 void storage_add_byte(Storage *tbl, char byte);
+
+/* prints tbl array with addr offset */
+void storage_print_array(const Storage *tbl, uint32_t addr);
 
 /* dumps storage to file */
 void storage_write(const Storage *tbl, FILE *file);

@@ -22,6 +22,7 @@ void dir_import(char *);
 void dir_module(char *);
 void dir_export(char *);
 void dir_extern(char *);
+void dir_str(char *);
 
 #endif
 

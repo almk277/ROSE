@@ -7,6 +7,7 @@ int lineno = 0;
 int verbose = 0;
 uint32_t offset = 0;
 const struct HashEntry *cur_proc;
+uint32_t *array_len = 0;
 
 void error(const char *fmt, ...)
 {
@@ -52,16 +53,20 @@ void file_write_error(void)
 	fprintf(stderr, "file write error\n");
 }
 
-void check_name(const char *name)
+int name_is_valid(const char *name)
 {
 	if(!isalpha(*name))
-		goto error;
+		return 0;
 	for(++name; *name; ++name)
 		if(!(isalnum(*name) || *name == '_'))
-			goto error;
-	return;
-error:
-	error("invalid name '%s'", name);
+			return 0;
+	return 1;
+}
+
+void check_name(const char *name)
+{
+	if(!name_is_valid(name))
+		error("invalid name '%s'", name);
 }
 
 void pass_spaces(char **pos)
@@ -80,5 +85,13 @@ void go_to_word_end(char **pos)
 {
 	while(**pos && (isalnum(**pos) || **pos == '_'))
 		++*pos;
+}
+
+void check_word_is_last(char *word, const char *msg)
+{
+	go_to_space(&word);
+	pass_spaces(&word);
+	if(*word)
+		unexpect_sym(msg);
 }
 

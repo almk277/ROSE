@@ -97,8 +97,20 @@ void header_print(void);
 /* dumps header to file */
 void header_write(FILE *file);
 
+/* adds new string with given name and returns address of it's length */
+uint32_t *str_add_string(const char *name);
+
+/* adds a byte c to #str, str_len points to current string length */
+void str_add_char(uint32_t *str_len, char c);
+
 /* #str length */
 size_t str_length(void);
+
+/* debug output for #str */
+void str_print(void);
+
+/* dumps #str to file */
+void str_write(FILE *file);
 
 #endif
 

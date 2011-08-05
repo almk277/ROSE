@@ -10,11 +10,13 @@ static Hash data_hash;
 static Hash var_hash;
 static Hash module_hash;
 static Hash imp_hash;
+static Hash str_hash;
 
 static RMDModule module_sect[256];
 static RMDImport imp_sect[256];
 static int32_t const_sect[256];
 static Storage sym_sect = STORAGE_INITIALIZER(sym_sect);
+static Storage str_sect = STORAGE_INITIALIZER(str_sect);
 
 RMDHeader header = {
 	{
@@ -241,8 +243,42 @@ void header_write(FILE *file)
 		file_write_error();
 }
 
+uint32_t *str_add_string(const char *name)
+{
+	uint32_t addr;
+	uint32_t *ret;
+	HashEntry *e = hash_add(&str_hash, name);
+	ret = storage_skip32(&str_sect, &addr);
+	e->data = addr;
+	return ret;
+}
+
+void str_add_char(uint32_t *str_len, char c)
+{
+	storage_add_byte(&str_sect, c);
+	++*str_len;
+}
+
 size_t str_length(void)
 {
-	return 0;
+	return str_sect.len;
+}
+
+static void str_print1(const HashEntry *e)
+{
+	printf("%s: >>", e->name);
+	storage_print_array(&str_sect, e->data);
+	printf("<<");
+}
+
+void str_print(void)
+{
+	printf("#str(%d): ", str_hash.count);
+	hash_print(&str_hash, str_print1);
+}
+
+void str_write(FILE *file)
+{
+	storage_write(&str_sect, file);
 }
 

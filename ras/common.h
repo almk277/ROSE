@@ -16,6 +16,7 @@ enum SectionType {
 	SECT_NONE,     /* no section */
 	SECT_PROC,     /* #text      */
 	SECT_CONST,    /* #const     */
+	SECT_STR,      /* #str       */
 	SECT_DATA,     /* #data      */
 };
 
@@ -32,6 +33,7 @@ extern int verbose;                       /* verbosity level */
 extern int lineno;                        /* current source line number */
 extern uint32_t offset;                   /* current #text offset */
 extern const struct HashEntry *cur_proc;  /* current procedure */
+extern uint32_t *array_len;               /* current string length field */
 
 /* prints out error in printf format and finishes program */
 C_ATTR_PRINTF(1, 2)
@@ -62,9 +64,14 @@ void go_to_space(char **pos);
 /* changes pos to point to current word end */
 void go_to_word_end(char **pos);
 
+/* returns if name is a valid name */
+int name_is_valid(const char *name);
+
 /* checks if name is valid; prints error message and finishes program
  * if it is not */
 void check_name(const char *name);
+
+void check_word_is_last(char *word, const char *msg);
 
 #endif
 
