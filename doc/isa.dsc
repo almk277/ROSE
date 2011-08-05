@@ -25,6 +25,7 @@ add       n        0x60    pops two stack words and pushes their sum
 call      p        0x40    makes near procedure call
 dec       n        0x66    decrements $top
 delete    n        0x51    deletes object referenced by $top and pops $top
+dup       n        0x17    pushes $top on stack again
 exit      n        0x05    stops the program
 farcall   f        0x42    makes far procedure call
 farjump   a        0x21    jumps to given address
@@ -40,7 +41,7 @@ jumpl     o        0x23    pops $top and jumps to ($ip + $op) if $top is \
 jumple    o        0x25    pops $top and jumps to ($ip + $op) if $top is \
                            less or equal to zero
 jumpz     o        0x22    pops $top and jumps to ($ip + $op) if $top is zero
-loadarr   n        0x57    pushes reference to array with .str address $top
+loadstr   n        0x57    pushes reference to array with .str address $top
 new       m        0x50    creates new module object and pushes reference to \
                            it on stack
 nop       n        0x01    nop does nothing
@@ -53,4 +54,5 @@ return    n        0x45    returns execution from current procedure with \
                            return value
 retp      n        0x46    returns execution from current procedure without \
                            return value
+strlen    n        0x58    gets array length: $top = length($top)
 sub       n        0x61    pops two stack words and pushes their difference
