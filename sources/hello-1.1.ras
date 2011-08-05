@@ -1,0 +1,23 @@
+.module hello-1.1
+
+# Outputs message through constant array.
+
+.str hello_str
+	'H'
+	'e'
+	'l'
+	'l'
+	'o'
+
+.const
+	hello_addr = hello_str
+
+.sub main
+.export
+	getc hello_addr
+	loadstr
+	dup
+	strlen
+	write 1
+	exit
+

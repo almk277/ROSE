@@ -56,3 +56,5 @@ retp      n        0x46    returns execution from current procedure without \
                            return value
 strlen    n        0x58    gets array length: $top = length($top)
 sub       n        0x61    pops two stack words and pushes their difference
+write     u        0x72    writes to given file array $top bytes from array \
+                           $top[-1]
