@@ -1,8 +1,90 @@
 #include "ref.h"
-#include "addrcat.h"
 #include "compiler.h"
 #include "error.h"
-#include <stddef.h>
+#include "conf.h"
+#include <stdlib.h>
+#include <stdint.h>
+
+/*****************  Address table  *******************/
+
+typedef struct AddrTbl AddrTbl;
+typedef void *Pointer;
+
+struct AddrTbl {
+	Pointer tbl[ADDRTBL_SIZE];
+	uint32_t top;
+};
+
+static AddrTbl addrtbl_first;
+
+static inline Pointer addrtbl_get(const AddrTbl *tbl, uint32_t idx)
+{
+	return tbl->tbl[idx];
+}
+
+static inline Pointer *addrtbl_addr(AddrTbl *tbl, uint32_t idx)
+{
+	return &tbl->tbl[idx];
+}
+
+static inline int addrtbl_is_full(const AddrTbl *tbl)
+{
+	return tbl->top == ADDRTBL_SIZE - 1;
+}
+
+static inline uint32_t addrtbl_top(AddrTbl *tbl)
+{
+	return tbl->top;
+}
+
+static AddrTbl *addrtbl_new(void)
+{
+	return calloc(1, sizeof(AddrTbl));
+}
+
+/*
+static void addrtbl_delete(AddrTbl *tbl)
+{
+	free(tbl);
+}
+*/
+
+static uint32_t addrtbl_add_ptr(AddrTbl *tbl, Pointer ptr)
+{
+	tbl->tbl[tbl->top++] = ptr;
+	return tbl->top;
+}
+
+/********************  Address catalog  ********************/
+
+typedef struct AddrCat AddrCat;
+
+struct AddrCat {
+	AddrTbl *cat[ADDRCAT_SIZE];
+	uint32_t top;
+};
+
+static inline AddrTbl *addrcat_get(const AddrCat *cat, uint32_t idx)
+{
+	return cat->cat[idx];
+}
+
+static inline uint32_t addrcat_top(const AddrCat *cat)
+{
+	return cat->top;
+}
+
+static inline int addrcat_is_full(const AddrCat *cat)
+{
+	return cat->top == ADDRCAT_SIZE - 1;
+}
+
+static void addrcat_add_tbl(AddrCat *cat, AddrTbl *tbl)
+{
+	cat->cat[cat->top++] = tbl;
+}
+
+/***********************  Reference  *********************/
 
 /* Ref <=> SplittedRef <=> PointerCell <=> Pointer */
 
