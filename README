@@ -1,8 +1,8 @@
-ROSE stands for RISC Object Study Environment.
-It is runtime environment, inspired by JVM.
+ROSE stands for Real Object Stack Environment.
+This is virtual machine similar to JVM.
 
 Main issues are:
 	* short 2-byte instructions;
-	* 32-bit host only;
+	* 32-bit data;
 	* modularity and late binding;
 	* safe code execution.
