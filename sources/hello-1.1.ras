@@ -8,6 +8,7 @@
 	'l'
 	'l'
 	'o'
+	'\n'
 
 .const
 	hello_addr = hello_str

@@ -51,8 +51,8 @@ static void addrtbl_delete(AddrTbl *tbl)
 
 static uint32_t addrtbl_add_ptr(AddrTbl *tbl, Pointer ptr)
 {
-	tbl->tbl[tbl->top++] = ptr;
-	return tbl->top;
+	tbl->tbl[tbl->top] = ptr;
+	return tbl->top++;
 }
 
 /********************  Address catalog  ********************/
@@ -96,8 +96,8 @@ typedef struct SplittedRef {
 } SplittedRef;
 
 static AddrCat addr_cat = {
-	{ &addrtbl_first }, /* 1st address table is created statically */
-	1                   /* $0.0 is forbidden */
+	{ 0, &addrtbl_first }, /* 1st address table is created statically */
+	1                      /* $0.0 is forbidden */
 };
 
 static Ref ref_free_list = { 0 };
@@ -138,10 +138,11 @@ Ref ref_new(void *ptr)
 		sp_ref.tbl = REF_TBL_IDX(ref_free_list);
 		ref_free_list._ref = next;
 	} else {
-		/* Table has an empty cell */
+		/* We need new cell */
 		sp_ref.cat = addrcat_top(&addr_cat);
 		tbl = addrcat_get(&addr_cat, sp_ref.cat);
 		if(likely(!addrtbl_is_full(tbl)))
+			/* Table has an empty cell */
 			sp_ref.tbl = addrtbl_add_ptr(tbl, ptr);
 		else {
 			/* We need new table */

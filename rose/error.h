@@ -7,7 +7,7 @@ enum Error {
 	ERR_REF_OVER,
 };
 
-#define error(code)
+void error(int code);
 
 #endif
 

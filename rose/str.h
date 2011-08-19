@@ -6,11 +6,16 @@
 typedef struct Str Str;
 
 struct Str {
-	const char *start;
+	char *start;
 	uint32_t size;
 };
 
-void str_init(Str *str, const char *start, const RMDHeader *h);
+void str_init(Str *str, char *start, const RMDHeader *h);
+
+static inline void *str_addr(Str *str, uint32_t offset)
+{
+	return str->start + offset;
+}
 
 #endif
 

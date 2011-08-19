@@ -22,7 +22,9 @@ static inline void stack_push(Stack *stack, int32_t elem)
 
 static inline int32_t stack_pop(Stack *stack)
 {
-	return *(stack--)->sp;
+	int32_t ret = *stack->sp;
+	--stack->sp;
+	return ret;
 }
 
 static inline int32_t stack_at(const Stack *stack, int ofs)

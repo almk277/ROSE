@@ -6,7 +6,7 @@ CPPFLAGS += -I../include
 all: rose
 
 rose: rose.o module.o debug.o thread.o stack.o text.o \
- ptbl.o exp.o sym.o cnst.o addr.o ref.o str.o
+ ptbl.o exp.o sym.o cnst.o addr.o ref.o str.o error.o
 
 isa_desc.c: ../doc/isa.dsc
 	./isa_gen.pl

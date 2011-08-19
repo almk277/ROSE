@@ -113,7 +113,11 @@ static void isa_jumpz(Thread *t)
 /* [c] pushes reference to array with address $op */
 static void isa_loadstr(Thread *t)
 {
-	NOT_IMPLEMENTED("loadstr");
+	/* FIXME reference can not be freed */
+	uint32_t ofs = stack_top(ST);
+	void *addr = str_addr(&t->module->seg.str, ofs);
+	Ref ref = ref_new(addr);
+	*stack_top_p(ST) = ref_to(ref);
 }
 
 /* [m] creates new module object and pushes reference to it on stack */
@@ -189,7 +193,9 @@ static void isa_sub(Thread *t)
 /* [n] gets array length: $top = length($top) */
 static void isa_strlen(Thread *t)
 {
-	NOT_IMPLEMENTED("strlen");
+	Ref ref = ref_from(stack_top(ST));
+	uint32_t *len = ref_get(ref);
+	*stack_top_p(ST) = *len;
 }
 
 /* [n] pushes $top on stack again */
@@ -201,6 +207,16 @@ static void isa_dup(Thread *t)
 /* [u] writes to given file array $top bytes from array $top[-1] */
 static void isa_write(Thread *t)
 {
-	NOT_IMPLEMENTED("write");
+	char *start;
+	uint32_t i;
+	uint32_t len = stack_pop(ST);
+	Ref ref = ref_from(stack_pop(ST));
+	uint32_t *array_len = ref_get(ref);
+	if(len > *array_len)
+		len = *array_len;
+	/* pass array length */
+	start = (char *)(array_len + 1);
+	for(i = 0; i != len; ++i)
+		putchar(start[i]);
 }
 
