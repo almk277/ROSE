@@ -23,7 +23,7 @@
 # name    operand  opcode  description
 add       n        0x60    pops two stack words and pushes their sum
 call      p        0x40    makes near procedure call
-dec       n        0x66    decrements $top
+dec       u        0x66    substracts $op from $top
 delete    n        0x51    deletes object referenced by $top and pops $top
 dup       n        0x17    pushes $top on stack again
 exit      n        0x05    stops the program
@@ -32,7 +32,7 @@ farjump   a        0x21    jumps to given address
 getc      c        0x10    pushes constant on stack
 getd      d        0x11    pushes module variable on stack
 gets      s        0x13    pushes local variable on stack
-inc       n        0x67    increments $top
+inc       u        0x67    adds $op to $top
 jump      o        0x20    jumps to ($ip + $op)
 jumpeq    o        0x27    pops two stack words and jumps to ($ip + $op) if \
                            they are equal

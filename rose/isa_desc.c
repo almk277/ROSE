@@ -17,7 +17,7 @@ static void isa_call(Thread *t)
 /* [n] decrements $top */
 static void isa_dec(Thread *t)
 {
-	--*stack_top_p(ST);
+	*stack_top_p(ST) = stack_top(ST) - OP;
 }
 
 /* [n] deletes object referenced by $top and pops $top */
@@ -68,7 +68,7 @@ static void isa_gets(Thread *t)
 /* [n] increments $top */
 static void isa_inc(Thread *t)
 {
-	++*stack_top_p(ST);
+	*stack_top_p(ST) = stack_top(ST) + OP;
 }
 
 /* [o] jumps to ($ip + $op) */
