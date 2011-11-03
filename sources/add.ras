@@ -26,7 +26,7 @@
 loop:
 	getc c_ok
 	out 0
-	dec
+	dec 1
 	jumpz out
 	jump loop
 out:

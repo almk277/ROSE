@@ -8,6 +8,42 @@ static void isa_add(Thread *t)
 	stack_push(ST, a);
 }
 
+/* [n] deletes array $top points to */
+static void isa_arrdel(Thread *t)
+{
+	uint32_t top = stack_pop(ST);
+	Ref ref = ref_from(top);
+	array_delete(ref);
+}
+
+/* [s] loads $top-th element from array $op */
+static void isa_arrget(Thread *t)
+{
+	uint32_t a = stack_at(ST, OP);
+	Ref ref = ref_from(a);
+	uint32_t idx = stack_top(ST);
+	int32_t data = array_get(ref, idx);
+	stack_push(ST, data);
+}
+
+/* [n] creates new array of size $top; pops; pushes ref */
+static void isa_arrnew(Thread *t)
+{
+	uint32_t size = stack_pop(ST);
+	Ref ref = array_new(size);
+	stack_push(ST, ref_to(ref));
+}
+
+/* [s] stores $top to $top[-1]-th element of array $op */
+static void isa_arrput(Thread *t)
+{
+	uint32_t a = stack_at(ST, OP);
+	Ref ref = ref_from(a);
+	int32_t data = stack_pop(ST);
+	int32_t idx = stack_top(ST);
+	array_put(ref, idx, data);
+}
+
 /* [p] makes near procedure call */
 static void isa_call(Thread *t)
 {

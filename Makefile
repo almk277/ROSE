@@ -1,6 +1,6 @@
 .PHONY: all clean sources
 
-all: ras/ras rose/rose sources
+all: ras/ras rose/rose
 
 ras/ras:
 	cd ras && $(MAKE)

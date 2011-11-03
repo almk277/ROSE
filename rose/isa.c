@@ -1,5 +1,6 @@
 #include "thread.h"
 #include "ref.h"
+#include "array.h"
 #include <stdio.h>
 
 #define NOT_IMPLEMENTED(name)	printf("%s: not implemented\n", name)

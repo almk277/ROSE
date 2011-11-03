@@ -28,7 +28,7 @@ static inline int32_t ref_to(Ref ref)
 #define ref_is_invalid(ref)    (ref._ref == 0)
 
 /* Converts word to reference */
-static inline Ref ref_from(int32_t val)
+static inline Ref ref_from(uint32_t val)
 {
 	Ref ref = { val };
 	return ref;

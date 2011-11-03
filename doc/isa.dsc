@@ -22,6 +22,10 @@
 # Instructions:
 # name    operand  opcode  description
 add       n        0x60    pops two stack words and pushes their sum
+arrdel    n        0x84    deletes array $top points to
+arrget    s        0x80    loads $top-th element from array $op
+arrnew    n        0x83    creates new array of size $top; pops; pushes ref
+arrput    s        0x81    stores $top to $top[-1]-th element of array $op
 call      p        0x40    makes near procedure call
 dec       u        0x66    substracts $op from $top
 delete    n        0x51    deletes object referenced by $top and pops $top
@@ -41,7 +45,7 @@ jumpl     o        0x23    pops $top and jumps to ($ip + $op) if $top is \
 jumple    o        0x25    pops $top and jumps to ($ip + $op) if $top is \
                            less or equal to zero
 jumpz     o        0x22    pops $top and jumps to ($ip + $op) if $top is zero
-loadstr   n        0x57    pushes reference to array with .str address $top
+loadstr   n        0x57    creates array, initialises it from .str addr $top
 new       m        0x50    creates new module object and pushes reference to \
                            it on stack
 nop       n        0x01    nop does nothing
