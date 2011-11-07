@@ -11,11 +11,11 @@ typedef struct Array Array;
 
 struct Array {
 	Object __object;
-	size_t size;
+	uint32_t size;
 	int32_t data[1];
 };
 
-Ref array_new(size_t count);
+Ref array_new(uint32_t count);
 
 void array_delete(Ref array);
 
@@ -25,9 +25,11 @@ void array_delete(Ref array);
 			error(ERR_OUT_OF_BAND); \
 	} while(0)
 
-int32_t array_get(Ref array, size_t idx);
+int32_t array_get(Ref array, uint32_t idx);
 
-void array_put(Ref array, size_t idx, int32_t data);
+void array_put(Ref array, uint32_t idx, int32_t data);
+
+uint32_t array_len(Ref array);
 
 #endif
 

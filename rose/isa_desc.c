@@ -14,6 +14,7 @@ static void isa_arrdel(Thread *t)
 	uint32_t top = stack_pop(ST);
 	Ref ref = ref_from(top);
 	array_delete(ref);
+	ref_delete(ref);
 }
 
 /* [s] loads $top-th element from array $op */
@@ -24,6 +25,25 @@ static void isa_arrget(Thread *t)
 	uint32_t idx = stack_top(ST);
 	int32_t data = array_get(ref, idx);
 	stack_push(ST, data);
+}
+
+/* [n] exchanges $top with $top array length */
+static void isa_arrlen(Thread *t)
+{
+	uint32_t a = stack_top(ST);
+	Ref ref = ref_from(a);
+	uint32_t len = array_len(ref);
+	*stack_top_p(ST) = len;
+	NOT_IMPLEMENTED("arrlen");
+}
+
+/* [n] creates array, initialises it from .str addr $top */
+static void isa_arrload(Thread *t)
+{
+	uint32_t ofs = stack_top(ST);
+	void *addr = str_addr(&t->module->seg.str, ofs);
+	Ref ref = ref_new(addr);
+	*stack_top_p(ST) = ref_to(ref);
 }
 
 /* [n] creates new array of size $top; pops; pushes ref */
@@ -146,16 +166,6 @@ static void isa_jumpz(Thread *t)
 		text_jump_ofs(TX, OP);
 }
 
-/* [c] pushes reference to array with address $op */
-static void isa_loadstr(Thread *t)
-{
-	/* FIXME reference can not be freed */
-	uint32_t ofs = stack_top(ST);
-	void *addr = str_addr(&t->module->seg.str, ofs);
-	Ref ref = ref_new(addr);
-	*stack_top_p(ST) = ref_to(ref);
-}
-
 /* [m] creates new module object and pushes reference to it on stack */
 static void isa_new(Thread *t)
 {
@@ -224,14 +234,6 @@ static void isa_sub(Thread *t)
 	/* FIXME overflow */
 	int32_t a  = a1 - a2;
 	stack_push(ST, a);
-}
-
-/* [n] gets array length: $top = length($top) */
-static void isa_strlen(Thread *t)
-{
-	Ref ref = ref_from(stack_top(ST));
-	uint32_t *len = ref_get(ref);
-	*stack_top_p(ST) = *len;
 }
 
 /* [n] pushes $top on stack again */
