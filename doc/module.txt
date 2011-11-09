@@ -3,7 +3,7 @@ Full name includes path and name and must be unique.
 This reflects module file placement in ROSE special directories.
 
 For example, if ROSE module directory is /usr/share/rose/module,
-and some module named 'example.rom' is placed in directory
+and some module named 'example.rmd' is placed in directory
 /usr/share/rose/module/base/test/', then module path is
 'base/test', and the full name is 'base/test/example'.
 

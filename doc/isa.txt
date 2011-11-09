@@ -1,25 +1,45 @@
-ROSE is stack machine. All instructions have zero or one argument,
+ROSE is a stack machine. All instructions have zero or one argument,
 although there might be implicit arguments on stack.
 
-All instructions are 2 byte long. First byte is opcode, and second one
-is operand (or it is not used).
+All instructions are 2 bytes long. First byte is opcode, and second one
+is operand (if it is used).
 Any instruction name in this document is prefixed with "%" sign. Any operand
 reference is prefixed with "$" sign. For example, "$data" record means that
 instruction under consideration contains operand with data index (that is,
 index into data table). Prefix "." means segment name (".data", for example).
 @top is stack top word. @base is stack frame base.
 
-				Working with data
+				Stack
 
-The only data type is 32-bit signed integer. Data are one of the following
-types:
+Stack is a main storage for 32-bit words. Every method has it's own stack frame.
+The first part of this frame is a locale variables storage (up to 255 words),
+it's size is fixed for every method. The second part is a work area, and it's
+size is changing dynamically. [%gets, %puts]
+
+				Data types
+
+There are two data types: small number and reference to object.
+
+				Numbers
+
+Numbers are 32-bits signed integers. Programmer can do some arighmetic with
+them:
+	* addition %add, substraction %sub.
+
+				Arrays
+
+There are fast arrays with random access.
+	* creation %arrnew;
+	* deletion %arrdel;
+	* element access %arrget, %arrput;
+	* getting length %arrlen.
+
+				Constants
+
+There are of the following types constant types:
 	* embedded constants are instruction operands; [%pushc, %pushcsh]
 	* constants are placed in .const; [%getc]
-	* constant initialized arrays are placed in .str; [%loadarr]
-	* data are placed in .data. It is read/write storage, which exists while
-	  the module instance does; [%getd, %putd]
-	* local variables are placed in .stack. Procedure arguments are local
-	  variables too. Their life time is current procedure. [%gets, %puts]
+	* constant initialized arrays are placed in .str. [%arrload]
 
 				Execution flow
 
@@ -32,26 +52,13 @@ There is three jump types:
 	* far jump can make jump to any address, but there must be no more than
 	  255 far jumps on module.
 
-				Procedures
+				Methods
 
-They organize execution flow too, but procedure is an independent code
-object, and there are more complicated rules.
+The same as functions or procedures.
+It is an independent code fragment in some module.
 
-Every code is executed in some procedure context. Any procedure belongs to
-some module, so there is module context too.
-There is two procedure call types:
-	* near call is for modules's own procedure;
-	* far call is for procedure in another module.
-Every procedure has it's own stack frame, containing procedure arguments,
-local variables and instruction operands. Any procedure has access only to
-it's own frame. So, near call influences stack addresses.
-Far call causes also current module change, meaning all current segments
-reload. So far call influences also data, constants, far jump addresses and
-all procedure calls.
-
-To make procedure call, user pushes it's arguments on stack. First argument
-must be reference to module object, if procedure uses module data or if it is
-far call. Otherwise, this is not necessary. Then call instruction executes.
+To make procedure call, user pushes it's arguments on stack, then module
+index (in .mtbl), and then call instruction follows.
 [%call, %farcall]
 To return execution flow, one must use return instruction. [%return, %retp]
 It returns execution flow to instruction just after last call. Stack is
@@ -60,9 +67,12 @@ be placed on @base (1st argument place), and return will leave it on stack
 top.
 
 				Objects
-
+[OBSOLETE]
 Object is a module instance. It has it's own data and other module segments
 associated with it. It must be created and deleted then. [%new, %delete]
+	* data are placed in .data. It is read/write storage, which exists while
+	  the module instance does; [%getd, %putd]
+
 
 				Miscellaneous
 
