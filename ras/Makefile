@@ -1,7 +1,7 @@
 all: ras
 DESCR = ../doc/isa.dsc
 
-CPPFLAGS += -I../include
+CPPFLAGS += -I../common
 CFLAGS += -Wall -g
 
 ras: main.o common.o dirmap.o direct.o str.o mm.o hash.o section.o tables.o \
