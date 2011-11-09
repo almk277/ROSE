@@ -23,6 +23,7 @@ int thread_start(Thread *t, Module *m)
 {
 	int exp_ent, ptbl_ent;
 	uint32_t start;
+	uint8_t opcode;
 
 	thread_set_module(t, m);
 	t->status = THS_RUNNING;
@@ -34,11 +35,18 @@ int thread_start(Thread *t, Module *m)
 	text_goto(t->text, start);
 
 	while(likely(t->status == THS_RUNNING)) {
-		uint8_t opcode = text_fetch(t->text);
+		opcode = text_fetch(t->text);
 		t->operand = text_fetch(t->text);
 		instr_run(opcode, t);
+
 	}
 
+	switch(t->status) {
+		case THS_EXIT: break;
+		case THS_INV_OPCODE:
+					   printf("Invalid instruction [%x]\n", (int)opcode);
+					   break;
+	}
 	return THS_EXIT;
 }
 

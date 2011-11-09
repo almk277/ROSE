@@ -15,7 +15,6 @@ typedef void (*Instr)(Thread *);
 static void isa_error(Thread *t)
 {
 	t->status = THS_INV_OPCODE;
-	puts("Invalid instruction");
 }
 
 #define NO_INSTR isa_error
