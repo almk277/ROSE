@@ -16,9 +16,9 @@
 .sub main
 .export
 	getc hello_addr
-	loadstr
+	arrload
 	dup
-	strlen
+	arrlen
 	write 1
 	exit
 
