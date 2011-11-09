@@ -34,7 +34,6 @@ static void isa_arrlen(Thread *t)
 	Ref ref = ref_from(a);
 	uint32_t len = array_len(ref);
 	*stack_top_p(ST) = len;
-	NOT_IMPLEMENTED("arrlen");
 }
 
 /* [n] creates array, initialises it from .str addr $top */
