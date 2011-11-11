@@ -61,9 +61,9 @@ void const_write(FILE *file)
 		file_write_error();
 }
 
-size_t const_length(void)
+uint8_t const_count(void)
 {
-	return const_hash.count * 4;
+	return const_hash.count;
 }
 
 void data_add(const char *name)
@@ -108,7 +108,7 @@ void sym_write(FILE *file)
 	storage_write(&sym_sect, file);
 }
 
-size_t sym_length(void)
+uint16_t sym_count(void)
 {
 	return sym_sect.len;
 }
@@ -177,9 +177,9 @@ void module_write(FILE *file)
 		file_write_error();
 }
 
-size_t module_length(void)
+uint8_t module_count(void)
 {
-	return module_hash.count * sizeof(RMDModule);
+	return module_hash.count;
 }
 
 RMDImport *imp_add(char *mangl_name)
@@ -226,9 +226,9 @@ void imp_write(FILE *file)
 		file_write_error();
 }
 
-size_t imp_length(void)
+uint8_t imp_count(void)
 {
-	return imp_hash.count * sizeof(RMDImport);
+	return imp_hash.count;
 }
 
 void header_print(void)
@@ -259,7 +259,7 @@ void str_add_char(uint32_t *str_len, char c)
 	++*str_len;
 }
 
-size_t str_length(void)
+uint32_t str_count(void)
 {
 	return str_sect.len;
 }

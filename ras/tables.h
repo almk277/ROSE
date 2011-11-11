@@ -19,8 +19,8 @@ void const_print(void);
 /* dumps #const in file */
 void const_write(FILE *file);
 
-/* #const length */
-size_t const_length(void);
+/* #const element count */
+uint8_t const_count(void);
 
 /* adds data with name */
 void data_add(const char *name);
@@ -44,7 +44,7 @@ void sym_print(void);
 void sym_write(FILE *file);
 
 /* #sym length */
-size_t sym_length(void);
+uint16_t sym_count(void);
 
 /* adds variable with name */
 void var_add(const char *name);
@@ -70,8 +70,8 @@ void module_print(void);
 /* dumps #mtbl to file */
 void module_write(FILE *file);
 
-/* #mtbl length */
-size_t module_length(void);
+/* #mtbl element count */
+uint8_t module_count(void);
 
 /* adds extern name from module and with mangled name mangl_name to #imp */
 RMDImport *imp_add(char *mangl_name);
@@ -85,8 +85,8 @@ void imp_print(void);
 /* dumps #imp to file */
 void imp_write(FILE *file);
 
-/* #imp length */
-size_t imp_length(void);
+/* #imp element count */
+uint8_t imp_count(void);
 
 /* module header */
 extern RMDHeader header;
@@ -104,7 +104,7 @@ uint32_t *str_add_string(const char *name);
 void str_add_char(uint32_t *str_len, char c);
 
 /* #str length */
-size_t str_length(void);
+uint32_t str_count(void);
 
 /* returns address of a string with given name, or (uint32_t)-1 if not found */
 uint32_t str_find(const char *name);

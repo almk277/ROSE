@@ -67,9 +67,9 @@ void proc_write(FILE *file)
 		file_write_error();
 }
 
-size_t proc_length(void)
+uint8_t proc_count(void)
 {
-	return proc_hash.count * sizeof(RMDProcedure);
+	return proc_hash.count;
 }
 
 void text_add(uint8_t opcode, uint8_t oper)
@@ -88,7 +88,7 @@ void text_write(FILE *file)
 	storage_write(&text_sect, file);
 }
 
-size_t text_length(void)
+uint32_t text_count(void)
 {
 	return text_sect.len;
 }
@@ -141,9 +141,9 @@ void addr_write(FILE *file)
 		file_write_error();
 }
 
-size_t addr_length(void)
+uint8_t addr_count(void)
 {
-	return addr_hash.count * 4;
+	return addr_hash.count;
 }
 
 static void label_print1(const HashEntry *ent)
@@ -255,8 +255,8 @@ void exp_write(FILE *file)
 		file_write_error();
 }
 
-size_t exp_length(void)
+uint8_t exp_count(void)
 {
-	return exp_hash.count * sizeof(RMDExport);
+	return exp_hash.count;
 }
 

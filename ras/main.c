@@ -120,27 +120,30 @@ static void debug_print(void)
 	sym_print();
 	data_print();
 	str_print();
+	printf("%d bytes written\n", sizeof(RMDHeader) + header.size);
 }
 
 static void make_header(void)
 {
 	if(header.name == 0)
 		error("module name was not specified");
-	header.exp  = sizeof(RMDHeader);
-	header.ptbl = header.exp  + exp_length();
-	header.mtbl = header.ptbl + proc_length();
-	header.imp  = header.mtbl + module_length();
-	header.addr = header.imp  + imp_length();
-	header.cnst = header.addr + addr_length();
-	header.text = header.cnst + const_length();
-	header.sym  = header.text + text_length();
-	header.str  = header.sym  + sym_length();
-	header.end  = header.str  + str_length();
+	header.exp  = exp_count();
+	header.ptbl = proc_count();
+	header.mtbl = module_count();
+	header.imp  = imp_count();
+	header.cnst = const_count();
+	header.addr = addr_count();
+	header.text = text_count();
+	header.sym  = sym_count();
+	header.str  = str_count();
+	header.size = header.exp * sizeof(RMDExport)
+		+ header.ptbl * sizeof(RMDProcedure) + header.mtbl * sizeof(RMDModule)
+		+ header.imp * sizeof(RMDImport) + 4 * (header.addr + header.cnst)
+		+ header.text + header.sym + header.str;
 }
 
 static void write_rmd(void)
 {
-	make_header();
 	header_write(output);
 	exp_write(output);
 	proc_write(output);
@@ -158,6 +161,7 @@ int main(int argc, char *argv[])
 	cmd_parse(argc, argv);
 	sym_add("");
 	read_source();
+	make_header();
 	if(verbose >= DL_DUMP)
 		debug_print();
 	write_rmd();

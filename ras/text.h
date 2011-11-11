@@ -19,8 +19,8 @@ void proc_print(void);
 /* dumps #ptbl into file */
 void proc_write(FILE *file);
 
-/* #ptbl length */
-size_t proc_length(void);
+/* #ptbl element count */
+uint8_t proc_count(void);
 
 /* adds new instruction to #text */
 void text_add(uint8_t opcode, uint8_t oper);
@@ -31,8 +31,8 @@ void text_print(void);
 /* dumps #text to file */
 void text_write(FILE *file);
 
-/* #text length */
-size_t text_length(void);
+/* #text element count */
+uint32_t text_count(void);
 
 /* stores label with given name and address */
 void label_add(const char *name, uint32_t addr);
@@ -55,8 +55,8 @@ void addr_print(void);
 /* dumps #addr to file */
 void addr_write(FILE *file);
 
-/* #addr length */
-size_t addr_length(void);
+/* #addr element count */
+uint8_t addr_count(void);
 
 /* stores reference to unknown label for near jump */
 void forward_ref_near(const char *label);
@@ -76,8 +76,8 @@ void exp_print(void);
 /* dumps #exp to file */
 void exp_write(FILE *file);
 
-/* #exp length */
-size_t exp_length(void);
+/* #exp element count */
+uint8_t exp_count(void);
 
 #endif
 

@@ -3,14 +3,7 @@
 #ifndef ROSE_MODULE_H
 #define ROSE_MODULE_H
 
-#include "rmd.h"
-#include "exp.h"
-#include "ptbl.h"
-#include "cnst.h"
-#include "addr.h"
-#include "text.h"
-#include "sym.h"
-#include "str.h"
+#include "seg.h"
 
 /* ROSE module descriptor */
 typedef struct Module Module;
@@ -18,8 +11,8 @@ typedef struct Module Module;
 struct ModuleSegments {
 	Exp exp;
 	Ptbl ptbl;
-	const RMDModule *mtbl;
-	const RMDImport *imp;
+	Mtbl mtbl;
+	Imp imp;
 	Cnst cnst;
 	Addr addr;
 	Text text;

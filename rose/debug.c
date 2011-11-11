@@ -10,3 +10,7 @@ void debug(const char *fmt, ...)
 	va_end(va);
 }
 
+void exp_dump(Exp *exp)
+{
+}
+

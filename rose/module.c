@@ -1,7 +1,7 @@
 #include "module.h"
-#include "ptbl.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 /* returns if maj1.min1 is greater than maj2.min2 */
 #define VERSION_GREATER(maj1, min1, maj2, min2) \
@@ -9,13 +9,6 @@
 /* returns if maj1.min1 is less than maj2.min2 */
 #define VERSION_LESS(maj1, min1, maj2, min2) \
 	(maj1 < maj2 || (maj1 == maj2 && min1 <= min2))
-
-#define SEG_INIT ptbl_init(module->seg.ptbl, ofs_start + h->exp, (h->mtbl - h->ptbl));
-
-static size_t load_size(const RMDHeader *header)
-{
-	return header->end - sizeof(RMDHeader);
-}
 
 int verify_ident(const unsigned char ident[4])
 {
@@ -70,37 +63,53 @@ close:
 	return module;
 }
 
-static void *section_address(const Module *module, uint32_t offset)
+static inline void *section_address(const Module *module, uint32_t offset)
 {
 	return (char *)module + sizeof(Module) - sizeof(RMDHeader) + offset;
 }
 
 static Module *create_module(RMDHeader *h, FILE *f, int *error)
 {
-	char *start, *ofs_start;
-	const size_t size = load_size(h);
-	Module *module = malloc(sizeof(Module) + size);
+	char *start;
+	struct ModuleSegments *seg;
+	Module *module = malloc(sizeof(Module) + h->size);
 	if(!module) {
 		*error = RMD_NO_MEMORY;
 		return NULL;
 	}
 	start = (char *)module + sizeof(Module);
-	if(fread(start, size, 1, f) != 1) {
+	if(fread(start, h->size, 1, f) != 1) {
 		*error = RMD_READ;
 		free(module);
 		return NULL;
 	}
-	ofs_start = start - sizeof(RMDHeader);
+	seg = &module->seg;
 
-	exp_init(&module->seg.exp, ofs_start, h);
-	ptbl_init(&module->seg.ptbl, ofs_start, h);
-	module->seg.mtbl   = section_address(module, h->mtbl);
-	module->seg.imp    = section_address(module, h->imp);
-	cnst_init(&module->seg.cnst, ofs_start, h);
-	addr_init(&module->seg.addr, ofs_start, h);
-	text_init(&module->seg.text, ofs_start, h);
-	sym_init(&module->seg.sym, ofs_start, h);
-	str_init(&module->seg.str, ofs_start, h);
+#define SET_SIZE(name) seg->name.size = h->name
+	SET_SIZE(exp);
+	SET_SIZE(ptbl);
+	SET_SIZE(mtbl);
+	SET_SIZE(imp);
+	SET_SIZE(cnst);
+	SET_SIZE(addr);
+	SET_SIZE(text);
+	SET_SIZE(sym);
+	SET_SIZE(str);
+#undef SET_SIZE
+
+#define SET_START(segment, type, prev, prevtype) \
+	seg->segment.start = (type *)(start += h->prev * sizeof(prevtype))
+
+	seg->exp.start  = (RMDExport *)start;
+	SET_START(ptbl, RMDProcedure, exp, RMDExport);
+	SET_START(mtbl, RMDModule, ptbl, RMDProcedure);
+	SET_START(imp, RMDImport, mtbl, RMDModule);
+	SET_START(cnst, int32_t, imp, RMDImport);
+	SET_START(addr, uint32_t, cnst, int32_t);
+	SET_START(text, char, addr, uint32_t);
+	SET_START(sym, char, text, char);
+	SET_START(str, char, sym, char);
+#undef SET_START
 
 	module->name = sym_get(&module->seg.sym, h->name);
 	module->version[0] = h->version[0];
