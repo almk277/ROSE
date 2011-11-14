@@ -2,7 +2,7 @@
 #define ROSE_DEBUG_H
 
 #include "compiler.h"
-#include "seg.h"
+#include "segment.h"
 
 C_ATTR_PRINTF(1, 2)
 void debug(const char *fmt, ...);

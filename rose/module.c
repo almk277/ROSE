@@ -1,7 +1,10 @@
 #include "module.h"
+#include "error.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include <glib.h>
+
+static GHashTable *module_tbl;
 
 /* returns if maj1.min1 is greater than maj2.min2 */
 #define VERSION_GREATER(maj1, min1, maj2, min2) \
@@ -9,6 +12,32 @@
 /* returns if maj1.min1 is less than maj2.min2 */
 #define VERSION_LESS(maj1, min1, maj2, min2) \
 	(maj1 < maj2 || (maj1 == maj2 && min1 <= min2))
+
+void module_init(void)
+{
+	module_tbl = g_hash_table_new(g_str_hash, g_str_equal);
+}
+
+static inline void module_add(const char *name, Module *module)
+{
+	/* FIXME why not const void *? */
+	g_hash_table_insert(module_tbl, (char *)name, module);
+}
+
+static inline Module *module_find(const char *name)
+{
+	return g_hash_table_lookup(module_tbl, name);
+}
+
+Module *module_load(const char *name)
+{
+	int err;
+	Module *m = module_load_file(name, &err);
+	if(!m)
+		error(ERR_NO_MODULE);
+	module_add(name, m);
+	return m;
+}
 
 int verify_ident(const unsigned char ident[4])
 {
@@ -18,7 +47,7 @@ int verify_ident(const unsigned char ident[4])
 		RMD_H_IDENT3,
 		RMD_H_IDENT4
 	};
-	return memcmp(ident, correct_ident, sizeof ident) == 0;
+	return memcmp(ident, correct_ident, sizeof correct_ident) == 0;
 }
 
 int verify_rmd_version(const unsigned char version[2])
@@ -33,7 +62,7 @@ int verify_rmd_version(const unsigned char version[2])
 
 static Module *create_module(RMDHeader *h, FILE *f, int *error);
 
-Module *module_load(const char *name, int *error)
+Module *module_load_file(const char *name, int *error)
 {
 	RMDHeader h;
 	Module *module = 0;
@@ -72,7 +101,10 @@ static Module *create_module(RMDHeader *h, FILE *f, int *error)
 {
 	char *start;
 	struct ModuleSegments *seg;
-	Module *module = malloc(sizeof(Module) + h->size);
+	Module *module = malloc(sizeof(Module)
+			+ h->size
+			+ h->mtbl * sizeof(Module *)
+			);
 	if(!module) {
 		*error = RMD_NO_MEMORY;
 		return NULL;
@@ -95,7 +127,6 @@ static Module *create_module(RMDHeader *h, FILE *f, int *error)
 	SET_SIZE(text);
 	SET_SIZE(sym);
 	SET_SIZE(str);
-#undef SET_SIZE
 
 #define SET_START(segment, type, prev, prevtype) \
 	seg->segment.start = (type *)(start += h->prev * sizeof(prevtype))
@@ -109,8 +140,8 @@ static Module *create_module(RMDHeader *h, FILE *f, int *error)
 	SET_START(text, char, addr, uint32_t);
 	SET_START(sym, char, text, char);
 	SET_START(str, char, sym, char);
-#undef SET_START
 
+	module->mtbl = (Module **)(module + sizeof(Module) + h->size);
 	module->name = sym_get(&module->seg.sym, h->name);
 	module->version[0] = h->version[0];
 	module->version[1] = h->version[1];
@@ -118,9 +149,9 @@ static Module *create_module(RMDHeader *h, FILE *f, int *error)
 	return module;
 }
 
-void module_unload(Module *self)
+void module_unload(Module *module)
 {
-	free(self);
+	free(module);
 }
 
 int module_find_proc(const Module *m, const char *name)
@@ -137,5 +168,23 @@ int module_find_proc(const Module *m, const char *name)
 uint32_t module_proc_addr(const Module *m, int idx)
 {
 	return ptbl_get(&m->seg.ptbl, idx)->addr;
+}
+
+Module *module_get_dependent(Module *module, uint8_t idx)
+{
+	Module *m = module->mtbl[idx];
+	/* if module was referenced from here - it is cached */
+	if(!m) {
+		/* module is either not referenced from this module,
+		 * or not loaded at all */
+		uint16_t name_ofs = mtbl_get_name(&module->seg.mtbl, idx);
+		const char *name = sym_get(&module->seg.sym, name_ofs);
+		m = module_find(name);
+		if(!m)
+			m = module_load(name);
+		/* anyway, cache it */
+		module->mtbl[idx] = m;
+	}
+	return m;
 }
 

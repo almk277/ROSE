@@ -23,6 +23,11 @@ static int file_error(const char *name, int error)
 	return 1;
 }
 
+static void init(void)
+{
+	module_init();
+}
+
 int main(int argc, char *argv[])
 {
 	int err;
@@ -30,8 +35,9 @@ int main(int argc, char *argv[])
 	Module *m;
 	Thread t;
 
+	init();
 	thread_init(&t);
-   	m = module_load(fname, &err);
+   	m = module_load_file(fname, &err);
 	if(!m)
 		return file_error(fname, err);
 	printf("module '%s' with version %hhu.%hhu\n", m->name,
