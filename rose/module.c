@@ -2,6 +2,7 @@
 #include "error.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <glib.h>
 
 static GHashTable *module_tbl;
@@ -18,10 +19,10 @@ void module_init(void)
 	module_tbl = g_hash_table_new(g_str_hash, g_str_equal);
 }
 
-static inline void module_add(const char *name, Module *module)
+static inline void module_to_hash(Module *module)
 {
 	/* FIXME why not const void *? */
-	g_hash_table_insert(module_tbl, (char *)name, module);
+	g_hash_table_insert(module_tbl, (char *)module->name, module);
 }
 
 static inline Module *module_find(const char *name)
@@ -35,7 +36,6 @@ Module *module_load(const char *name)
 	Module *m = module_load_file(name, &err);
 	if(!m)
 		error(ERR_NO_MODULE);
-	module_add(name, m);
 	return m;
 }
 
@@ -142,10 +142,12 @@ static Module *create_module(RMDHeader *h, FILE *f, int *error)
 	SET_START(str, char, sym, char);
 
 	module->mtbl = (Module **)(module + sizeof(Module) + h->size);
+	memset(module->mtbl, 0, h->mtbl * sizeof(Module *));
 	module->name = sym_get(&module->seg.sym, h->name);
 	module->version[0] = h->version[0];
 	module->version[1] = h->version[1];
 
+	module_to_hash(module);
 	return module;
 }
 
