@@ -111,7 +111,7 @@ static void debug_print(void)
 {
 	header_print();
 	exp_print();
-	proc_print();
+	ptbl_print();
 	module_print();
 	imp_print();
 	const_print();
@@ -128,7 +128,7 @@ static void make_header(void)
 	if(header.name == 0)
 		error("module name was not specified");
 	header.exp  = exp_count();
-	header.ptbl = proc_count();
+	header.ptbl = ptbl_count();
 	header.mtbl = module_count();
 	header.imp  = imp_count();
 	header.cnst = const_count();
@@ -146,7 +146,7 @@ static void write_rmd(void)
 {
 	header_write(output);
 	exp_write(output);
-	proc_write(output);
+	ptbl_write(output);
 	module_write(output);
 	imp_write(output);
 	const_write(output);

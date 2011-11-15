@@ -8,19 +8,46 @@
 struct HashEntry;
 
 /* adds procedure name to #ptbl and returns long-live procedure name */
-const struct HashEntry *proc_add(const char *name);
+const struct HashEntry *ptbl_add(const char *name);
 
 /* returns procedure index or -1 if not found */
-int proc_find(const char *name);
+int ptbl_find(const char *name);
 
 /* debug ouput for #ptbl */
-void proc_print(void);
+void ptbl_print(void);
 
 /* dumps #ptbl into file */
-void proc_write(FILE *file);
+void ptbl_write(FILE *file);
 
 /* #ptbl element count */
-uint8_t proc_count(void);
+uint8_t ptbl_count(void);
+
+/* debug output for procedure */
+void proc_print(void);
+
+/* adds variable with name */
+void var_add(const char *name);
+
+/* returns index of variable, or -1 if not found */
+int var_find(const char *name);
+
+/* clears all variables */
+void var_clear(void);
+
+/* debug output for variables */
+void var_print(void);
+
+/* adds argument with name */
+void arg_add(const char *name);
+
+/* returns index of argument, or -1 if not found */
+int arg_find(const char *name);
+
+/* clears argument list */
+void arg_clear(void);
+
+/* debug output for arguments */
+void arg_print(void);
 
 /* adds new instruction to #text */
 void text_add(uint8_t opcode, uint8_t oper);

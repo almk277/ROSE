@@ -1,7 +1,7 @@
 				ROSE Assembler directives
 
-There is three section types: constants, data and text. Every section begins
-with special directive and ends with next such directive.
+There is four section types: constants, data, text and strings. Every section
+begins with special directive and reachs until the next section.
 
 .arg <name>
 	Declares procedure argument.

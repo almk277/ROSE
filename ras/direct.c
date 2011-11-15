@@ -23,6 +23,12 @@ static void set_current_section(int sect, const char *name)
 	debug_line("%s section", name);
 }
 
+static void check_current_proc(void)
+{
+	if(!cur_proc)
+		error("no current procedure");
+}
+
 void dir_const(char *args)
 {
 	if(*args)
@@ -41,22 +47,25 @@ void dir_sub(char *args)
 {
 	if(!*args)
 		error("procedure name missing");
-	cur_proc = proc_add(args);
-	check_word_is_last(args, "after procedure name");
 	set_current_section(SECT_PROC, "procedure");
+	cur_proc = ptbl_add(args);
+	check_word_is_last(args, "after procedure name");
+	var_clear();
 }
 
 void dir_arg(char *args)
 {
+	check_current_proc();
 	if(!*args)
 		error("argument name missing");
-	var_add(args);
+	arg_add(args);
 	check_word_is_last(args, "after argument");
 	debug_line("argument '%s'", args);
 }
 
 void dir_var(char *args)
 {
+	check_current_proc();
 	if(!*args)
 		error("variable name missing");
 	var_add(args);
@@ -95,8 +104,7 @@ void dir_module(char *args)
 
 void dir_export(char *args)
 {
-	if(!cur_proc)
-		error("no current procedure");
+	check_current_proc();
 	exp_add(cur_proc);
 	if(*args)
 		unexpect_sym("after .export");

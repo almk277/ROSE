@@ -7,7 +7,6 @@
 
 static Hash const_hash;
 static Hash data_hash;
-static Hash var_hash;
 static Hash module_hash;
 static Hash imp_hash;
 static Hash str_hash;
@@ -111,34 +110,6 @@ void sym_write(FILE *file)
 uint16_t sym_count(void)
 {
 	return sym_sect.len;
-}
-
-void var_add(const char *name)
-{
-	hash_add(&var_hash, name);
-}
-
-int var_find(const char *name)
-{
-	return hash_get(&var_hash, name);
-}
-
-void var_clear(void)
-{
-	hash_clear(&var_hash);
-}
-
-static void var_print1(const HashEntry *ent)
-{
-	printf("%s(%d)  ", ent->name, ent->data);
-}
-
-void var_print(void)
-{
-	if(var_hash.count) {
-		printf("VAR[%s](%d):  ", cur_proc->name, var_hash.count);
-		hash_print(&var_hash, var_print1);
-	}
 }
 
 void module_add(const char *name, uint8_t maj, uint8_t min)

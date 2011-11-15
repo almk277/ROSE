@@ -21,10 +21,11 @@ typedef struct Reference {
 	SLIST_ENTRY(Reference) le;
 } Reference;
 
-static Hash proc_hash;   /* procedures */
+static Hash ptbl_hash;   /* procedures */
 static Hash label_hash;  /* labels */
 static Hash addr_hash;   /* addresses */
 static Hash exp_hash;    /* export table */
+static Hash var_hash;    /* current method variables */
 
 static RMDProcedure ptbl_sect[256];                         /* #ptbl */
 static RMDExport exp_sect[256];                             /* #exp  */
@@ -35,41 +36,97 @@ static MM_DECL(Reference, 10);
 
 static SLIST_HEAD(, Reference) ref_head;
 
-const HashEntry *proc_add(const char *name)
+const HashEntry *ptbl_add(const char *name)
 {
-	HashEntry *e = hash_add(&proc_hash, name);
+	HashEntry *e = hash_add(&ptbl_hash, name);
 	RMDProcedure *p = &ptbl_sect[e->data];
 	p->addr = offset;
+	p->argc = p->varc = 0;
 	return e;
 }
 
-int proc_find(const char *name)
+int ptbl_find(const char *name)
 {
-	return hash_get(&proc_hash, name);
+	return hash_get(&ptbl_hash, name);
 }
 
-static void proc_print1(const HashEntry *ent)
+static void ptbl_print1(const HashEntry *ent)
 {
 	RMDProcedure *p = &ptbl_sect[ent->data];
 	printf("%s => %u  ", ent->name, p->addr);
 }
 
-void proc_print(void)
+void ptbl_print(void)
 {
-	printf("#proc(%d): ", proc_hash.count);
-	hash_print(&proc_hash, proc_print1);
+	printf("#ptbl(%d): ", ptbl_hash.count);
+	hash_print(&ptbl_hash, ptbl_print1);
 }
 
-void proc_write(FILE *file)
+void ptbl_write(FILE *file)
 {
-	if(fwrite(ptbl_sect, sizeof(RMDProcedure), proc_hash.count, file)
-			!= proc_hash.count)
+	if(fwrite(ptbl_sect, sizeof(RMDProcedure), ptbl_hash.count, file)
+			!= ptbl_hash.count)
 		file_write_error();
 }
 
-uint8_t proc_count(void)
+uint8_t ptbl_count(void)
 {
-	return proc_hash.count;
+	return ptbl_hash.count;
+}
+
+void proc_print(void)
+{
+	RMDProcedure *p = &ptbl_sect[cur_proc->data];
+	printf("PROC END(%s): argc = %d, varc = %d\n",
+			cur_proc->name, p->argc, p->varc);
+}
+
+void var_add(const char *name)
+{
+	hash_add(&var_hash, name);
+	++ptbl_sect[cur_proc->data].varc;
+}
+
+int var_find(const char *name)
+{
+	return hash_get(&var_hash, name);
+}
+
+void var_clear(void)
+{
+	hash_clear(&var_hash);
+}
+
+static void var_print1(const HashEntry *ent)
+{
+	printf("%s(%d)  ", ent->name, ent->data);
+}
+
+void var_print(void)
+{
+	if(var_hash.count) {
+		printf("VAR[%s](%d):  ", cur_proc->name, var_hash.count);
+		hash_print(&var_hash, var_print1);
+	}
+}
+
+void arg_add(const char *name)
+{
+	hash_add(&var_hash, name);
+	++ptbl_sect[cur_proc->data].argc;
+}
+
+static void arg_print1(const HashEntry *ent)
+{
+	printf("%s(%d)  ", ent->name, ent->data);
+}
+
+void arg_print(void)
+{
+	if(var_hash.count) {
+		printf("ARG[%s](%d):  ", cur_proc->name, var_hash.count);
+		hash_print(&var_hash, arg_print1);
+	}
 }
 
 void text_add(uint8_t opcode, uint8_t oper)

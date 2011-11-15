@@ -46,18 +46,6 @@ void sym_write(FILE *file);
 /* #sym length */
 uint16_t sym_count(void);
 
-/* adds variable with name */
-void var_add(const char *name);
-
-/* returns index of variable, or -1 if not found */
-int var_find(const char *name);
-
-/* clears all variables */
-void var_clear(void);
-
-/* debug output for variables */
-void var_print(void);
-
 /* adds module with name to #mtbl */
 void module_add(const char *name, uint8_t maj, uint8_t min);
 

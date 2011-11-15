@@ -98,7 +98,7 @@ static uint8_t proc_a(const char *args)
 /* index to .ptbl */
 static uint8_t proc_p(const char *args)
 {
-	int idx = proc_find(args);
+	int idx = ptbl_find(args);
 	if(idx == -1)
 		error("unknown procedure '%s'", args);
 	return idx;
@@ -144,9 +144,9 @@ uint8_t proc_read(int type, const char *arg)
 void proc_finish(void)
 {
 	ref_resolve();
-	if(verbose >= DL_DUMP) {
+	if(verbose >= DL_PERLINE) {
 		label_print();
-		var_print();
+		proc_print();
 	}
 	label_clear();
 	var_clear();
