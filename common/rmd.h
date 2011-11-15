@@ -39,6 +39,8 @@ typedef struct RMDExport {
 /* #ptbl entry */
 typedef struct RMDProcedure {
 	uint32_t addr;
+	uint8_t argc;
+	uint8_t varc;
 } RMDProcedure;
 
 /* #mtbl entry */
