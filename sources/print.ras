@@ -1,0 +1,15 @@
+.module print-1.0
+
+.const
+	nl = '\n'
+
+# prints out a given string and a new line
+.sub println
+.export
+.arg str
+	gets str
+	dup
+	arrlen
+	write 0
+	return
+
