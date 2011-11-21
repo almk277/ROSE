@@ -47,7 +47,21 @@ static inline int32_t *stack_top_p(const Stack *stack)
 	return stack->sp;
 }
 
+void stack_new_proc(Stack *stack);
+
 void stack_debug(const Stack *stack);
+
+typedef struct Proc Proc;
+struct Module;
+
+struct Proc {
+	uint32_t *sp;
+	uint32_t *bp;
+	const uint8_t *pc;
+	struct Module *module;
+	Proc *prev;
+	RMDProcedure *proc;
+};
 
 #endif
 

@@ -13,6 +13,7 @@ struct Thread {
 	Text *text;
 	int status;
 	uint8_t operand;
+	Proc *current_proc;
 };
 
 void thread_init(Thread *t);
@@ -29,6 +30,10 @@ enum ThreadStatus {
 int thread_start(Thread *t, Module *m);
 
 void thread_set_module(Thread *t, Module *m);
+
+void thread_proc_call(Thread *t, Module *m, uint8_t idx);
+
+void thread_proc_ret(Thread *t, int retval);
 
 #endif
 

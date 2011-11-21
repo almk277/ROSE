@@ -8,6 +8,7 @@ enum Error {
 	ERR_OUT_OF_BAND,
 	ERR_OUT_OF_MEMORY,
 	ERR_NO_MODULE,
+	ERR_NO_PROC,
 };
 
 void error(int code);

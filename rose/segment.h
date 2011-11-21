@@ -17,7 +17,7 @@ static inline RMDExport *exp_get(const Exp *exp, int idx)
 	return &exp->start[idx];
 }
 
-static inline uint8_t exp_idx_get(const Exp *exp, int idx)
+static inline uint8_t exp_get_ptbl_idx(const Exp *exp, int idx)
 {
 	return exp_get(exp, idx)->idx;
 }
@@ -59,6 +59,11 @@ struct Imp {
 	RMDImport *start;
 	uint8_t size;
 };
+
+static inline RMDImport *imp_get(const Imp *imp, int idx)
+{
+	return &imp->start[idx];
+}
 
 /*************************  .cnst  ************************/
 

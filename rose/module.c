@@ -30,6 +30,7 @@ static inline Module *module_find(const char *name)
 	return g_hash_table_lookup(module_tbl, name);
 }
 
+/* TODO verify module version */
 Module *module_load(const char *name)
 {
 	int err;
@@ -101,9 +102,9 @@ static Module *create_module(RMDHeader *h, FILE *f, int *error)
 {
 	char *start;
 	struct ModuleSegments *seg;
-	Module *module = malloc(sizeof(Module)
-			+ h->size
-			+ h->mtbl * sizeof(Module *)
+	Module *module = malloc(sizeof(Module) /* header */
+			+ h->size                      /* sectors */
+			+ h->mtbl * sizeof(Module *)   /* procedure cache */
 			);
 	if(!module) {
 		*error = RMD_NO_MEMORY;
@@ -141,7 +142,7 @@ static Module *create_module(RMDHeader *h, FILE *f, int *error)
 	SET_START(sym, char, text, char);
 	SET_START(str, char, sym, char);
 
-	module->mtbl = (Module **)(module + sizeof(Module) + h->size);
+	module->mtbl = (Module **)((char *)module + sizeof(Module) + h->size);
 	memset(module->mtbl, 0, h->mtbl * sizeof(Module *));
 	module->name = sym_get(&module->seg.sym, h->name);
 	module->version[0] = h->version[0];
@@ -162,17 +163,25 @@ int module_find_proc(const Module *m, const char *name)
 	for(i = 0; i != m->seg.exp.size; ++i) {
 		RMDExport *e = exp_get(&m->seg.exp, i);
 		if(strcmp(sym_get(&m->seg.sym, e->name), name) == 0)
-			return i;
+			return exp_get_ptbl_idx(&m->seg.exp, i);
 	}
 	return -1;
 }
 
-uint32_t module_proc_addr(const Module *m, int idx)
+int module_find_external_proc(Module *module, int idx, Module **m)
 {
-	return ptbl_get(&m->seg.ptbl, idx)->addr;
+	int ptbl_idx;
+	RMDImport *imp = imp_get(&module->seg.imp, idx);
+	const char *name = sym_get(&module->seg.sym, imp->name);
+	*m = module_get_another_module(module, imp->module);
+	ptbl_idx = module_find_proc(*m, name);
+	if(ptbl_idx == -1)
+		/* TODO: output procedure name */
+		error(ERR_NO_PROC);
+	return ptbl_idx;
 }
 
-Module *module_get_dependent(Module *module, uint8_t idx)
+Module *module_get_another_module(Module *module, uint8_t idx)
 {
 	Module *m = module->mtbl[idx];
 	/* if module was referenced from here - it is cached */

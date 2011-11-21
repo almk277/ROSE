@@ -44,6 +44,7 @@ enum RMDError {
 	RMD_BAD_VERSION,  /* module has an unsupported version */
 };
 
+/* Initializes module storage. Must be called before moudle loading */
 void module_init(void);
 
 Module *module_load(const char *name);
@@ -64,11 +65,19 @@ int verify_ident(const unsigned char ident[4]);
 /* Returns a given ROSE version is supported */
 int verify_rmd_version(const unsigned char version[2]);
 
+/* Looks for a given procedure name in #exp of module m,
+ * and returns it's #ptbl index, or -1 if not found */
 int module_find_proc(const Module *m, const char *name);
 
-uint32_t module_proc_addr(const Module *m, int idx);
+static inline RMDProcedure *module_get_proc(const Module *m, int idx)
+{
+	return ptbl_get(&m->seg.ptbl, idx);
+}
 
-Module *module_get_dependent(Module *module, uint8_t idx);
+/* For module m, gets module with #mtbl index idx */
+Module *module_get_another_module(Module *m, uint8_t idx);
+
+int module_find_external_proc(Module *module, int idx, Module **m);
 
 #endif
 

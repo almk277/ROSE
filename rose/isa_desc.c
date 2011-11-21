@@ -66,7 +66,7 @@ static void isa_arrput(Thread *t)
 /* [p] makes near procedure call */
 static void isa_call(Thread *t)
 {
-	NOT_IMPLEMENTED("call");
+	thread_proc_call(t, t->module, OP);
 }
 
 /* [n] decrements $top */
@@ -81,6 +81,12 @@ static void isa_delete(Thread *t)
 	NOT_IMPLEMENTED("delete");
 }
 
+/* [n] pushes $top on stack again */
+static void isa_dup(Thread *t)
+{
+	stack_push(ST, stack_top(ST));
+}
+
 /* [n] stops the program */
 static void isa_exit(Thread *t)
 {
@@ -90,7 +96,9 @@ static void isa_exit(Thread *t)
 /* [f] makes far procedure call */
 static void isa_farcall(Thread *t)
 {
-	NOT_IMPLEMENTED("farcall");
+	Module *m;
+	int idx = module_find_external_proc(t->module, OP, &m);
+	thread_proc_call(t, m, idx);
 }
 
 /* [a] jumps to given address */
@@ -213,16 +221,16 @@ static void isa_puts(Thread *t)
 	*stack_at_p(ST, OP) = a;
 }
 
-/* [n] returns execution from current procedure with return value */
+/* [n] returns execution from current procedure without return value */
 static void isa_return(Thread *t)
 {
-	NOT_IMPLEMENTED("return");
+	thread_proc_ret(t, 0);
 }
 
-/* [n] returns execution from current procedure without return value */
-static void isa_retp(Thread *t)
+/* [n] returns execution from current procedure with return value */
+static void isa_retval(Thread *t)
 {
-	NOT_IMPLEMENTED("retp");
+	thread_proc_ret(t, 1);
 }
 
 /* [n] pops two stack words and pushes their difference */
@@ -235,15 +243,10 @@ static void isa_sub(Thread *t)
 	stack_push(ST, a);
 }
 
-/* [n] pushes $top on stack again */
-static void isa_dup(Thread *t)
-{
-	stack_push(ST, stack_top(ST));
-}
-
 /* [u] writes to given file array $top bytes from array $top[-1] */
 static void isa_write(Thread *t)
 {
+	/* FIXME This is just a temporary stub */
 	char *start;
 	uint32_t i;
 	uint32_t len = stack_pop(ST);
