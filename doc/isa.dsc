@@ -55,9 +55,9 @@ pushc     i        0x15    pushes constant on stack
 pushcsh   i        0x16    makes $top = ($top << 8) | $op
 putd      d        0x12    pops stack word into module variable
 puts      s        0x14    pops stack word into local variable
-return    n        0x45    returns execution from current procedure with \
+return    n        0x45    returns execution from current procedure without \
                            return value
-retp      n        0x46    returns execution from current procedure without \
+retval    n        0x46    returns execution from current procedure with \
                            return value
 sub       n        0x61    pops two stack words and pushes their difference
 write     u        0x72    writes to given file array $top bytes from array \
