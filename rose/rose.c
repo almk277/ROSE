@@ -43,8 +43,9 @@ int main(int argc, char *argv[])
 	printf("module '%s' with version %hhu.%hhu\n", m->name,
 			m->version[0], m->version[1]);
 
-	if(thread_start(&t, m) != THS_EXIT)
-		puts("thread interrupt");
+	/*if(thread_start(&t, m) != THS_EXIT)*/
+		/*puts("thread interrupt");*/
+	thread_debug_start(&t, m);
 	module_unload(m);
 	return 0;
 }

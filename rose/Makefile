@@ -6,13 +6,21 @@ LDFLAGS += -lglib-2.0
 
 all: rose
 
-rose: rose.o module.o debug.o thread.o stack.o ref.o error.o array.o
+rose: rose.o module.o debug.o thread.o stack.o ref.o error.o array.o disas.o
 
 isa_desc.c: ../doc/isa.dsc
 	./isa_gen.pl
 	touch $@
 
 isa_tbl.c: ../doc/isa.dsc
+	./isa_gen.pl
+	touch $@
+
+dbg_tbl.c: ../doc/isa.dsc
+	./isa_gen.pl
+	touch $@
+
+disas_tbl.c: ../doc/isa.dsc
 	./isa_gen.pl
 	touch $@
 

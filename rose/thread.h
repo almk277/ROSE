@@ -35,5 +35,7 @@ void thread_proc_call(Thread *t, Module *m, uint8_t idx);
 
 void thread_proc_ret(Thread *t, int retval);
 
+void thread_debug_start(Thread *t, Module *m);
+
 #endif
 

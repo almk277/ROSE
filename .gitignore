@@ -9,3 +9,5 @@ ras/instr.c
 ras/instr.gperf
 rose/rose
 rose/isa_tbl.c
+rose/dbg_tbl.c
+rose/disas_tbl.c

@@ -112,6 +112,11 @@ static inline uint8_t *text_addr(const Text *text, uint32_t ofs)
 	return &text->start[ofs];
 }
 
+static inline uint32_t text_get_offset(const Text *text)
+{
+	return text->pc - text->start;
+}
+
 static inline uint8_t text_fetch(Text *text)
 {
 	return *text->pc++;
@@ -128,9 +133,14 @@ static inline void text_jump_ofs(Text *text, uint8_t ofs)
 	text->pc += 2 * _ofs;
 }
 
-typedef struct Sym Sym;
+static inline void text_back(Text *text)
+{
+	text->pc -= 2;
+}
 
 /*************************  .sym  ************************/
+
+typedef struct Sym Sym;
 
 struct Sym {
 	const char *start;

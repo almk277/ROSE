@@ -8,8 +8,6 @@
 #define TX        (t->text)
 #define OP        (t->operand)
 
-#include "isa_desc.c"
-
 typedef void (*Instr)(Thread *);
 
 static void isa_error(Thread *t)
@@ -17,10 +15,17 @@ static void isa_error(Thread *t)
 	t->status = THS_INV_OPCODE;
 }
 
-#define NO_INSTR isa_error
+#define NO_INSTR               isa_error
+#define DBG_NO_INSTR           isa_error
 
+#include "isa_desc.c"
 static const Instr instr_set[] = {
 #include "isa_tbl.c"
+};
+
+#include "isa_dbg.c"
+static const Instr instr_dbg[] = {
+#include "dbg_tbl.c"
 };
 
 #define instr_run(idx, thread)  instr_set[idx](thread)

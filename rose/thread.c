@@ -1,6 +1,7 @@
 #include "thread.h"
 #include "compiler.h"
 #include "isa.c"
+#include "disas.h"
 #include <glib.h>
 
 void thread_init(Thread *t)
@@ -20,20 +21,27 @@ inline void thread_set_module(Thread *t, Module *m)
 	t->text   = &m->seg.text;
 }
 
-int thread_start(Thread *t, Module *m)
+static int thread_prepare(Thread *t, Module *m)
 {
 	int ent;
 	uint32_t start;
-	uint8_t opcode;
 
 	thread_set_module(t, m);
 	t->status = THS_RUNNING;
    	ent = module_find_proc(m, "main");
 	if (ent == -1)
-		return THS_NOENTRY;
+		return 0;
 	start = module_get_proc(m, ent)->addr;
 	text_goto(t->text, start);
+	return 1;
+}
 
+int thread_start(Thread *t, Module *m)
+{
+	uint8_t opcode;
+
+	if(!thread_prepare(t, m))
+		return THS_NOENTRY;
 	while(likely(t->status == THS_RUNNING)) {
 		opcode = text_fetch(t->text);
 		t->operand = text_fetch(t->text);
@@ -81,5 +89,19 @@ void thread_proc_ret(Thread *t, int retval)
 	t->stack.sp -= proc->proc->argc;
 	t->stack.sp += retval;
 	g_slice_free(Proc, proc);
+}
+
+void thread_debug_start(Thread *t, Module *m)
+{
+	uint8_t opcode;
+	if(!thread_prepare(t, m))
+		return;
+	while(likely(t->status == THS_RUNNING)) {
+		fputs(disas_str(t->module, text_get_offset(&m->seg.text)), stderr);
+		fputc('\n', stderr);
+		opcode = text_fetch(t->text);
+		t->operand = text_fetch(t->text);
+		instr_run(opcode, t);
+	}
 }
 
