@@ -140,6 +140,7 @@ static void make_header(void)
 		+ header.ptbl * sizeof(RMDProcedure) + header.mtbl * sizeof(RMDModule)
 		+ header.imp * sizeof(RMDImport) + 4 * (header.addr + header.cnst)
 		+ header.text + header.sym + header.str;
+	header.debug = 0;
 }
 
 static void write_rmd(void)

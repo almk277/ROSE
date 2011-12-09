@@ -10,16 +10,17 @@ typedef struct RMDHeader {
 	unsigned char version[2];  /* module version            */
 	uint8_t flags;             /* various flags             */
 	uint8_t data_cnt;          /* data count                */
-	uint8_t exp;               /* export table offset       */
-	uint8_t ptbl;              /* procedure table offset    */
-	uint8_t mtbl;              /* module table offset       */
-	uint8_t imp;               /* import table offset       */
-	uint8_t cnst;              /* constant table offset     */
-	uint8_t addr;              /* address table offset      */
-	uint32_t text;             /* text segment offset       */
-	uint16_t sym;              /* symbol segment offset     */
-	uint32_t str;              /* string segment offset     */
+	uint8_t exp;               /* export table size         */
+	uint8_t ptbl;              /* procedure table size      */
+	uint8_t mtbl;              /* module table size         */
+	uint8_t imp;               /* import table size         */
+	uint8_t cnst;              /* constant table size       */
+	uint8_t addr;              /* address table size        */
+	uint32_t text;             /* text sector size          */
+	uint16_t sym;              /* symbol sector size        */
+	uint32_t str;              /* string sector size        */
 	uint32_t size;             /* size of (module - header) */
+	uint32_t debug;            /* debug section size        */
 	char pad[16];              /* for future expanding      */
 } RMDHeader;
 
