@@ -1,6 +1,7 @@
 #include "thread.h"
 #include "ref.h"
 #include "array.h"
+#include "conf.h"
 #include <stdio.h>
 
 #define NOT_IMPLEMENTED(name)	printf("%s: not implemented\n", name)
@@ -23,10 +24,12 @@ static const Instr instr_set[] = {
 #include "isa_tbl.c"
 };
 
+#ifdef ENABLE_DEBUGGER
 #include "isa_dbg.c"
 static const Instr instr_dbg[] = {
 #include "dbg_tbl.c"
 };
+#endif /* ENABLE_DEBUGGER */
 
 #define instr_run(idx, thread)  instr_set[idx](thread)
 

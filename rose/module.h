@@ -4,6 +4,7 @@
 #define ROSE_MODULE_H
 
 #include "segment.h"
+#include "disas.h"
 
 /* ROSE module descriptor */
 typedef struct Module Module;
@@ -25,6 +26,7 @@ struct Module {
 	unsigned char version[2];
 	Module **mtbl;
 	struct ModuleSegments seg;
+	DisasInfo *info;
 };
 
 /* minimal supported version */
@@ -44,7 +46,12 @@ enum RMDError {
 	RMD_BAD_VERSION,  /* module has an unsupported version */
 };
 
-/* Initializes module storage. Must be called before moudle loading */
+enum ModuleFlags {
+	MODULE_NONE    = 0,
+	MODULE_DEBUG   = 1,
+};
+
+/* Initializes module storage. Must be called before module loading */
 void module_init(void);
 
 Module *module_load(const char *name);

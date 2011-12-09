@@ -2,6 +2,12 @@
 #include "thread.h"
 #include <stdio.h>
 
+struct Options {
+	int disas;
+} options;
+
+int module_flags = MODULE_DEBUG;
+
 static int file_error(const char *name, int error)
 {
 	const char *msg;
@@ -43,9 +49,8 @@ int main(int argc, char *argv[])
 	printf("module '%s' with version %hhu.%hhu\n", m->name,
 			m->version[0], m->version[1]);
 
-	/*if(thread_start(&t, m) != THS_EXIT)*/
-		/*puts("thread interrupt");*/
-	thread_debug_start(&t, m);
+	if(thread_start(&t, m) != THS_EXIT)
+		puts("thread interrupt");
 	module_unload(m);
 	return 0;
 }

@@ -1,10 +1,12 @@
 #include "module.h"
 #include "error.h"
+#include "conf.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <glib.h>
 
+extern int module_flags;
 static GHashTable *module_tbl;
 
 /* returns if maj1.min1 is greater than maj2.min2 */
@@ -101,11 +103,17 @@ static inline void *section_address(const Module *module, uint32_t offset)
 static Module *create_module(RMDHeader *h, FILE *f, int *error)
 {
 	char *start;
+	Module *module;
 	struct ModuleSegments *seg;
-	Module *module = malloc(sizeof(Module) /* header */
-			+ h->size                      /* sectors */
-			+ h->mtbl * sizeof(Module *)   /* procedure cache */
-			);
+	size_t size = sizeof(Module)       /* header */
+		+ h->size                      /* sectors */
+		+ h->mtbl * sizeof(Module *);  /* procedure cache */
+#ifdef ENABLE_DEBUGGER
+	int debug = module_flags & MODULE_DEBUG;
+	if(debug)
+		size += h->debug;
+#endif
+	module = malloc(size);
 	if(!module) {
 		*error = RMD_NO_MEMORY;
 		return NULL;
@@ -147,6 +155,10 @@ static Module *create_module(RMDHeader *h, FILE *f, int *error)
 	module->name = sym_get(&module->seg.sym, h->name);
 	module->version[0] = h->version[0];
 	module->version[1] = h->version[1];
+#ifdef ENABLE_DEBUGGER
+	if(debug)
+		disas_load_sym(module, h);
+#endif
 
 	module_to_hash(module);
 	return module;

@@ -2,6 +2,7 @@
 #include "compiler.h"
 #include "isa.c"
 #include "disas.h"
+#include "conf.h"
 #include <glib.h>
 
 void thread_init(Thread *t)
@@ -91,6 +92,8 @@ void thread_proc_ret(Thread *t, int retval)
 	g_slice_free(Proc, proc);
 }
 
+#ifdef ENABLE_DEBUGGER
+
 void thread_debug_start(Thread *t, Module *m)
 {
 	uint8_t opcode;
@@ -105,3 +108,4 @@ void thread_debug_start(Thread *t, Module *m)
 	}
 }
 
+#endif
