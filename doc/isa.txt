@@ -1,79 +1,100 @@
-ROSE is a stack machine. All instructions have zero or one argument,
-although there might be implicit arguments on stack.
+Every instruction starts with one-byte opcode, following with several operands.
 
-All instructions are 2 bytes long. First byte is opcode, and second one
-is operand (if it is used).
 Any instruction name in this document is prefixed with "%" sign. Any operand
 reference is prefixed with "$" sign. For example, "$data" record means that
 instruction under consideration contains operand with data index (that is,
 index into data table). Prefix "." means segment name (".data", for example).
 @top is stack top word. @base is stack frame base.
 
-				Stack
+				1. Data types
 
-Stack is a main storage for 32-bit words. Every method has it's own stack frame.
-The first part of this frame is a locale variables storage (up to 255 words),
-it's size is fixed for every method. The second part is a work area, and it's
-size is changing dynamically. [%gets, %puts]
+Data types are:
+	* Integer;
+	* Float;
+	* Array;
+	* File;
+	* Object.
 
-				Data types
+				1.1 Integers
 
-There are two data types: small number and reference to object.
+Integers are 32-bits signed numbers. They support base arithmetics:
+addition #addi, substraction #subi;
+increment #inc, decrement #dec.
 
-				Numbers
+				1.2 Floats
 
-Numbers are 32-bits signed integers. Programmer can do some arighmetic with
-them:
-	* addition %add, substraction %sub.
+Floats are IEEE-754 single precision floating-point numbers. They support
+base arithmetics: addition #addf, substraction #subf.
 
-				Arrays
+				1.3 Arrays
 
 There are fast arrays with random access.
-	* creation %arrnew;
-	* deletion %arrdel;
-	* element access %arrget, %arrput;
-	* getting length %arrlen.
+#arrnew creates an empty array of given size;
+#arrload creates initialized from .str segment array;
+#arrget gets an array element, #arrput puts an element into array;
+#arrlen gets array length.
 
-				Constants
+				1.4 Files
 
-There are of the following types constant types:
-	* embedded constants are instruction operands; [%pushc, %pushcsh]
-	* constants are placed in .const; [%getc]
-	* constant initialized arrays are placed in .str. [%arrload]
+Under consideration.
 
-				Execution flow
+				1.5 Objects
 
-There is three jump types:
-	* near jump. It's destination must be no more than 127 instructions from
-	  jump instruction; [%jump]
-	* conditional jumps. They all are near jumps too, but jump happens only
-	  on some condition. They pops one stack word [%jumpz, %jumpl, %jumple] or
-	  two stack words [%jumpeq] and makes jump on some condition;
-	* far jump can make jump to any address, but there must be no more than
-	  255 far jumps on module.
+Object is module instance. It has a state (all it's data values) and
+interface - procedure set.
+#new - creates new object
 
-				Methods
+				2. Execution flow
 
-The same as functions or procedures.
-It is an independent code fragment in some module.
+Execution flow is controlled with jumps and some procedure calling variants.
 
-To make procedure call, user pushes it's arguments on stack, then module
-index (in .mtbl), and then call instruction follows.
-[%call, %farcall]
-To return execution flow, one must use return instruction. [%return, %retp]
-It returns execution flow to instruction just after last call. Stack is
-returned to the same state, but if it is procedure with return value, is must
-be placed on @base (1st argument place), and return will leave it on stack
-top.
+				2.1 Jumps
 
-				Objects
-[OBSOLETE]
-Object is a module instance. It has it's own data and other module segments
-associated with it. It must be created and deleted then. [%new, %delete]
-	* data are placed in .data. It is read/write storage, which exists while
-	  the module instance does; [%getd, %putd]
+#jump    - go to given offset;
+#jumpeq  - go to given offset if two integers are equal;
+#jumpl   - go to given offset if one integer < other;
+#jumple  - go to given offset if one integer <= other;
+#jumplf  - go to given offset if one float < other;
+#jumpz   - go to given offset if an integer is zero.
 
+				2.2 Procedure call
 
-				Miscellaneous
+#call is used for calling concrete procedure from the same module procedure.
+This is fast.
 
-NOP instruction might be used for alignment purpose. [%nop]
+				2.3 Procedure invoke
+
+#invoke is used for calling some module procedure.
+This includes lookup by the given name in the given module.
+
+				2.4 Procedure dispatch
+
+#dispatch is used for virtual method calling.
+It looks into the given dispatch object module to find the given procedure.
+
+				2.5 Return from procedure
+
+#return is used to return to caller where current procedure was called with
+any of the previously mentioned instructions.
+
+				2.6 Exit
+
+#exit terminates current thread.
+
+				3. Data exchange
+
+There are some instructions for moving data.
+
+				3.1 Constants
+
+#getc loads 1-byte constant on stack;
+#getcl loads 4-byte constant on stack.
+
+				3.2 Stack moves
+
+#move just moves a value from one stack word to another.
+
+				3.3 Object data
+
+#load loads an object field on stack;
+#store stores a stack word into an object field.

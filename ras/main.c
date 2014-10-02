@@ -1,172 +1,102 @@
-#include <string.h>
-#include <ctype.h>
-#include <unistd.h>
-#include "common.h"
-#include "direct.h"
-#include "section.h"
-#include "tables.h"
-#include "proc.h"
-#include "text.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <locale.h>
+#include "print.h"
+#include "sect.h"
+#include "mm.h"
+#include "cmdopt.h"
 
-#define MAX_WORD_LEN            16
-#define COMMENT_SIGN            '#'
-#define DEFAULT_OUT_FILE_NAME   "out.rmd"
-#define MAX_LINE_LEN      128
-
-static FILE *input;
-static FILE *output;
-
-static const char *out_file_name = DEFAULT_OUT_FILE_NAME;
-
-static void out_help(void)
+static void *mm_error(mmPoolStruct *p)
 {
+	error("Out of memory");
+	return 0;
+}
+
+void *(*mm_on_error)(mmPoolStruct *) = mm_error;
+
+int verbose = DL_NONE;
+static const char *input_name = 0;
+const char *output_name = 0;
+
+FILE *output;
+/* from generated ras-lex.c */
+extern FILE *yyin;
+extern int yylex(void);
+
+static void usage(const char *progname)
+{
+	fprintf(stdout, "Usage:\n"
+			"%s [OPTIONS] FILE.ras\n",
+			progname);
 	fputs(
-			"ROSE assembler\n"
-			"-h -- this help message\n"
-			"-o file_name -- place output in file 'file_name'\n"
-			"-v -- verbose mode. Might be used multiple times\n"
+			"Options are:\n"
+			"  -help        -- this help message\n"
+			"  -output=name -- create file 'name' instead of FILE.rmd\n"
+			/*"  -verbose[=n] -- verbose mode, n is level (1..3)\n"*/
 		, stdout);
 }
 
-static void cmd_parse(int argc, char *argv[])
+static void parse_cmd(int argc, char *argv[])
 {
-	int opt;
-	while((opt = getopt(argc, argv, "o:vh")) != -1) {
-		switch(opt) {
-			case 'v':
-				++verbose;
-				break;
-			case 'h':
-				out_help();
-				exit(0);
-			case 'o':
-				out_file_name = optarg;
-				break;
-		}
+	int help = 0;
+	/*char **p_output = &output_name;*/
+	struct cmdopt opts[] = {
+		{ "help", CMDOPT_NONE, &help },
+		{ "output", CMDOPT_STR, &output_name },
+#ifdef DEBUG
+		{ "verbose", CMDOPT_LONG1, &verbose },
+#endif
+		{ NULL, 0, NULL }
+	};
+
+	int file_idx = cmdopt(argc, argv, opts);
+	if(help) {
+		fputs("ROSE assembler. ", stdout);
+		usage(argv[0]);
+		exit(1);
 	}
-	if(argc <= optind || !strcmp(argv[optind], "-"))
-		input = stdin;
-	else {
-		const char *inname = argv[optind];
-		input = fopen(inname, "r");
-		if(!input) {
-			perror(inname);
-			exit(1);
-		}
+	if(file_idx <= 0) {
+		if(file_idx == 0)
+			printf("%s: no input file specified. ", argv[0]);
+		puts("See -help for details."); 
+		exit(1);
 	}
-	output = fopen(out_file_name, "w");
-	if(!output)
-		error("can not create file %s", out_file_name);
+	input_name = argv[file_idx];
+	if(!output_name)
+		output_name = "out.rmd";
 }
 
-static void finish(void)
+static FILE *fopen_and_check(const char *name, const char *mode)
 {
-	fclose(output);
-	fclose(input);
+	FILE *f = fopen(name, mode);
+	if(!f)
+		file_error(name);
+	return f;
 }
 
-static void parse_line(char *line)
+static void fclose_and_check(const char *name, FILE *f)
 {
-	char keyword[MAX_WORD_LEN + 1];
-	char *space = line;
-	int keylen;
-	go_to_space(&space);
-	keylen = space - line;
-	if(keylen > MAX_WORD_LEN)
-		error("too long word");
-	strncpy(keyword, line, keylen);
-	keyword[keylen] = '\0';
-	while(isspace(*space))
-		++space;
-	if(keyword[0] == '.')
-		read_direct(keyword + 1, space);
-	else
-		in_section(keyword, space);
-}
-
-static void read_source()
-{
-	static char buf[MAX_LINE_LEN];
-	while(fgets(buf, sizeof buf, input)) {
-		char *start;
-		char *comment, *newline;
-		++lineno;
-		comment = strchr(buf, COMMENT_SIGN);
-		if(comment)
-			*comment = '\0';
-		newline = strchr(buf, '\n');
-		if(newline)
-			*newline = 0;
-		start = buf;
-		while(isspace(*start))
-			++start;
-		if(*start == '\0')
-			continue;
-		parse_line(start);
-	}
-	proc_finish();
-}
-
-static void debug_print(void)
-{
-	header_print();
-	exp_print();
-	ptbl_print();
-	module_print();
-	imp_print();
-	const_print();
-	addr_print();
-	text_print();
-	sym_print();
-	data_print();
-	str_print();
-	printf("%d bytes written\n", sizeof(RMDHeader) + header.size);
-}
-
-static void make_header(void)
-{
-	if(header.name == 0)
-		error("module name was not specified");
-	header.exp  = exp_count();
-	header.ptbl = ptbl_count();
-	header.mtbl = module_count();
-	header.imp  = imp_count();
-	header.cnst = const_count();
-	header.addr = addr_count();
-	header.text = text_count();
-	header.sym  = sym_count();
-	header.str  = str_count();
-	header.size = header.exp * sizeof(RMDExport)
-		+ header.ptbl * sizeof(RMDProcedure) + header.mtbl * sizeof(RMDModule)
-		+ header.imp * sizeof(RMDImport) + 4 * (header.addr + header.cnst)
-		+ header.text + header.sym + header.str;
-	header.debug = 0;
-}
-
-static void write_rmd(void)
-{
-	header_write(output);
-	exp_write(output);
-	ptbl_write(output);
-	module_write(output);
-	imp_write(output);
-	const_write(output);
-	addr_write(output);
-	text_write(output);
-	sym_write(output);
-	str_write(output);
+	if(fclose(f) == EOF)
+		file_error(name);
 }
 
 int main(int argc, char *argv[])
 {
-	cmd_parse(argc, argv);
-	sym_add("");
-	read_source();
-	make_header();
-	if(verbose >= DL_DUMP)
-		debug_print();
-	write_rmd();
-	finish();
+	setlocale(LC_ALL, "");
+	parse_cmd(argc, argv);
+	sect_init();
+
+	yyin = fopen_and_check(input_name, "r");
+	yylex();
+	fclose(yyin); /* ignore errors */
+
+	header_fill();
+	sect_print();
+
+	output = fopen_and_check(output_name, "w");
+	sect_write();
+	fclose_and_check(output_name, output);
+
 	return 0;
 }
 

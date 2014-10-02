@@ -28,8 +28,37 @@
  *
  */
 
+/***  Usage example  ***/
+
+#if 0
+#include "mm.h"
+void example(void)
+{
+	typedef struct Object {
+		char *name;
+		int data;
+	} Object;
+
+	MM_DECL(Object, 10);
+
+	Object *list[10];
+	int i;
+
+	for(i = 0; i != 10; ++i)
+		list[i] = mm_alloc(Object);
+
+	do_something(list);
+
+	for(i = 0; i != 10; ++i)
+		mm_free(Object, list[i]);
+}
+#endif
+
 #include "mm.h"
 #include <stdlib.h>
+#include <stdio.h>
+
+#define    MM_MIN_SIZE		4
 
 /* Common variable. Defaults to zero, but can be redefined by user */
 void *(*mm_on_error)(struct mm_pool_struct *);
@@ -42,10 +71,10 @@ static int alloc_count = 0;
  * pool - pointer to pool structure;
  * size - memory chunk size;
  * returns pointer to new chunk. */
-void *_mm_alloc(struct mm_pool_struct *pool)
+void mm_pool_alloc(struct mm_pool_struct *pool)
 {
-	size_t const size = pool->size;
-	unsigned poolsize = pool->count;
+	const unsigned size = pool->el_size;
+	unsigned poolsize = pool->size;
 	char *mem = malloc(size * poolsize);
 #ifdef TEST
 	++alloc_count;
@@ -53,15 +82,20 @@ void *_mm_alloc(struct mm_pool_struct *pool)
 	if(unlikely(mem == NULL)) {
 		poolsize = MM_MIN_SIZE;
 		mem = malloc(size * MM_MIN_SIZE);
-		if(unlikely(mem == NULL))
-			return mm_on_error ? mm_on_error(pool) : NULL;
+		if(unlikely(mem == NULL)) {
+			if(mm_on_error)
+				mem = mm_on_error(pool);
+			else {
+				fputs(__FILE__ ": ERROR: Out of memory", stderr);
+				exit(1);
+			}
+		}
 	}
 
 	pool->head = mem;
-	for(poolsize -= 2; poolsize != 0; --poolsize, mem += size)
+	for(--poolsize; poolsize != 0; --poolsize, mem += size)
 		*(void **)mem = mem + size;
 	*(void **)mem = NULL;
-	return mem + size;
 }
 
 /* Some tests */
@@ -71,20 +105,19 @@ void *_mm_alloc(struct mm_pool_struct *pool)
 
 #define N 10
 
-MM_DECL(int, N);
-MM_EXTERN(int);
+MM_DECL(long, N);
 
-static int *addr[2 * N + 1];
+static long *addr[2 * N + 1];
 
-static void init(int k)
+static void init(long k)
 {
-	addr[k] = mm_alloc(int);
+	addr[k] = mm_alloc(long);
 	*(addr[k]) = k;
 }
 
 int main(void)
 {
-	int i;
+	long i;
 
 	/* Track when pool is filled */
 	assert(alloc_count == 0);
@@ -113,25 +146,25 @@ int main(void)
 	assert(alloc_count == 3);
 
 	for(i = 0; i <= 2 * N; ++i)
-		mm_free(int, addr[i]);
+		mm_free(long, addr[i]);
 
 	/* Now check if we get the same addresses in opposite order */
 	for(i = 2 * N; i >= 0; --i)
-		assert(mm_alloc(int) == addr[i]);
+		assert(mm_alloc(long) == addr[i]);
 
 	return 0;
 }
 
 /* Functions to profile */
 
-int *int_get(void)
+long *int_get(void)
 {
-	return mm_alloc(int);
+	return mm_alloc(long);
 }
 
-void int_put(int *p)
+void int_put(long *p)
 {
-	mm_free(int, p);
+	mm_free(long, p);
 }
 #endif
 

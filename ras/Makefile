@@ -2,27 +2,24 @@ all: ras
 DESCR = ../doc/isa.dsc
 
 CPPFLAGS += -I../common
-CFLAGS += -Wall -g
+#LANG=C
 
-ras: main.o common.o dirmap.o direct.o str.o mm.o hash.o section.o tables.o \
-		storage.o instr.o proc.o text.o
+ras: main.o storage.o ras-lex.o hash.o ../common/mm.o cstring.o sect.o print.o
 	$(CC) $(LDFLAGS) -o $@ $^
 
-dirmap.c: dirmap.gperf
-	gperf -LANSI-C --output-file $@ < $^
+ras-lex.l: ras-head.l ras-tail.l gen.pl $(DESCR)
+	perl gen.pl
 
-instr.gperf: $(DESCR) instr-head.gperf
-	(cat instr-head.gperf; perl isa2perf.pl < $<) > $@
-
-instr.c: instr.gperf
-	gperf -LANSI-C --output-file $@ < $^
+debug:   CPPFLAGS += -DDEBUG
+debug:   CFLAGS += -Wall -g
+debug:   ras
+prepare: ras-lex.c
 
 clean:
 	rm -f *.o ras
 
 clean-all: clean
-	rm -f dirmap.c instr.c instr.gperf tags
+	rm -f ras-lex.l ras-lex.c
 
 tags: *.c
 	ctags *.c
-

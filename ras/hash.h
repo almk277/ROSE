@@ -5,6 +5,7 @@
 #define HASH_H
 
 #include <stdint.h>
+#include "cstring.h"
 #include "queue.h"
 
 /* queue array length */
@@ -16,24 +17,32 @@ typedef SLIST_HEAD(, HashEntry) ListHead;
 /* hash descriptor */
 typedef struct Hash {
 	ListHead heads[HASH_LEN];
-	uint8_t count;
+	int count;
 } Hash;
 
 /* object stored in hash */
 typedef struct HashEntry {
-	char *name;
-	uint32_t data;
+	String *string;
+	union {
+		uint8_t u8;
+		//uint16_t u16;
+		uint32_t u32;
+	} data;
 	SLIST_ENTRY(HashEntry) le;
 } HashEntry;
 
-/* adds name to hash h and assigns to it new index */
-HashEntry *hash_add(Hash *h, const char *name);
+/* adds string to hash h, checks it for uniqueness
+ * and returns reference to it's entry */
+HashEntry *hash_add(Hash *h, const String *string);
 
 /* looks for name in hash h */
-HashEntry *hash_find(const Hash *h, const char *name);
+HashEntry *hash_find(const Hash *h, const String *string);
 
 /* returns index for name in hash h, or -1 if not found */
-int hash_get(const Hash *h, const char *name);
+int hash_get(const Hash *h, const String *string);
+
+/* returns index for name s in hash h, or die if not found */
+uint32_t hash_get_or_die(const Hash *h, const String *s);
 
 /* clears hash h */
 void hash_clear(Hash *h);

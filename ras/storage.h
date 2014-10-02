@@ -5,50 +5,65 @@
 #define STORAGE_H
 
 #include "queue.h"
+#include "cstring.h"
 #include <stdint.h>
-#include <stdio.h>
 
 /* one array length */
-#define ARRAY_LEN  (2 * 1024)
+#define SLICE_LEN  (2 * 1024)
 
-typedef struct Array Array;
+typedef struct Slice Slice;
 
-SIMPLEQ_HEAD(QueueHead, Array);
+SIMPLEQ_HEAD(QueueHead, Slice);
 
 /* type descriptor, must be initialized */
 typedef struct Storage {
 	struct QueueHead head;
-	Array *current;
-	size_t len;
+	Slice *current;
+	uint32_t len;
 } Storage;
 
 /* initializer for Storage */
 #define STORAGE_INITIALIZER(table) \
 	{ SIMPLEQ_HEAD_INITIALIZER(table.head), 0, 0 }
 
-/* adds string str to storage tbl */
-uint16_t storage_add_str(Storage *tbl, const char *str);
+/* Guarantees that tbl has at least size bytes free */
+void storage_enlarge(Storage *tbl, uint32_t size);
+
+/* copies size bytes from addr to s */
+void storage_copy(Storage *s, const void *addr, uint32_t size);
+
+#define storage_put(s, word) do { \
+	switch(sizeof(word)) { \
+		case 1: storage_put1byte(s, word); break; \
+		case 2: storage_put2byte(s, word); break; \
+		case 4: storage_put4byte(s, word); break; \
+		default: error("something goes wrong");   \
+	} \
+} while(0)
+
+void storage_put1byte(Storage *s, char byte);
+
+void storage_put2byte(Storage *s, int16_t word);
+
+void storage_put4byte(Storage *s, int32_t word);
+
+/* adds string to storage tbl */
+uint32_t storage_add_string(Storage *tbl, const String *str);
 
 /* prints tbl as string storage */
 void storage_print_str(const Storage *tbl);
 
-/* adds instruction to tbl */
-void storage_add_instr(Storage *tbl, uint8_t opcode, uint8_t oper);
-
 /* returns current storage position address */
 char *storage_current(const Storage *tbl);
 
-/* skips 32 bits and returns pointer to it. Writes current offset to addr */
-uint32_t *storage_skip32(Storage *tbl, uint32_t *addr);
-
-/* adds byte to tbl */
-void storage_add_byte(Storage *tbl, char byte);
-
-/* prints tbl array with addr offset */
-void storage_print_array(const Storage *tbl, uint32_t addr);
-
 /* dumps storage to file */
-void storage_write(const Storage *tbl, FILE *file);
+void storage_write(const Storage *tbl);
+
+uint32_t array_begin(Storage *tbl);
+
+void array_add_byte(char byte);
+
+void array_add_string(const String *string);
 
 #endif
 

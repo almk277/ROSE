@@ -2,7 +2,8 @@ There is ROSE documentation.
 
 isa.txt     describes all ROSE instructions.
 isa.dcs     contains formal instruction description.
-memory.txt  describes memory segment model.
+memory.txt  describes memory model.
 module.txt  describes module using.
+operand.dcs contains formal operand description.
 ras.txt     describes ROSE assembler language.
 rmd.txt     describes ROSE binary format RMD.

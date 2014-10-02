@@ -7,6 +7,7 @@ typedef struct RMDHeader {
 	unsigned char ident[4];    /* signature                 */
 	unsigned char rmd_ver[2];  /* ROSE version              */
 	uint16_t name;             /* module name               */
+	uint16_t parent;           /* parent module name        */
 	unsigned char version[2];  /* module version            */
 	uint8_t flags;             /* various flags             */
 	uint8_t data_cnt;          /* data count                */
@@ -14,8 +15,6 @@ typedef struct RMDHeader {
 	uint8_t ptbl;              /* procedure table size      */
 	uint8_t mtbl;              /* module table size         */
 	uint8_t imp;               /* import table size         */
-	uint8_t cnst;              /* constant table size       */
-	uint8_t addr;              /* address table size        */
 	uint32_t text;             /* text sector size          */
 	uint16_t sym;              /* symbol sector size        */
 	uint32_t str;              /* string sector size        */
@@ -62,7 +61,7 @@ typedef struct RMDImport {
 /* #str entry */
 typedef struct RMDString {
 	uint32_t len;
-	const char str[1];
+	char str[1];
 } RMDString;
 
 #endif

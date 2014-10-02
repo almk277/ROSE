@@ -1,73 +1,81 @@
 #include "hash.h"
-#include "str.h"
-#include "common.h"
+#include "print.h"
 #include "mm.h"
 #include <string.h>
 #include <stdio.h>
 
+extern int verbose;
 static MM_DECL(HashEntry, 32);
 
-static HashEntry *hashentry_new(const char *name)
+static HashEntry *hashentry_new(const String *s)
 {
 	HashEntry *e = mm_alloc(HashEntry);
-	if(!e)
-		error("out of memory");
-	e->name = str_clone(name);
+	e->string = string_new(s->data, s->len);
 	return e;
 }
 
 static void hashentry_delete(HashEntry *e)
 {
-	str_free(e->name);
+	string_delete(e->string);
 	mm_free(HashEntry, e);
 }
 
-static uint8_t hash(const char *str)
+static uint8_t hash(const String *s)
 {
 	uint8_t h = 0;
-	for(; *str; ++str)
-		h += *str;
+	int i = s->len;
+	while(i--)
+		h += s->data[i];
 	return h;
 }
 
-static HashEntry *list_find(const ListHead *head, const char *name)
+static HashEntry *list_find(const ListHead *head, const String *s)
 {
 	HashEntry *ent;
 	SLIST_FOREACH(ent, head, le)
-		if(!strcmp(ent->name, name))
+		if(ent->string->len == s->len
+				&& !strncmp(ent->string->data, s->data, s->len))
 			return ent;
 	return 0;
 }
 
-HashEntry *hash_find(const Hash *h, const char *name)
+HashEntry *hash_find(const Hash *h, const String *s)
 {
-	uint8_t idx = hash(name);
+	uint8_t idx = hash(s);
 	const ListHead *list = &h->heads[idx];
 	if(!SLIST_EMPTY(list))
-		return list_find(list, name);
+		return list_find(list, s);
 	return 0;
 }
 
-int hash_get(const Hash *h, const char *name)
+int hash_get(const Hash *h, const String *s)
 {
-	const HashEntry *e = hash_find(h, name);
+	const HashEntry *e = hash_find(h, s);
 	if(e)
-		return e->data;
+		return e->data.u32;
 	return -1;
 }
 
-HashEntry *hash_add(Hash *h, const char *name)
+uint32_t hash_get_or_die(const Hash *h, const String *s)
+{
+	const HashEntry *e = hash_find(h, s);
+	if(!e)
+		error("%s: variable not found", s->data);
+	return e->data.u32;
+}
+
+HashEntry *hash_add(Hash *h, const String *s)
 {
 	HashEntry *ent;
 	uint8_t idx;
-	if(hash_find(h, name))
-		error("name defined already");
-	if(h->count == HASH_LEN)
-		error("too many strings");
-	ent = hashentry_new(name);
-	ent->data = h->count++;
-	idx = hash(name);
+
+	if(hash_find(h, s))
+		error("%s: name defined already", s->data);
+	ent = hashentry_new(s);
+	idx = hash(s);
 	SLIST_INSERT_HEAD(&h->heads[idx], ent, le);
+	++h->count;
+	ent->data.u32 = h->count;
 	return ent;
 }
 
@@ -84,6 +92,7 @@ void hash_clear(Hash *h)
 	h->count = 0;
 }
 
+#ifdef DEBUG
 void hash_print(const Hash *h, void (*print)(const HashEntry *ent))
 {
 	int i;
@@ -99,4 +108,5 @@ void hash_print(const Hash *h, void (*print)(const HashEntry *ent))
 	}
 	putchar('\n');
 }
+#endif
 

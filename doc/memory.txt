@@ -1,75 +1,43 @@
 There is segmented memory model. Segments are:
-	1.  .heap - area for dynamic memory allocating;
-	2.  .stack - current data and procedure frame;
-	3.  .ptbl - procedure table;
-	4.  .mtbl - module table;
-	5.  .imp - import table;
-	6.  .exp - export table.
-	7.  .const - module constant table;
-	8.  .addr - text address table;
-	9.  .text - program instructions;
-	10. .data - initially zero-filled variable table;
-	11. .proc - internal procedure stack;
-	12. .sym - runtime symbol table;
-	13. .str - data constant pool.
+        GLOBAL:
+	*  .heap - area for dynamic memory allocation;
+        THREAD-LOCAL:
+	*  .stack - procedure arguments and local variables;
+	*  .proc  - internal procedure stack;
+        MODULE-LOCAL:
+	*  .ptbl - procedure table;
+	*  .mtbl - module table;
+	*  .imp  - import table;
+	*  .exp  - export table;
+	*  .text - program instructions;
+	*  .sym  - runtime symbol table;
+	*  .str  - data constant pool;
+        MODULE-INSTANCE-LOCAL:
+	*  .data - module instance variables;
 
-.heap is a global segment for entire environment.
-Every thread has it's own .stack and .proc.
-.const, .addr, .text, .ptbl, .mtbl, .imp and .exp are module-local.
-.data is created for every module instance.
+All module-local segments are loaded from RMD.
 
-------------------------------------------------------------
-|                         ROSE                             |
-|             -------------------------------              |
-|             |          .heap              |              |
-|             -------------------------------              |
-|  ------------------------------------------------------- |
-|  |                     Thread                          | |
-|  |  -------------------------------   ---------------  | |
-|  |  |          .stack             |   |    .proc    |  | |
-|  |  -------------------------------   ---------------  | |
-|  |-----------------------------------------------------| |
-|                                                          |
-|   ----------------------------------------------------   |
-|   |                    Module                        |   |
-|   |                                                  |   |
-|   | ------------  ----------  ------------ --------- |   |
-|   | |  .str    |  | .ptbl  |  |  .mtbl   | | .imp  | |   |
-|   | ------------  ----------  ------------ --------- |   |
-|   |                                                  |   |
-|   | ------------  ----------  ------------ --------- |   |
-|   | |  .exp    |  | .addr  |  | .const   | | .text | |   |
-|   | ------------  ----------  ------------ --------- |   |
-|   |                                                  |   |
-|   |      module instance       module instance       |   |
-|   |     ------------------   ------------------      |   |
-|   |     |  ------------  |   |  ------------  |      |   |
-|   |     |  | .data    |  |   |  |  .data   |  |      |   |
-|   |     |  ------------  |   |  ------------  |      |   |
-|   |     ------------------   ------------------      |   |
-|   ----------------------------------------------------   |
-------------------------------------------------------------
+  .stack            Stack consists from 32-bit words.
+----------          BP points to the current stack frame.
+|  valN  |          
+|--------|          
+|  ...   |
+|--------|
+|  val1  |          -------           There is also procedure stack
+|--------|          | RET | <- PSP    .proc. It's head pointer is PSP.
+|  refM  |          |-----|           This stack is not accessible by program
+|--------|          | OVP |           directly, it is used by procedure call
+|  ...   |          |-----|           instructions.
+|--------|          | ORP |
+|  ref1  |          |=====|
+|--------|          | RET |
+|  argL  |          -------
+|--------|
+|  ...   |          All procedure arguments are references.
+|--------|          Total stack frame size is up to 255 words.
+|  arg0  | <- BP    
+----------
 
-All tables has maximum size of 255 entries.
-stack, heap and data are not stored in module file, they initially contains
-garbage, except for data which is filled with zeroes.
-
-  .stack
-----------          Stack uses two pointers: sp points to stack head, 
-|  top   | <- SP    and bp points to stack base. There is current procedure
-|--------|          stack frame from BP to SP.
-|  ...   |          Stack frame begins with procedure arguments. Then local
-|--------|          variables are placed, and then there is operand stack
-|  varN  |          with floating head. So, BP is constant during procedure
-|--------|          execution, and SP is variable.
-|  ...   |           .proc
-|--------|          -------           There is also procedure stack
-|  var1  |          | RET | <- PSP    .proc. It's head pointer is PSP.
-|--------|          |-----|           This stack is not accessible by program
-|  argN  |          | OSP |           directly, it is used by procedure call
-|--------|          |-----|           instructions.
-|  ...   |          | OBP |
-|--------|          |=====|
-|  arg0  | <- BP    | RET |
-----------          -------
-
+You can dynamically allocate memory with 'new' and 'arrnew' instructions.
+There is no need to delete such objects - runtime deletes them automatically
+when they are no longer needed.
