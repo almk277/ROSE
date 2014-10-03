@@ -1,100 +1,84 @@
-Every instruction starts with one-byte opcode, following with several operands.
+Every instruction starts with one-byte opcode, possibly followed
+by several operands.
 
-Any instruction name in this document is prefixed with "%" sign. Any operand
+Any instruction name in this document is prefixed with "#" sign. Any operand
 reference is prefixed with "$" sign. For example, "$data" record means that
-instruction under consideration contains operand with data index (that is,
+current instruction contains operand with data index (that is,
 index into data table). Prefix "." means segment name (".data", for example).
 @top is stack top word. @base is stack frame base.
 
-				1. Data types
+			1. Data types
 
 Data types are:
 	* Integer;
 	* Float;
+	* Object;
 	* Array;
-	* File;
-	* Object.
+	* File.
 
 				1.1 Integers
 
-Integers are 32-bits signed numbers. They support base arithmetics:
-addition #addi, substraction #subi;
-increment #inc, decrement #dec.
+Integers are 32-bits signed numbers.
+Constructors: #int.new, #int.snew.
+Base arithmetic operations: #int.add, #int.sub, increment #inc, decrement #dec.
+Multiplication and division not implemented yet.
 
 				1.2 Floats
 
-Floats are IEEE-754 single precision floating-point numbers. They support
-base arithmetics: addition #addf, substraction #subf.
+Floats are IEEE-754 single precision floating-point numbers.
+Constructor: #flt.new.
+Arithmetic operations: #flt.add, #flt.sub, #flt.mul, #flt.div.
 
-				1.3 Arrays
+				1.3 Objects
 
-There are fast arrays with random access.
-#arrnew creates an empty array of given size;
-#arrload creates initialized from .str segment array;
-#arrget gets an array element, #arrput puts an element into array;
-#arrlen gets array length.
+An object is a module instance. Constructor: #new.
+It has a state (all variables), accessible with #load and #store.
 
-				1.4 Files
+				1.4 Arrays
+
+An array is a container with random access.
+Constructors: #arr.new, #arr.load.
+It has #arr.len elements, accessible with #arr.get and #arr.put.
+
+				1.5 Files
 
 Under consideration.
 
-				1.5 Objects
+			2. Execution flow
 
-Object is module instance. It has a state (all it's data values) and
-interface - procedure set.
-#new - creates new object
-
-				2. Execution flow
-
-Execution flow is controlled with jumps and some procedure calling variants.
+Execution flow is controlled with jumps and procedure calls.
 
 				2.1 Jumps
 
-#jump    - go to given offset;
-#jumpeq  - go to given offset if two integers are equal;
-#jumpl   - go to given offset if one integer < other;
-#jumple  - go to given offset if one integer <= other;
-#jumplf  - go to given offset if one float < other;
-#jumpz   - go to given offset if an integer is zero.
+Unconditional jump: #jump.
+Conditional jumps: #jumpeq, #jumpl, #jumple, #jumplf, #jumpz.
 
 				2.2 Procedure call
 
-#call is used for calling concrete procedure from the same module procedure.
-This is fast.
+There is 3 variants of procedure call.
 
-				2.3 Procedure invoke
+					2.2.1 Internal call
 
-#invoke is used for calling some module procedure.
-This includes lookup by the given name in the given module.
+#call is used for calling procedure from the same module procedure. This is fast.
 
-				2.4 Procedure dispatch
+					2.2.2 External call
+
+#invoke is used for calling procedure in some other module.
+
+					2.2.3 Dispatch
 
 #dispatch is used for virtual method calling.
-It looks into the given dispatch object module to find the given procedure.
+It looks into the given dispatch object and searches for the procedure in it's
+module.
 
-				2.5 Return from procedure
+				2.3 Return from procedure
 
-#return is used to return to caller where current procedure was called with
-any of the previously mentioned instructions.
+#return returns control flow to the last procedure invoked some call variant.
 
-				2.6 Exit
+				2.4 Exit
 
 #exit terminates current thread.
 
-				3. Data exchange
+			3 Miscellaneous
 
-There are some instructions for moving data.
-
-				3.1 Constants
-
-#getc loads 1-byte constant on stack;
-#getcl loads 4-byte constant on stack.
-
-				3.2 Stack moves
-
-#move just moves a value from one stack word to another.
-
-				3.3 Object data
-
-#load loads an object field on stack;
-#store stores a stack word into an object field.
+#move, #nop, #dbg.byte, #dbg.str.

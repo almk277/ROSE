@@ -20,7 +20,6 @@ flt.div   sss       0xAA    $1F = $2F / $3F
 flt.mul   sss       0xAA    $1F = $2F * $3F
 flt.new   sw        0xAA    $1 = $2F
 flt.sub   sss       0x61    $1F = $2F - $3F
-load      ssb       0x11    $1 = $2O.$3
 inc       sb        0x67    $1I = $1I + $2
 int.add   sss       0x60    $1I = $2I + $3I
 int.new   sw        0x11    $1 = $2I
@@ -33,10 +32,11 @@ jumpl     ssr       0x23    jumps to ($ip + $3) if $1I < $2I
 jumple    ssr       0x25    jumps to ($ip + $3) if $1I <= $2I
 jumplf    ssr       0xAA    jumps to ($ip + $3) if $1F < $2F
 jumpz     sr        0x22    jumps to ($ip + $2) if $1I == 0
+load      ssb       0x11    $1 = $2O.$3
 move      ss        0xAA    $1 = $2
 new       sm        0x50    $1O = new $2
-nop       -         0x01    nop does nothing
-outb      s         0x01    print $1 & 0xFF
-outstr    s         0x01    print $1A
+nop       -         0x01    does nothing
+dbg.byte  s         0x01    prints $1 & 0xFF
+dbg.str   s         0x01    prints $1A
 return    -         0x45    returns from current method
 store     ssb       0x12    $2O.$3 = $1

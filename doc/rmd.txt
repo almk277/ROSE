@@ -39,4 +39,3 @@ Section #debug might be ommited.
 	* slot   - index into procedure module #exp;
 	* addr   - cached procedure offset.
 addr and slot might be ommited.
-

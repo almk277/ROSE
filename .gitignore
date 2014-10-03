@@ -4,9 +4,8 @@
 tags
 .exrc
 ras/ras
-ras/dirmap.c
-ras/instr.c
-ras/instr.gperf
+ras/ras-lex.l
+ras/ras-lex.c
 rose/rose
 rose/isa_tbl.c
 rose/dbg_tbl.c

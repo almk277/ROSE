@@ -1,7 +1,7 @@
 				ROSE Assembler directives
 
 There is four section types: constants, data, text and strings. Every section
-begins with special directive and reachs until the next section.
+begins with special directive and reaches until the next section.
 
 .arg <name>
 	Declares procedure argument.
@@ -11,7 +11,7 @@ begins with special directive and reachs until the next section.
 	'name = value'.
 
 .data
-	Declares #data section. Data variables are placed one per line as names.
+	Declares #data section. Data variable names are placed one per line.
 
 .export
 	Declares current procedure as public.

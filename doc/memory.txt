@@ -17,12 +17,12 @@ There is segmented memory model. Segments are:
 
 All module-local segments are loaded from RMD.
 
-  .stack            Stack consists from 32-bit words.
+  .stack            Stack consists of 32-bit words.
 ----------          BP points to the current stack frame.
 |  valN  |          
 |--------|          
 |  ...   |
-|--------|
+|--------|           .proc
 |  val1  |          -------           There is also procedure stack
 |--------|          | RET | <- PSP    .proc. It's head pointer is PSP.
 |  refM  |          |-----|           This stack is not accessible by program
@@ -39,5 +39,5 @@ All module-local segments are loaded from RMD.
 ----------
 
 You can dynamically allocate memory with 'new' and 'arrnew' instructions.
-There is no need to delete such objects - runtime deletes them automatically
-when they are no longer needed.
+You can not delete such objects - runtime (namely, garbage collector)
+deletes them automatically when they are no longer needed.
