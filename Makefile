@@ -1,4 +1,4 @@
-.PHONY: all clean sources
+.PHONY: all clean examples
 
 all: ras/ras rose/rose
 
@@ -8,11 +8,11 @@ ras/ras:
 rose/rose:
 	cd rose && $(MAKE)
 
-sources:
-	cd sources && $(MAKE)
+examples:
+	cd examples && $(MAKE)
 
 clean:
 	cd ras && $(MAKE) clean
 	cd rose && $(MAKE) clean
-	cd sources && $(MAKE) clean
+	cd examples && $(MAKE) clean
 
