@@ -106,7 +106,6 @@ void module_add(const String *name, uint8_t maj, uint8_t min)
 	m->name = sym_add(name);
 	m->version[0] = maj;
    	m->version[1] = min;
-	m->sum = 0;
 }
 
 int module_find(const String *name)
@@ -145,7 +144,7 @@ void imp_add(const String *name)
 	imp = &imp_sect[ent->data.u8];
 	imp->name = sym_add(name);
 	imp->module = idx;
-	imp->slot = imp->addr = 0;
+	imp->slot = 0;
 }
 
 int imp_find(const String *name)
@@ -165,6 +164,12 @@ void header_set_name(const String *name)
 	if(header.name != 0)
 		error("module has name already");
 	header.name = sym_add(name);
+}
+
+void header_set_version(String *version)
+{
+	//TODO
+	string_delete(version);
 }
 
 void header_set_parent(const String *name)
@@ -229,13 +234,18 @@ void ptbl_write(void)
 		file_write_error();
 }
 
-void var_add(const String *name)
+static RMDProcedure *add_to_var(const String *name)
 {
 	uint8_t proc_idx;
 	check_current_sub();
 	hash_add(&var_hash, name);
 	proc_idx = current_sub->data.u8;
-	++ptbl_sect[proc_idx].varc;
+	return &ptbl_sect[proc_idx];
+}
+
+void var_add(const String *name)
+{
+	++add_to_var(name)->varc;
 }
 
 int var_find(const String *name)
@@ -250,11 +260,7 @@ void var_clear(void)
 
 void arg_add(const String *name)
 {
-	uint8_t proc_idx;
-	check_current_sub();
-	hash_add(&var_hash, name);
-	proc_idx = current_sub->data.u8;
-	++ptbl_sect[proc_idx].argc;
+	++add_to_var(name)->argc;
 }
 
 void text_enlarge(int size)

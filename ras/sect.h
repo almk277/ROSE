@@ -30,6 +30,9 @@ int imp_find(const String *name);
 /* sets module name */
 void header_set_name(const String *name);
 
+/* sets module version */
+void header_set_version(String *version);
+
 /* sets module parent */
 void header_set_parent(const String *name);
 
@@ -54,6 +57,9 @@ void label_add(const String *name);
 /* returns procedure index or -1 if not found */
 int ptbl_find(const String *name);
 
+/* adds argument with name */
+void arg_add(const String *name);
+
 /* adds variable with name */
 void var_add(const String *name);
 
@@ -62,15 +68,6 @@ int var_find(const String *name);
 
 /* clears all variables */
 void var_clear(void);
-
-/* adds argument with name */
-void arg_add(const String *name);
-
-/* returns index of argument, or -1 if not found */
-int arg_find(const String *name);
-
-/* clears argument list */
-void arg_clear(void);
 
 /* provides size bytes avaliable in text storage */
 void text_enlarge(int size);

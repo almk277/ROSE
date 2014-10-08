@@ -29,13 +29,6 @@ typedef struct RMDHeader {
 #define RMD_H_IDENT3		'D'
 #define RMD_H_IDENT4		0x1F
 
-/* #exp entry */
-typedef struct RMDExport {
-	uint16_t name;
-	uint16_t proto;
-	uint8_t idx;
-} RMDExport;
-
 /* #ptbl entry */
 typedef struct RMDProcedure {
 	uint32_t addr;
@@ -43,11 +36,17 @@ typedef struct RMDProcedure {
 	uint8_t varc;
 } RMDProcedure;
 
+/* #exp entry */
+typedef struct RMDExport {
+	uint16_t name;
+	uint16_t proto;
+	uint8_t idx;
+} RMDExport;
+
 /* #mtbl entry */
 typedef struct RMDModule {
 	uint16_t name;
 	unsigned char version[2];
-	uint32_t sum;
 } RMDModule;
 
 /* #imp entry */
@@ -55,7 +54,6 @@ typedef struct RMDImport {
 	uint16_t name;
 	uint8_t module;
 	uint8_t slot;
-	uint32_t addr;
 } RMDImport;
 
 /* #str entry */

@@ -13,9 +13,11 @@ uint32_t instr_start;
 SYM    [a-zA-Z0-9_]
 SYM1   [a-zA-Z_]
 WORD   {SYM1}{SYM}*
+NUM    [0-9]
+VER    {NUM}\.{NUM}
 
 %option yylineno nounput noyywrap
-%x instruction eol sub arg var exp imp data mod inh str strsect string
+%x instruction eol sub arg var exp imp data mod modver inh str strsect string
 
 %%
 
@@ -40,7 +42,10 @@ WORD   {SYM1}{SYM}*
 <inh>{WORD}    header_set_parent(YSTRING); dl("parent: %s", yytext); BEGIN eol;
 
 \.module       BEGIN mod;
-<mod>{WORD}    header_set_name(YSTRING); dl("module %s", yytext); BEGIN eol;
+<mod>{WORD}    header_set_name(YSTRING); dl("module %s", yytext); BEGIN modver;
+<modver>{VER}  BEGIN eol;
+<modver>\n     BEGIN eol;
+
 
 \.str          BEGIN str;
 <str>{WORD}    str_begin(YSTRING); dl("string: %s", yytext); BEGIN strsect;

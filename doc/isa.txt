@@ -12,9 +12,9 @@ index into data table). Prefix "." means segment name (".data", for example).
 Data types are:
 	* Integer;
 	* Float;
-	* Object;
 	* Array;
-	* File.
+	* File;
+	* Object.
 
 				1.1 Integers
 
@@ -29,20 +29,20 @@ Floats are IEEE-754 single precision floating-point numbers.
 Constructor: #flt.new.
 Arithmetic operations: #flt.add, #flt.sub, #flt.mul, #flt.div.
 
-				1.3 Objects
-
-An object is a module instance. Constructor: #new.
-It has a state (all variables), accessible with #load and #store.
-
-				1.4 Arrays
+				1.3 Arrays
 
 An array is a container with random access.
 Constructors: #arr.new, #arr.load.
 It has #arr.len elements, accessible with #arr.get and #arr.put.
 
-				1.5 Files
+				1.4 Files
 
 Under consideration.
+
+				1.5 Objects
+
+An object is a module instance. Constructor: #new.
+It has a state (all variables), accessible with #load and #store.
 
 			2. Execution flow
 

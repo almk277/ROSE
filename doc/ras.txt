@@ -1,30 +1,51 @@
 				ROSE Assembler directives
 
-There is four section types: constants, data, text and strings. Every section
+There is three section types: data, text and strings. Every section
 begins with special directive and reaches until the next section.
+Comments starts with '#' and ends at end of line.
+.data contains module variables declaration, one per line. Every variable
+might be aliased multiple times.
+.text contains instructions within procedures, and labels.
+.str contains initialized arrays (for example, strings).
+--------------------------------------------
+.module just_an_example 0.1
+.data          # .data begins
+	x          # first module variable
+	y          # second variable
+	z : temp   # third variable with alias
+.sub main      # .text begins
+.export main
+exit:          # label
+	exit       # instruction
+.str
+	hello "hello, world!\n"
+	"and bye";
+	myname { 'R', 'O', 'S' 'E' }
+--------------------------------------------
 
 .arg <name>
 	Declares procedure argument.
 
-.const
-	Declares #const section. Constants are placed one per line in form
-	'name = value'.
-
 .data
 	Declares #data section. Data variable names are placed one per line.
 
-.export
-	Declares current procedure as public.
+.export <name>
+	Declares procedure 'name' as public.
 
-.extern <name@module>
+.extern <module:name>
 	Imports procedure with <name> from <module> (previously imported with
 	.import).
 
-.import <name-maj.min>
-	Imports module with given name and version.
+.import <name [<maj>.<min>]>
+	Imports module with given name and version (0.0 by default).
 
-.module <name-maj.min>
-	Declares current module name and version.
+.inherits <module>
+	Declares that current module inherits another module <module>
+	(previously imported with .import).
+
+.module <name [<maj>.<min>]>
+	Declares current module name and version (0.0 by default).
+
 
 .str <name>
 	Declares #str section, begins a string with <name>.
@@ -35,4 +56,3 @@ begins with special directive and reaches until the next section.
 
 .var <name>
 	Declares local variable for current procedure.
-
