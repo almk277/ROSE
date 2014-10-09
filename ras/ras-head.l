@@ -37,7 +37,8 @@ EXTPR  {WORD}:{WORD}
 \.export       BEGIN exp;
 <exp>{WORD}    exp_add(YSTRING); dl("export"); BEGIN eol;
 
-\.extern       
+\.extern       BEGIN ext;
+<ext>{EXTPR}   imp_add(YSTRING); dl("extern"); BEGIN eol;
 
 \.import       BEGIN imp;
 <imp>{WORD}    module_add(YSTRING); dl("import"); BEGIN impver;

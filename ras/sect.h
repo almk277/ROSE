@@ -21,7 +21,7 @@ void module_set_version(const char *version);
 /* returns index of module, or -1 if not found */
 int module_find(const String *name);
 
-/* adds extern name from module and with mangled name name to #imp */
+/* adds extern name to #imp */
 void imp_add(const String *name);
 
 /* returns index of extern name, or -1 if not found */
@@ -63,9 +63,6 @@ void var_add(const String *name);
 /* returns index of variable, or -1 if not found */
 int var_find(const String *name);
 
-/* clears all variables */
-void var_clear(void);
-
 /* provides size bytes avaliable in text storage */
 void text_enlarge(int size);
 
@@ -79,9 +76,6 @@ void text_emit_operand(char type, String *name);
 
 /* stores label with given name */
 void label_add(const String *name);
-
-/* clears all labels */
-void label_clear(void);
 
 /* adds procedure name to #exp */
 void exp_add(const String *name);

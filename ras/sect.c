@@ -138,31 +138,22 @@ void module_write(void)
 		file_write_error();
 }
 
-void imp_add(const String *name)
+void imp_add(const String *fullname)
 {
-	RMDImport *imp;
-	HashEntry *ent;
-	char *proc;
-	int idx;
-	String *str;
-	int module_len;
-
-	proc = strchr(name->data, ':');
-	if(!proc)
-		error("import name must be specified as 'module:procedure'");
-	module_len = proc - name->data;
- 	ent = hash_add(&imp_hash, name);
-	*proc++ = 0;
-
-	str = string_new(name->data, module_len);
-	idx = module_find(str);
-	string_delete(str);
-	if(idx == -1)
+ 	HashEntry *ent = hash_add(&imp_hash, fullname);
+	RMDImport *imp = &imp_sect[ent->data.u8];
+	char *colon = strchr(fullname->data, ':'); /* flex guarantees there is ':' */
+	/* split up fullname into module and procedure names */
+	String *module = string_new(fullname->data, colon - fullname->data);
+	String *proc = string_new(colon + 1, fullname->data + fullname->len - colon);
+	int idx = module_find(module);
+	if(idx < 0)
 		error("module '%s' not found", proc);
-	imp = &imp_sect[ent->data.u8];
-	imp->name = sym_add(name);
 	imp->module = idx;
+	imp->name = sym_add(proc);
 	imp->slot = 0;
+	string_delete(proc);
+	string_delete(module);
 }
 
 int imp_find(const String *name)
@@ -270,7 +261,7 @@ int var_find(const String *name)
 	return hash_get(&var_hash, name);
 }
 
-void var_clear(void)
+static void var_clear(void)
 {
 	hash_clear(&var_hash);
 }
@@ -404,7 +395,7 @@ static const HashEntry *label_find(const String *name)
 	return hash_find(&label_hash, name);
 }
 
-void label_clear(void)
+static void label_clear(void)
 {
 	hash_clear(&label_hash);
 }
