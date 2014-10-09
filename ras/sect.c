@@ -7,6 +7,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <inttypes.h>
+#include <stdlib.h>
 
 /* ROSE version */
 #define ROSE_VERSION_MAJ   1
@@ -52,21 +53,22 @@ SLIST_HEAD(RefList, Reference) ref_head;
 static MM_DECL(Reference, 16);
 
 HashEntry *current_sub = 0;
+RMDModule *current_import;
 
 RMDHeader header = {
-	{
+	{ /* ident */
 		RMD_H_IDENT1,
 		RMD_H_IDENT2,
 		RMD_H_IDENT3,
 		RMD_H_IDENT4
 	},
-	{
+	{ /* RMD version */
 		ROSE_VERSION_MAJ,
 		ROSE_VERSION_MIN
 	},
-	0,
-	0,
-	{ 0, 0 }
+	0, /* name */
+	0, /* parent */
+	{ 0, 0 } /* module version */
 };
 
 #define text_put1byte(byte) storage_put1byte(&text_sect, byte)
@@ -99,13 +101,29 @@ void sym_write(void)
 	storage_write(&sym_sect);
 }
 
-void module_add(const String *name, uint8_t maj, uint8_t min)
+static void parse_version(const char *s, RMDVersion *ver)
+{
+	unsigned maj, min;
+	if(sscanf(s, "%u.%u", &maj, &min) != 2)
+		error("can not parse version: %s", s);
+	if(maj > 255 || min > 255)
+		error("%u.%u: version number is too big - must be less then 256",
+				maj, min);
+	ver->maj = maj;
+	ver->min = min;
+}
+
+void module_add(const String *name)
 {
 	HashEntry *e = hash_add(&module_hash, name);
-	RMDModule *m = &module_sect[e->data.u8];
-	m->name = sym_add(name);
-	m->version[0] = maj;
-   	m->version[1] = min;
+	current_import = &module_sect[e->data.u8];
+	current_import->name = sym_add(name);
+	current_import->version.maj = current_import->version.min = 0;
+}
+
+void module_set_version(const char *version)
+{
+	parse_version(version, &current_import->version);
 }
 
 int module_find(const String *name)
@@ -166,10 +184,9 @@ void header_set_name(const String *name)
 	header.name = sym_add(name);
 }
 
-void header_set_version(String *version)
+void header_set_version(const char *version)
 {
-	//TODO
-	string_delete(version);
+	parse_version(version, &header.version);
 }
 
 void header_set_parent(const String *name)
@@ -522,8 +539,8 @@ static void sym_print(void)
 static void module_print1(const HashEntry *ent)
 {
 	const RMDModule *m = &module_sect[ent->data.u8];
-	printf("%s-%hhu.%hhu(%u)[%u] ", ent->string->data,
-			m->version[0], m->version[1], m->name, m->sum);
+	printf("%s-%hhu.%hhu(%u) ", ent->string->data,
+			m->version.maj, m->version.min, m->name);
 
 }
 
@@ -548,8 +565,8 @@ static void imp_print(void)
 
 static void header_print(void)
 {
-	printf("RMD-%d.%d, version %d.%d\n", header.rmd_ver[0],
-			header.rmd_ver[1], header.version[0], header.version[1]);
+	printf("RMD-%d.%d, version %d.%d\n", header.rmd_version.maj,
+			header.rmd_version.min, header.version.maj, header.version.min);
 }
 
 static void ptbl_print1(const HashEntry *ent)

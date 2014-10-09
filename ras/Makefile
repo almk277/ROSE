@@ -1,8 +1,7 @@
-all: ras
-DESCR = ../doc/isa.dsc
-
+DESCR := ../doc/isa.dsc
 CPPFLAGS += -I../include
-#LANG=C
+
+all: ras
 
 ras: main.o storage.o ras-lex.o hash.o ../lib/mm.o cstring.o sect.o print.o
 	$(CC) $(LDFLAGS) -o $@ $^

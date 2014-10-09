@@ -12,11 +12,11 @@ void data_add(const String *name);
 /* returns index of data data segment, or -1 if not found */
 int data_find(const String *name);
 
-/* adds name to #sym and returns it's address */
-uint16_t sym_add(const String *name);
-
 /* adds module with name to #mtbl */
-void module_add(const String *name, uint8_t maj, uint8_t min);
+void module_add(const String *name);
+
+/* sets version for last imported module */
+void module_set_version(const char *version);
 
 /* returns index of module, or -1 if not found */
 int module_find(const String *name);
@@ -31,7 +31,7 @@ int imp_find(const String *name);
 void header_set_name(const String *name);
 
 /* sets module version */
-void header_set_version(String *version);
+void header_set_version(const char *version);
 
 /* sets module parent */
 void header_set_parent(const String *name);
@@ -48,11 +48,8 @@ void str_add_char(char c);
 /* adds a string str to current #str string */
 void str_add_string(const String *str);
 
-/* adds procedure name to #ptbl and returns long-live procedure name */
+/* adds procedure name to #ptbl */
 void ptbl_add(const String *name);
-
-/* stores label with given name */
-void label_add(const String *name);
 
 /* returns procedure index or -1 if not found */
 int ptbl_find(const String *name);
@@ -79,6 +76,9 @@ void text_emit_opcode(char code);
 
 /* emits instruction argument of given type with given name */
 void text_emit_operand(char type, String *name);
+
+/* stores label with given name */
+void label_add(const String *name);
 
 /* clears all labels */
 void label_clear(void);

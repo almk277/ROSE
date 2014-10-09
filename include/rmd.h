@@ -3,12 +3,17 @@
 
 #include <stdint.h>
 
+typedef struct RMDVersion {
+	unsigned char maj;
+	unsigned char min;
+} RMDVersion;
+
 typedef struct RMDHeader {
 	unsigned char ident[4];    /* signature                 */
-	unsigned char rmd_ver[2];  /* ROSE version              */
+	RMDVersion rmd_version;    /* ROSE version              */
 	uint16_t name;             /* module name               */
 	uint16_t parent;           /* parent module name        */
-	unsigned char version[2];  /* module version            */
+	RMDVersion version;        /* module version            */
 	uint8_t flags;             /* various flags             */
 	uint8_t data_cnt;          /* data count                */
 	uint8_t exp;               /* export table size         */
@@ -46,7 +51,7 @@ typedef struct RMDExport {
 /* #mtbl entry */
 typedef struct RMDModule {
 	uint16_t name;
-	unsigned char version[2];
+	RMDVersion version;
 } RMDModule;
 
 /* #imp entry */

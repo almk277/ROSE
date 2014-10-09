@@ -46,7 +46,6 @@ exit:          # label
 .module <name [<maj>.<min>]>
 	Declares current module name and version (0.0 by default).
 
-
 .str <name>
 	Declares #str section, begins a string with <name>.
 
