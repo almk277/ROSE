@@ -9,23 +9,14 @@
 /* adds data with name */
 void data_add(const String *name);
 
-/* returns index of data data segment, or -1 if not found */
-int data_find(const String *name);
-
 /* adds module with name to #mtbl */
 void module_add(const String *name);
 
 /* sets version for last imported module */
 void module_set_version(const char *version);
 
-/* returns index of module, or -1 if not found */
-int module_find(const String *name);
-
 /* adds extern name to #imp */
 void imp_add(const String *name);
-
-/* returns index of extern name, or -1 if not found */
-int imp_find(const String *name);
 
 /* sets module name */
 void header_set_name(const String *name);
@@ -51,17 +42,11 @@ void str_add_string(const String *str);
 /* adds procedure name to #ptbl */
 void ptbl_add(const String *name);
 
-/* returns procedure index or -1 if not found */
-int ptbl_find(const String *name);
-
 /* adds argument with name */
 void arg_add(const String *name);
 
 /* adds variable with name */
 void var_add(const String *name);
-
-/* returns index of variable, or -1 if not found */
-int var_find(const String *name);
 
 /* provides size bytes avaliable in text storage */
 void text_enlarge(int size);

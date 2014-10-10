@@ -75,7 +75,7 @@ RMDHeader header = {
 #define text_put2byte(byte) storage_put2byte(&text_sect, byte)
 #define text_put4byte(byte) storage_put4byte(&text_sect, byte)
 
-static void check_current_sub(void)
+static void check_current_sub()
 {
 	if(!current_sub)
 		error("no current procedure");
@@ -86,17 +86,12 @@ void data_add(const String *name)
 	hash_add(&data_hash, name);
 }
 
-int data_find(const String *name)
-{
-	return hash_get(&data_hash, name);
-}
-
 uint16_t sym_add(const String *sym)
 {
 	return storage_add_string(&sym_sect, sym);
 }
 
-void sym_write(void)
+void sym_write()
 {
 	storage_write(&sym_sect);
 }
@@ -126,12 +121,12 @@ void module_set_version(const char *version)
 	parse_version(version, &current_import->version);
 }
 
-int module_find(const String *name)
+static int module_find(const String *name)
 {
 	return hash_get(&module_hash, name);
 }
 
-void module_write(void)
+void module_write()
 {
 	if(fwrite(module_sect, sizeof(RMDModule), module_hash.count, output)
 			!= module_hash.count)
@@ -156,12 +151,7 @@ void imp_add(const String *fullname)
 	string_delete(module);
 }
 
-int imp_find(const String *name)
-{
-	return hash_get(&imp_hash, name);
-}
-
-void imp_write(void)
+void imp_write()
 {
 	if(fwrite(imp_sect, sizeof(RMDImport), imp_hash.count, output)
 			!= imp_hash.count)
@@ -187,7 +177,7 @@ void header_set_parent(const String *name)
 	header.parent = sym_add(name);
 }
 
-void header_write(void)
+void header_write()
 {
 	if(fwrite(&header, sizeof(RMDHeader), 1, output) != 1)
 		file_write_error();
@@ -209,7 +199,7 @@ void str_add_string(const String *str)
 	array_add_string(str);
 }
 
-void str_write(void)
+void str_write()
 {
 	storage_write(&str_sect);
 }
@@ -230,12 +220,7 @@ void ptbl_add(const String *name)
 	sub_begin(e);
 }
 
-int ptbl_find(const String *name)
-{
-	return hash_get(&ptbl_hash, name);
-}
-
-void ptbl_write(void)
+void ptbl_write()
 {
 	if(fwrite(ptbl_sect, sizeof(RMDProcedure), ptbl_hash.count, output)
 			!= ptbl_hash.count)
@@ -256,12 +241,7 @@ void var_add(const String *name)
 	++add_to_var(name)->varc;
 }
 
-int var_find(const String *name)
-{
-	return hash_get(&var_hash, name);
-}
-
-static void var_clear(void)
+static void var_clear()
 {
 	hash_clear(&var_hash);
 }
@@ -276,12 +256,12 @@ void text_enlarge(int size)
 	storage_enlarge(&text_sect, size);
 }
 
-char *text_addr(void)
+char *text_addr()
 {
 	return storage_current(&text_sect);
 }
 
-uint32_t text_len(void)
+uint32_t text_len()
 {
 	return text_sect.len;
 }
@@ -386,7 +366,7 @@ void text_emit_operand(char type, String *string)
 	}
 }
 
-void text_write(void)
+void text_write()
 {
 	storage_write(&text_sect);
 }
@@ -402,7 +382,7 @@ static const HashEntry *label_find(const String *name)
 	return hash_find(&label_hash, name);
 }
 
-static void label_clear(void)
+static void label_clear()
 {
 	hash_clear(&label_hash);
 }
@@ -442,7 +422,7 @@ static void resolve(const Reference *ref)
 				ref->name->data, ent->data.u32, offset);
 }
 
-static void ref_resolve(void)
+static void ref_resolve()
 {
 	if(verbose >= DL_NUDE && !SLIST_EMPTY(&ref_head))
 		debug_line("LBL resolving: ");
@@ -458,7 +438,7 @@ static void sub_print(void);
 static void label_print(void);
 static void var_print(void);
 
-void sub_finish(void)
+void sub_finish()
 {
 	if(current_sub) {
 		ref_resolve();
@@ -489,14 +469,14 @@ void exp_add(const String *name)
 	e->idx = ent->data.u8;
 }
 
-void exp_write(void)
+void exp_write()
 {
 	if(fwrite(exp_sect, sizeof(RMDExport), exp_hash.count, output)
 			!= exp_hash.count)
 		file_write_error();
 }
 
-void header_fill(void)
+void header_fill()
 {
 	if(header.name == 0)
 		error("module name was not specified");
@@ -522,13 +502,13 @@ static void data_print1(const HashEntry *ent)
 	printf("%s(%d)  ", ent->string->data, ent->data.u8);
 }
 
-static void data_print(void)
+static void data_print()
 {
 	printf(".data(%d): ", data_hash.count);
 	hash_print(&data_hash, data_print1);
 }
 
-static void sym_print(void)
+static void sym_print()
 {
     printf("#sym: ");
     storage_print_str(&sym_sect);
@@ -542,7 +522,7 @@ static void module_print1(const HashEntry *ent)
 
 }
 
-static void module_print(void)
+static void module_print()
 {
 	printf("#mtbl(%d): ", module_hash.count);
 	hash_print(&module_hash, module_print1);
@@ -555,13 +535,13 @@ static void imp_print1(const HashEntry *ent)
 			module_sect[imp->module].name, ent->string->data);
 }
 
-static void imp_print(void)
+static void imp_print()
 {
 	printf("#imp(%d):  ", imp_hash.count);
 	hash_print(&imp_hash, imp_print1);
 }
 
-static void header_print(void)
+static void header_print()
 {
 	printf("RMD-%d.%d, version %d.%d\n", header.rmd_version.maj,
 			header.rmd_version.min, header.version.maj, header.version.min);
@@ -573,7 +553,7 @@ static void ptbl_print1(const HashEntry *ent)
 	printf("%s => %u  ", ent->string->data, p->addr);
 }
 
-static void ptbl_print(void)
+static void ptbl_print()
 {
 	printf("#ptbl(%d): ", ptbl_hash.count);
 	hash_print(&ptbl_hash, ptbl_print1);
@@ -584,7 +564,7 @@ static void var_print1(const HashEntry *ent)
 	printf("%s(%d)  ", ent->string->data, ent->data.u8);
 }
 
-static void var_print(void)
+static void var_print()
 {
 	if(var_hash.count) {
 		printf("VAR[%s](%d):  ", current_sub->string->data, var_hash.count);
@@ -592,7 +572,7 @@ static void var_print(void)
 	}
 }
 
-static void text_print(void)
+static void text_print()
 {
 	printf("#text: %u bytes\n", text_sect.len);
 }
@@ -602,7 +582,7 @@ static void label_print1(const HashEntry *ent)
 	printf("%s  ", ent->string->data);
 }
 
-static void label_print(void)
+static void label_print()
 {
 	if(label_hash.count) {
 		printf("LABELS[%s](%d):  ", current_sub->string->data, label_hash.count);
@@ -610,7 +590,7 @@ static void label_print(void)
 	}
 }
 
-static void sub_print(void)
+static void sub_print()
 {
 	RMDProcedure *p = &ptbl_sect[current_sub->data.u8];
 	printf("PROC END(%s): argc = %d, varc = %d\n",
@@ -622,19 +602,19 @@ static void exp_print1(const HashEntry *ent)
 	printf("%s(%d)  ", ent->string->data, ent->data.u8);
 }
 
-static void exp_print(void)
+static void exp_print()
 {
 	printf("#exp(%d):  ", exp_hash.count);
 	hash_print(&exp_hash, exp_print1);
 }
  
-static void str_print(void)
+static void str_print()
 {
 	printf("#str(%d)  ", str_sect.len);
 	putchar('\n');
 }
 
-void sect_print(void)
+void sect_print()
 {
 	if(verbose < DL_DUMP)
 		return;
@@ -652,7 +632,7 @@ void sect_print(void)
 
 #endif /* DEBUG */
 
-void sect_init(void)
+void sect_init()
 {
 	/* symbol may not have an address of 0 */
 	String *empty = string_new("", 1);
@@ -660,12 +640,12 @@ void sect_init(void)
 	string_delete(empty);
 }
 
-void sect_finish(void)
+void sect_finish()
 {
 	sub_finish();
 }
 
-void sect_write(void)
+void sect_write()
 {
 	header_write();
 	exp_write();

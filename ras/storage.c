@@ -14,7 +14,7 @@ struct Slice {
 	char array[SLICE_LEN];
 };
 
-static Slice *array_new(void)
+static Slice *array_new()
 {
 	Slice *a = malloc(sizeof *a);
 	if(!a)
@@ -31,6 +31,7 @@ void storage_enlarge(Storage *tbl, uint32_t size)
 	}
 }
 
+/* copies size bytes from addr to s */
 /*
 void storage_copy(Storage *s, const void *addr, uint32_t size)
 {

@@ -41,7 +41,6 @@ static void usage(const char *progname)
 static void parse_cmd(int argc, char *argv[])
 {
 	int help = 0;
-	/*char **p_output = &output_name;*/
 	struct cmdopt opts[] = {
 		{ "help", CMDOPT_NONE, &help },
 		{ "output", CMDOPT_STR, &output_name },

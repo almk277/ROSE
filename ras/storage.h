@@ -29,18 +29,6 @@ typedef struct Storage {
 /* Guarantees that tbl has at least size bytes free */
 void storage_enlarge(Storage *tbl, uint32_t size);
 
-/* copies size bytes from addr to s */
-void storage_copy(Storage *s, const void *addr, uint32_t size);
-
-#define storage_put(s, word) do { \
-	switch(sizeof(word)) { \
-		case 1: storage_put1byte(s, word); break; \
-		case 2: storage_put2byte(s, word); break; \
-		case 4: storage_put4byte(s, word); break; \
-		default: error("something goes wrong");   \
-	} \
-} while(0)
-
 void storage_put1byte(Storage *s, char byte);
 
 void storage_put2byte(Storage *s, int16_t word);

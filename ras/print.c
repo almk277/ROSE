@@ -1,7 +1,6 @@
 #include "print.h"
 #include <stdarg.h>
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
 
 extern int yylineno;
@@ -39,7 +38,7 @@ void file_error(const char *name)
 	exit(1);
 }
 
-void file_write_error(void)
+void file_write_error()
 {
 	file_error(output_name);
 }
