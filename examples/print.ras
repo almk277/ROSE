@@ -1,15 +1,11 @@
-.module print-1.0
-
-.const
-	nl = '\n'
+.module print
 
 # prints out a given string and a new line
 .sub println
-.export
+.export println
 .arg str
-	gets str
-	dup
-	arrlen
-	write 0
+.var nl
+	dbg.str str
+	int.snew nl '\n'
+	dbg.byte nl
 	return
-
