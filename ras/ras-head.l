@@ -3,7 +3,7 @@
 #include "sect.h"
 #include "cstring.h"
 #define YSTRING string_new(yytext, yyleng + 1)
-#define dl(str) debug_line(str ": %s", str, yytext)
+#define dl(str) debug_line(str ": %s", yytext)
 static void emit_instruction(int len, char opcode, const char *argstring);
 static void end_instruction(void);
 static const char *args;
@@ -14,6 +14,7 @@ SYM    [a-zA-Z0-9_]
 SYM1   [a-zA-Z_]
 WORD   {SYM1}{SYM}*
 NUM    [0-9]+
+CONST  {NUM}|'.'|'\\.'
 VER    {NUM}\.{NUM}
 EXTPR  {WORD}:{WORD}
 
@@ -52,7 +53,6 @@ EXTPR  {WORD}:{WORD}
 <mod>{WORD}    header_set_name(YSTRING); dl("module"); BEGIN modver;
 <modver>{VER}  header_set_version(yytext); dl("version"); BEGIN eol;
 <modver>\n     /* no version */ BEGIN eol;
-
 
 \.str          BEGIN str;
 <str>{WORD}    str_begin(YSTRING); dl("string"); BEGIN strsect;

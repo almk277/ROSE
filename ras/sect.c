@@ -148,7 +148,7 @@ void imp_add(const String *fullname)
 	String *proc = string_new(colon + 1, fullname->data + fullname->len - colon);
 	int idx = module_find(module);
 	if(idx < 0)
-		error("module '%s' not found", proc);
+		error("module '%s' not found", proc->data);
 	imp->module = idx;
 	imp->name = sym_add(proc);
 	imp->slot = 0;
@@ -307,12 +307,29 @@ static struct NumberDesc {
 	{ "%"PRIi32, INT32_MIN, INT32_MAX },
 };
 
+static char sym2num(char sym)
+{
+	switch(sym) {
+		case 'n':  return '\n';
+		case 't':  return '\t';
+		case '\\': return '\\';
+		case '\'': return '\'';
+		default: return sym;
+	}
+}
+
 static long num_parse(const char *string, int code)
 {
 	long arg;
 
-	if(string[0] == '\'' && string[2] == '\'')
-		return string[1];
+	if(string[0] == '\'') {
+	   	if(string[2] == '\'')
+			return sym2num(string[1]);
+		else if(string[1] == '\\' && string[3] == '\'')
+			return sym2num(string[2]);
+		else
+			error("%s: can not parse", string);
+	}
 
 	if(sscanf(string, num_desc[code].fmt, &arg) != 1)
 		error("%s: not a number", string);
@@ -329,39 +346,29 @@ void text_emit_operand(char type, String *string)
 		case '-':
 			error("'%s': superfluous argument", str);
 		case 's':
-			{
-				const HashEntry *ent = hash_find(&var_hash, string);
-				if(!ent)
-					ent = hash_find(&data_hash, string);
-				if(!ent)
-					error("%s: variable not found", str);
-				text_put1byte(ent->data.u8);
-			}
-			break;
-		case 'b':
-			text_put1byte((int8_t)num_parse(str, NUMDESC8));
-			break;
-		case 'h':
-			text_put2byte((int16_t)num_parse(str, NUMDESC16));
-			break;
-		case 'w':
-			text_put4byte((int32_t)num_parse(str, NUMDESC32));
-			break;
-		case 'p':
-			text_put1byte(hash_get_or_die(&ptbl_hash, string));
-			break;
-		case 'a':
-			text_put4byte(hash_get_or_die(&array_hash, string));
-			break;
-		case 'm':
-			text_put1byte(hash_get_or_die(&module_hash, string));
-			break;
+		case 'v':
 		case 'i':
-			text_put1byte(hash_get_or_die(&imp_hash, string));
-			break;
-		case 'e':
-			text_put1byte(hash_get_or_die(&exp_hash, string));
-			break;
+		case 'f':
+		case 'a':
+		case 'b':
+		case 'F':
+		case 'o': /* they all are stack variables */
+			text_put1byte(hash_get_or_die(&var_hash, string)); break;
+		case 'D':
+			text_put1byte(hash_get_or_die(&data_hash, string)); break;
+		case 'c':
+			text_put1byte((int8_t)num_parse(str, NUMDESC8)); break;
+		case 'w':
+			text_put4byte((int32_t)num_parse(str, NUMDESC32)); break;
+		case 'P':
+			text_put1byte(hash_get_or_die(&ptbl_hash, string)); break;
+		case 'S': break; /* TODO */
+		case 'A':
+			text_put4byte(hash_get_or_die(&array_hash, string)); break;
+		case 'M':
+			text_put1byte(hash_get_or_die(&module_hash, string)); break;
+		case 'I':
+			text_put1byte(hash_get_or_die(&imp_hash, string)); break;
 		case 'r':
 			{
 				const HashEntry *ent = label_find(string);

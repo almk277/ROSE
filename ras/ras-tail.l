@@ -1,14 +1,12 @@
 <instruction>\n                end_instruction();
-<instruction>[0-9]*            |
-<instruction>'.'               |
-<instruction>{SYM1}{SYM}*      text_emit_operand(*args++, YSTRING);
+<instruction>{CONST}           |
+<instruction>{WORD}            text_emit_operand(*args++, YSTRING);
 
 <*>#.*                         /* comment until EOL */
 <*>[ \t]+                      /* spaces are allowed anywhere */
 <*>\n                          error("unexpected end of line");
 <<EOF>>                        error("unexpected end of file");
-
-<*>.                           error("'%c': unexpected symbol", *yytext);
+<*>.                           error("'%s': unexpected token", yytext);
 
 %%
 static void emit_instruction(int len, char opcode, const char *argstring)
