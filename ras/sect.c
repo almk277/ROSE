@@ -624,7 +624,7 @@ static void exp_print1(const HashEntry *ent)
 
 static void exp_print(void)
 {
-	printf("#exp(%d)  ", exp_hash.count);
+	printf("#exp(%d):  ", exp_hash.count);
 	hash_print(&exp_hash, exp_print1);
 }
  

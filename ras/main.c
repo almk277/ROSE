@@ -32,7 +32,9 @@ static void usage(const char *progname)
 			"Options are:\n"
 			"  -help        -- this help message\n"
 			"  -output=name -- create file 'name' instead of FILE.rmd\n"
-			/*"  -verbose[=n] -- verbose mode, n is level (1..3)\n"*/
+#ifdef DEBUG
+			"  -verbose[=n] -- verbose mode, n is level (1..3)\n"
+#endif
 		, stdout);
 }
 
