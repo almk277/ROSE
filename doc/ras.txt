@@ -9,10 +9,8 @@ might be aliased multiple times.
 .str contains initialized arrays (for example, strings).
 --------------------------------------------
 .module just_an_example 0.1
-.data          # .data begins
-	x          # first module variable
-	y          # second variable
-	z : temp   # third variable with alias
+.data x y      # first and second module variables
+.data z        # third variable
 .sub main      # .text begins
 .export main
 exit:          # label
@@ -24,10 +22,10 @@ exit:          # label
 --------------------------------------------
 
 .arg <name>
-	Declares procedure argument.
+	Declares procedure argument. Several arguments are allowed.
 
 .data
-	Declares #data section. Data variable names are placed one per line.
+	Declares #data variable. Sevaral variables are allowed.
 
 .export <name>
 	Declares procedure 'name' as public.
@@ -54,4 +52,4 @@ exit:          # label
 	directives may be used here.
 
 .var <name>
-	Declares local variable for current procedure.
+	Declares local variable. Several variables are allowed.

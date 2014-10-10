@@ -28,12 +28,12 @@ EXTPR  {WORD}:{WORD}
 <INITIAL><<EOF>> sect_finish(); yyterminate();
 
 \.data         BEGIN data;
-<data>\n       /* just skip */
 <data>{WORD}   data_add(YSTRING); dl("data");
-<data>;        BEGIN INITIAL;
+<data>\n       BEGIN INITIAL;
 
 \.arg          BEGIN arg;
-<arg>{WORD}    arg_add(YSTRING); dl("arg"); BEGIN eol;
+<arg>{WORD}    arg_add(YSTRING); dl("arg");
+<arg>\n        BEGIN INITIAL;
 
 \.export       BEGIN exp;
 <exp>{WORD}    exp_add(YSTRING); dl("export"); BEGIN eol;
@@ -44,7 +44,7 @@ EXTPR  {WORD}:{WORD}
 \.import       BEGIN imp;
 <imp>{WORD}    module_add(YSTRING); dl("import"); BEGIN impver;
 <impver>{VER}  module_set_version(yytext); dl("version"); BEGIN eol;
-<impver>\n     /* no version */ BEGIN eol;
+<impver>\n     /* no version */ BEGIN INITIAL;
 
 \.inherits     BEGIN inh;
 <inh>{WORD}    header_set_parent(YSTRING); dl("parent"); BEGIN eol;
@@ -52,7 +52,7 @@ EXTPR  {WORD}:{WORD}
 \.module       BEGIN mod;
 <mod>{WORD}    header_set_name(YSTRING); dl("module"); BEGIN modver;
 <modver>{VER}  header_set_version(yytext); dl("version"); BEGIN eol;
-<modver>\n     /* no version */ BEGIN eol;
+<modver>\n     /* no version */ BEGIN INITIAL;
 
 \.str          BEGIN str;
 <str>{WORD}    str_begin(YSTRING); dl("string"); BEGIN strsect;
@@ -70,7 +70,8 @@ EXTPR  {WORD}:{WORD}
 <sub>{WORD}    ptbl_add(YSTRING); dl("procedure"); BEGIN eol;
 
 \.var          BEGIN var;
-<var>{WORD}    var_add(YSTRING); dl("variable"); BEGIN eol;
+<var>{WORD}    var_add(YSTRING); dl("variable");
+<var>\n        BEGIN INITIAL;
 
 <eol>\n        BEGIN INITIAL;
 
