@@ -22,7 +22,7 @@ typedef struct Hash {
 
 /* object stored in hash */
 typedef struct HashEntry {
-	Symbol *symbol;
+	const Symbol *symbol;
 	union {
 		uint8_t u8;
 		//uint16_t u16;

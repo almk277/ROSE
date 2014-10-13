@@ -1,5 +1,5 @@
-#ifndef CSTRING_H
-#define CSTRING_H
+#ifndef SYMBOL_H
+#define SYMBOL_H
 
 #include <stdio.h>
 
@@ -11,9 +11,6 @@ typedef unsigned char SymbolSize;
 
 /* Creates new symbol of len size and copies str into it */
 Symbol *symbol_new(const char *str, int len);
-
-/* Copies symbol s */
-Symbol *symbol_copy(const Symbol *s);
 
 /* Deletes symbol s */
 void symbol_delete(Symbol *s);

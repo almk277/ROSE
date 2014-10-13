@@ -10,13 +10,13 @@ static MM_DECL(HashEntry, 32);
 static HashEntry *hashentry_new(const Symbol *s)
 {
 	HashEntry *e = mm_alloc(HashEntry);
-	e->symbol = symbol_copy(s); //TODO copy?
+	e->symbol = s;
 	return e;
 }
 
 static void hashentry_delete(HashEntry *e)
 {
-	symbol_delete(e->symbol);
+	symbol_delete((Symbol*)e->symbol);
 	mm_free(HashEntry, e);
 }
 

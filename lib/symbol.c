@@ -37,11 +37,6 @@ Symbol *symbol_new(const char *str, int len)
 	return s;
 }
 
-Symbol *symbol_copy(const Symbol *s)
-{
-	return symbol_new(s->data, s->len);
-}
-
 void symbol_delete(Symbol *s)
 {
 	int len = s->len;
