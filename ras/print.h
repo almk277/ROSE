@@ -4,6 +4,7 @@
 #define PRINT_H
 
 #include "compiler.h"
+struct Symbol;
 
 /* level of debugging */
 enum DebugLevel {
@@ -16,6 +17,8 @@ enum DebugLevel {
 /* prints out error in printf format and finishes program */
 C_ATTR_PRINTF(1, 2) C_ATTR_NORETURN
 void error(const char *fmt, ...);
+
+void error_symbol(const struct Symbol *sym, const char *msg);
 
 /* prints information about current source line
  * if requested by verbosity level */

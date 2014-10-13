@@ -7,48 +7,38 @@
 extern int verbose;
 static MM_DECL(HashEntry, 32);
 
-static HashEntry *hashentry_new(const String *s)
+static HashEntry *hashentry_new(const Symbol *s)
 {
 	HashEntry *e = mm_alloc(HashEntry);
-	e->string = string_new(s->data, s->len);
+	e->symbol = symbol_copy(s); //TODO copy?
 	return e;
 }
 
 static void hashentry_delete(HashEntry *e)
 {
-	string_delete(e->string);
+	symbol_delete(e->symbol);
 	mm_free(HashEntry, e);
 }
 
-static uint8_t hash(const String *s)
-{
-	uint8_t h = 0;
-	int i = s->len;
-	while(i--)
-		h += s->data[i];
-	return h;
-}
-
-static HashEntry *list_find(const ListHead *head, const String *s)
+static HashEntry *list_find(const ListHead *head, const Symbol *s)
 {
 	HashEntry *ent;
 	SLIST_FOREACH(ent, head, le)
-		if(ent->string->len == s->len
-				&& !strncmp(ent->string->data, s->data, s->len))
+		if(symbol_compare(ent->symbol, s))
 			return ent;
 	return 0;
 }
 
-HashEntry *hash_find(const Hash *h, const String *s)
+HashEntry *hash_find(const Hash *h, const Symbol *s)
 {
-	uint8_t idx = hash(s);
+	uint8_t idx = symbol_hash(s);
 	const ListHead *list = &h->heads[idx];
 	if(!SLIST_EMPTY(list))
 		return list_find(list, s);
 	return 0;
 }
 
-int hash_get(const Hash *h, const String *s)
+int hash_get(const Hash *h, const Symbol *s)
 {
 	const HashEntry *e = hash_find(h, s);
 	if(e)
@@ -56,23 +46,23 @@ int hash_get(const Hash *h, const String *s)
 	return -1;
 }
 
-uint32_t hash_get_or_die(const Hash *h, const String *s)
+uint32_t hash_get_or_die(const Hash *h, const Symbol *s)
 {
 	const HashEntry *e = hash_find(h, s);
 	if(!e)
-		error("%s: variable not found", s->data);
+		error_symbol(s, "variable not found");
 	return e->data.u32;
 }
 
-HashEntry *hash_add(Hash *h, const String *s)
+HashEntry *hash_add(Hash *h, const Symbol *s)
 {
 	HashEntry *ent;
 	uint8_t idx;
 
 	if(hash_find(h, s))
-		error("%s: name defined already", s->data);
+		error_symbol(s, "name defined already");
 	ent = hashentry_new(s);
-	idx = hash(s);
+	idx = symbol_hash(s);
 	SLIST_INSERT_HEAD(&h->heads[idx], ent, le);
 	++h->count;
 	ent->data.u32 = h->count;

@@ -5,7 +5,7 @@
 #define STORAGE_H
 
 #include "queue.h"
-#include "cstring.h"
+#include "symbol.h"
 #include <stdint.h>
 
 /* one array length */
@@ -35,8 +35,8 @@ void storage_put2byte(Storage *s, int16_t word);
 
 void storage_put4byte(Storage *s, int32_t word);
 
-/* adds string to storage tbl */
-uint32_t storage_add_string(Storage *tbl, const String *str);
+/* adds symbol to storage tbl */
+uint32_t storage_add_symbol(Storage *tbl, const Symbol *symbol);
 
 /* prints tbl as string storage */
 void storage_print_str(const Storage *tbl);
@@ -50,8 +50,6 @@ void storage_write(const Storage *tbl);
 uint32_t array_begin(Storage *tbl);
 
 void array_add_byte(char byte);
-
-void array_add_string(const String *string);
 
 #endif
 

@@ -32,7 +32,6 @@ static RMDProcedure ptbl_sect[256];                         /* #ptbl */
 static RMDExport exp_sect[256];                             /* #exp  */
 static Storage text_sect = STORAGE_INITIALIZER(text_sect);  /* #text */
 
-
 extern FILE *output;
 extern int yylineno;
 extern int verbose;
@@ -42,7 +41,7 @@ extern uint32_t instr_start;
 #define REF_MIN_OFS INT16_MIN
 #define REF_MAX_OFS INT16_MAX
 typedef struct Reference {
-	String *name;                /* referenced label */
+	Symbol *name;                /* referenced label */
 	int lineno;                  /* reference source line */
 	uint32_t base;               /* reference base address */
 	int16_t *value;              /* reference value address */
@@ -81,14 +80,14 @@ static void check_current_sub()
 		error("no current procedure");
 }
 
-void data_add(const String *name)
+void data_add(const Symbol *name)
 {
 	hash_add(&data_hash, name);
 }
 
-uint16_t sym_add(const String *sym)
+uint16_t sym_add(const Symbol *sym)
 {
-	return storage_add_string(&sym_sect, sym);
+	return storage_add_symbol(&sym_sect, sym);
 }
 
 void sym_write()
@@ -108,7 +107,7 @@ static void parse_version(const char *s, RMDVersion *ver)
 	ver->min = min;
 }
 
-void module_add(const String *name)
+void module_add(const Symbol *name)
 {
 	HashEntry *e = hash_add(&module_hash, name);
 	current_import = &module_sect[e->data.u8];
@@ -121,7 +120,7 @@ void module_set_version(const char *version)
 	parse_version(version, &current_import->version);
 }
 
-static int module_find(const String *name)
+static int module_find(const Symbol *name)
 {
 	return hash_get(&module_hash, name);
 }
@@ -133,22 +132,21 @@ void module_write()
 		file_write_error();
 }
 
-void imp_add(const String *fullname)
+void imp_add(const Symbol *fullname)
 {
  	HashEntry *ent = hash_add(&imp_hash, fullname);
 	RMDImport *imp = &imp_sect[ent->data.u8];
-	char *colon = strchr(fullname->data, ':'); /* flex guarantees there is ':' */
-	/* split up fullname into module and procedure names */
-	String *module = string_new(fullname->data, colon - fullname->data);
-	String *proc = string_new(colon + 1, fullname->data + fullname->len - colon);
-	int idx = module_find(module);
+	Symbol *module, *proc;
+	int idx;
+	symbol_split_colon(fullname, &module, &proc); /* we know there is ":" */
+	idx = module_find(module);
 	if(idx < 0)
-		error("module '%s' not found", proc->data);
+		error_symbol(proc, "module not found");
 	imp->module = idx;
 	imp->name = sym_add(proc);
 	imp->slot = 0;
-	string_delete(proc);
-	string_delete(module);
+	symbol_delete(proc);
+	symbol_delete(module);
 }
 
 void imp_write()
@@ -158,7 +156,7 @@ void imp_write()
 		file_write_error();
 }
 
-void header_set_name(const String *name)
+void header_set_name(const Symbol *name)
 {
 	if(header.name != 0)
 		error("module has name already");
@@ -170,7 +168,7 @@ void header_set_version(const char *version)
 	parse_version(version, &header.version);
 }
 
-void header_set_parent(const String *name)
+void header_set_parent(const Symbol *name)
 {
 	if(header.parent != 0)
 		error("module is inherited already");
@@ -183,7 +181,7 @@ void header_write()
 		file_write_error();
 }
 
-void str_begin(const String *name)
+void str_begin(const Symbol *name)
 {
 	HashEntry *ent = hash_add(&array_hash, name);
 	ent->data.u32 = array_begin(&str_sect);
@@ -194,11 +192,6 @@ void str_add_char(char c)
 	array_add_byte(c);
 }
 
-void str_add_string(const String *str)
-{
-	array_add_string(str);
-}
-
 void str_write()
 {
 	storage_write(&str_sect);
@@ -206,13 +199,13 @@ void str_write()
 
 void sub_begin(HashEntry *p);
 
-void ptbl_add(const String *name)
+void ptbl_add(const Symbol *name)
 {
 	HashEntry *e;
 	RMDProcedure *p;
 
 	if(ptbl_hash.count == sizeof(ptbl_sect) / sizeof(ptbl_sect[0]))
-		error("%s: too many procedures", name->data);
+		error_symbol(name, "too many procedures");
 	e = hash_add(&ptbl_hash, name);
 	p = &ptbl_sect[e->data.u8];
 	p->addr = text_sect.len;
@@ -227,7 +220,7 @@ void ptbl_write()
 		file_write_error();
 }
 
-static RMDProcedure *add_to_var(const String *name)
+static RMDProcedure *add_to_var(const Symbol *name)
 {
 	uint8_t proc_idx;
 	check_current_sub();
@@ -236,7 +229,7 @@ static RMDProcedure *add_to_var(const String *name)
 	return &ptbl_sect[proc_idx];
 }
 
-void var_add(const String *name)
+void var_add(const Symbol *name)
 {
 	++add_to_var(name)->varc;
 }
@@ -246,7 +239,7 @@ static void var_clear()
 	hash_clear(&var_hash);
 }
 
-void arg_add(const String *name)
+void arg_add(const Symbol *name)
 {
 	++add_to_var(name)->argc;
 }
@@ -271,8 +264,8 @@ void text_emit_opcode(char opcode)
 	text_put1byte(opcode);
 }
 
-static const HashEntry *label_find(const String *name);
-static void ref_new(String *label);
+static const HashEntry *label_find(const Symbol *name);
+static void ref_new(Symbol *label);
 
 #define NUMDESC8  0
 #define NUMDESC16 1
@@ -318,51 +311,53 @@ static long num_parse(const char *string, int code)
 	return arg;
 }
 
-void text_emit_operand(char type, String *string)
+void text_emit_const(char type, const char *c)
 {
-	char *str = string->data;
+	switch(type) {
+		case 'c':
+			text_put1byte((int8_t)num_parse(c, NUMDESC8)); break;
+		case 'w':
+			text_put4byte((int32_t)num_parse(c, NUMDESC32)); break;
+		default:
+			error("%s: numeric constant expected", c);
+	}
+}
+
+void text_emit_symbol(char type, Symbol *symbol)
+{
 	switch(type) {
 		case 0:
 		case '-':
-			error("'%s': superfluous argument", str);
+			error_symbol(symbol, "superfluous argument");
 		case 's':
 		case 'v':
 		case 'i':
 		case 'f':
 		case 'a':
 		case 'b':
-		case 'F':
-		case 'o': /* they all are stack variables */
-			text_put1byte(hash_get_or_die(&var_hash, string)); break;
-		case 'D':
-			text_put1byte(hash_get_or_die(&data_hash, string)); break;
-		case 'c':
-			text_put1byte((int8_t)num_parse(str, NUMDESC8)); break;
-		case 'w':
-			text_put4byte((int32_t)num_parse(str, NUMDESC32)); break;
-		case 'P':
-			text_put1byte(hash_get_or_die(&ptbl_hash, string)); break;
-		case 'S': break; /* TODO */
-		case 'A':
-			text_put4byte(hash_get_or_die(&array_hash, string)); break;
-		case 'M':
-			text_put1byte(hash_get_or_die(&module_hash, string)); break;
-		case 'I':
-			text_put1byte(hash_get_or_die(&imp_hash, string)); break;
+		case 'F': /* they all are stack variables */
+		case 'o': text_put1byte(hash_get_or_die(&var_hash, symbol)); break;
+
+		case 'D': text_put1byte(hash_get_or_die(&data_hash, symbol)); break;
+		case 'P': text_put1byte(hash_get_or_die(&ptbl_hash, symbol)); break;
+		case 'S': text_put2byte(0); break; /* TODO */
+		case 'A': text_put4byte(hash_get_or_die(&array_hash, symbol)); break;
+		case 'M': text_put1byte(hash_get_or_die(&module_hash, symbol)); break;
+		case 'I': text_put1byte(hash_get_or_die(&imp_hash, symbol)); break;
 		case 'r':
 			{
-				const HashEntry *ent = label_find(string);
+				const HashEntry *ent = label_find(symbol);
 				if(ent) {
 					int32_t offset = ent->data.u32 - text_sect.len;
 					if(offset < INT16_MIN || offset > INT16_MAX)
 						error("offset %" PRIx32 " is out of range", offset);
 					text_put2byte(offset);
 				} else
-					ref_new(string);
+					ref_new(symbol);
 				break;
 			}
 		default:
-			error("%s: switch error", __func__);
+			error_symbol(symbol, "symbol expected");
 	}
 }
 
@@ -371,13 +366,13 @@ void text_write()
 	storage_write(&text_sect);
 }
 
-void label_add(const String *name)
+void label_add(const Symbol *name)
 {
 	HashEntry *e = hash_add(&label_hash, name);
 	e->data.u32 = text_sect.len;
 }
 
-static const HashEntry *label_find(const String *name)
+static const HashEntry *label_find(const Symbol *name)
 {
 	return hash_find(&label_hash, name);
 }
@@ -387,7 +382,7 @@ static void label_clear()
 	hash_clear(&label_hash);
 }
 
-static void ref_new(String *label)
+static void ref_new(Symbol *label)
 {
 	Reference *r = mm_alloc(Reference);
 	r->name = label;
@@ -401,7 +396,7 @@ static void ref_new(String *label)
 
 static void ref_delete(Reference *ref)
 {
-	string_delete(ref->name);
+	symbol_delete(ref->name);
 	mm_free(Reference, ref);
 }
 
@@ -410,16 +405,18 @@ static void resolve(const Reference *ref)
 	int32_t offset;
 	const HashEntry *ent = label_find(ref->name);
 	if(!ent)
-		error("unknown label '%s'", ref->name->data);
+		error_symbol(ref->name, "unknown label");
 
 	offset = ent->data.u32 - ref->base;
-	if(offset < REF_MIN_OFS || offset > REF_MAX_OFS)
-		error("%s: label reference at line %d is out of range: %d",
-				ref->name->data, ref->lineno, offset);
+	if(offset < REF_MIN_OFS || offset > REF_MAX_OFS) {
+		fprintf(stderr, "line %d, offset %d: ", ref->lineno, offset);
+		error_symbol(ref->name, "label reference is out of range");
+	}
 	*ref->value = (int16_t)offset;
-	if(verbose >= DL_NUDE) 
-		debug_line("  %s -> %"PRIu32"(%+"PRIi16")",
-				ref->name->data, ent->data.u32, offset);
+	if(verbose >= DL_NUDE) {
+		symbol_print(ref->name);
+		debug_line("  -> %"PRIu32"(%+"PRIi16")", ent->data.u32, offset);
+	}
 }
 
 static void ref_resolve()
@@ -461,7 +458,7 @@ void sub_begin(HashEntry *p)
 	current_sub = p;
 }
 
-void exp_add(const String *name)
+void exp_add(const Symbol *name)
 {
 	HashEntry *ent = hash_add(&exp_hash, name);
 	RMDExport *e = &exp_sect[ent->data.u8];
@@ -499,7 +496,8 @@ void header_fill()
 
 static void data_print1(const HashEntry *ent)
 {
-	printf("%s(%d)  ", ent->string->data, ent->data.u8);
+	symbol_print(ent->symbol);
+	printf("(%d)  ", ent->data.u8);
 }
 
 static void data_print()
@@ -517,8 +515,8 @@ static void sym_print()
 static void module_print1(const HashEntry *ent)
 {
 	const RMDModule *m = &module_sect[ent->data.u8];
-	printf("%s-%hhu.%hhu(%u) ", ent->string->data,
-			m->version.maj, m->version.min, m->name);
+	symbol_print(ent->symbol);
+	printf("-%hhu.%hhu(%u) ", m->version.maj, m->version.min, m->name);
 
 }
 
@@ -531,8 +529,9 @@ static void module_print()
 static void imp_print1(const HashEntry *ent)
 {
 	const RMDImport *imp = &imp_sect[ent->data.u8];
-	printf("'%d' from '%d'(%s)  ", imp->name,
-			module_sect[imp->module].name, ent->string->data);
+	printf("'%d' from '%d'(", imp->name, module_sect[imp->module].name);
+	symbol_print(ent->symbol);
+	printf(")  ");
 }
 
 static void imp_print()
@@ -550,7 +549,8 @@ static void header_print()
 static void ptbl_print1(const HashEntry *ent)
 {
 	RMDProcedure *p = &ptbl_sect[ent->data.u8];
-	printf("%s => %u  ", ent->string->data, p->addr);
+	symbol_print(ent->symbol);
+	printf(" => %u  ", p->addr);
 }
 
 static void ptbl_print()
@@ -561,13 +561,16 @@ static void ptbl_print()
 
 static void var_print1(const HashEntry *ent)
 {
-	printf("%s(%d)  ", ent->string->data, ent->data.u8);
+	symbol_print(ent->symbol);
+	printf("(%d)  ", ent->data.u8);
 }
 
 static void var_print()
 {
 	if(var_hash.count) {
-		printf("VAR[%s](%d):  ", current_sub->string->data, var_hash.count);
+		printf("VAR[");
+		symbol_print(current_sub->symbol);
+		printf("](%d):  ", var_hash.count);
 		hash_print(&var_hash, var_print1);
 	}
 }
@@ -579,13 +582,16 @@ static void text_print()
 
 static void label_print1(const HashEntry *ent)
 {
-	printf("%s  ", ent->string->data);
+	symbol_print(ent->symbol);
+	printf("  ");
 }
 
 static void label_print()
 {
 	if(label_hash.count) {
-		printf("LABELS[%s](%d):  ", current_sub->string->data, label_hash.count);
+		printf("LABELS[");
+		symbol_print(current_sub->symbol);
+		printf("](%d):  ", label_hash.count);
 		hash_print(&label_hash, label_print1);
 	}
 }
@@ -593,13 +599,16 @@ static void label_print()
 static void sub_print()
 {
 	RMDProcedure *p = &ptbl_sect[current_sub->data.u8];
-	printf("PROC END(%s): argc = %d, varc = %d\n",
-			current_sub->string->data, p->argc, p->varc);
+	printf("PROC END(");
+	symbol_print(current_sub->symbol);
+	printf("): argc = %d, varc = %d\n",
+			p->argc, p->varc);
 }
 
 static void exp_print1(const HashEntry *ent)
 {
-	printf("%s(%d)  ", ent->string->data, ent->data.u8);
+	symbol_print(ent->symbol);
+	printf("(%d)  ", ent->data.u8);
 }
 
 static void exp_print()
@@ -635,9 +644,9 @@ void sect_print()
 void sect_init()
 {
 	/* symbol may not have an address of 0 */
-	String *empty = string_new("", 1);
+	Symbol *empty = symbol_new("", 1);
 	sym_add(empty);
-	string_delete(empty);
+	symbol_delete(empty);
 }
 
 void sect_finish()

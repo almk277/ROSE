@@ -1,8 +1,8 @@
 %top{
 #include "print.h"
 #include "sect.h"
-#include "cstring.h"
-#define YSTRING string_new(yytext, yyleng + 1)
+#include "symbol.h"
+#define YSTRING symbol_new(yytext, yyleng + 1)
 #define dl(str) debug_line(str ": %s", yytext)
 static void emit_instruction(int len, char opcode, const char *argstring);
 static void end_instruction(void);

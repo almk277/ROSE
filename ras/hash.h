@@ -1,11 +1,11 @@
-/* simple hash with string keys */
-/* 8-bit string hash is index into array of list heads */
+/* simple hash with symbol keys */
+/* 8-bit symbol hash is index into array of list heads */
 
 #ifndef HASH_H
 #define HASH_H
 
 #include <stdint.h>
-#include "cstring.h"
+#include "symbol.h"
 #include "queue.h"
 
 /* queue array length */
@@ -22,7 +22,7 @@ typedef struct Hash {
 
 /* object stored in hash */
 typedef struct HashEntry {
-	String *string;
+	Symbol *symbol;
 	union {
 		uint8_t u8;
 		//uint16_t u16;
@@ -31,18 +31,18 @@ typedef struct HashEntry {
 	SLIST_ENTRY(HashEntry) le;
 } HashEntry;
 
-/* adds string to hash h, checks it for uniqueness
+/* adds symbol to hash h, checks it for uniqueness
  * and returns reference to it's entry */
-HashEntry *hash_add(Hash *h, const String *string);
+HashEntry *hash_add(Hash *h, const Symbol *symbol);
 
-/* looks for name in hash h */
-HashEntry *hash_find(const Hash *h, const String *string);
+/* looks symbol in hash h */
+HashEntry *hash_find(const Hash *h, const Symbol *symbol);
 
-/* returns index for name in hash h, or -1 if not found */
-int hash_get(const Hash *h, const String *string);
+/* returns index for symbol in hash h, or -1 if not found */
+int hash_get(const Hash *h, const Symbol *symbol);
 
 /* returns index for name s in hash h, or die if not found */
-uint32_t hash_get_or_die(const Hash *h, const String *s);
+uint32_t hash_get_or_die(const Hash *h, const Symbol *s);
 
 /* clears hash h */
 void hash_clear(Hash *h);

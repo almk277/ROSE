@@ -66,15 +66,15 @@ void storage_put4byte(Storage *s, int32_t word)
 	s->len += 4;
 }
 
-uint32_t storage_add_string(Storage *tbl, const String *str)
+uint32_t storage_add_symbol(Storage *tbl, const Symbol *sym)
 {
 	uint32_t cur = tbl->len;
 	Slice *s;
-	const int len = str->len;
+	const int len = symbol_length(sym);
 
 	storage_enlarge(tbl, len);
 	s = tbl->current;
-	memcpy(&s->array[s->len], str->data, len);
+	symbol_copy_to(sym, &s->array[s->len]);
 	s->len += len;
 	tbl->len += len;
 
@@ -141,11 +141,5 @@ void array_add_byte(char byte)
 	storage_enlarge(array_current_storage, 1);
 	storage_put1byte(array_current_storage, byte);
 	++*array_current_len;
-}
-
-void array_add_string(const String *string)
-{
-	storage_add_string(array_current_storage, string);
-	*array_current_len += string->len;
 }
 

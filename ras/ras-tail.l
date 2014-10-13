@@ -1,6 +1,6 @@
 <instruction>\n                end_instruction();
-<instruction>{CONST}           |
-<instruction>{WORD}            text_emit_operand(*args++, YSTRING);
+<instruction>{CONST}           text_emit_const(*args++, yytext);
+<instruction>{WORD}            text_emit_symbol(*args++, YSTRING);
 
 <*>#.*                         /* comment until EOL */
 <*>[ \t]+                      /* spaces are allowed anywhere */
