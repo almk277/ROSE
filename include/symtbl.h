@@ -31,6 +31,9 @@ int symtbl_size(const SymbolTable *tbl);
  * Otherwise, returns NULL */
 SymbolValue *symtbl_add_unique(SymbolTable *tbl, const struct Symbol *symbol);
 
+/* adds symbol to tbl, if not there yet. Returns pointer to it's value. */
+SymbolValue *symtbl_add_or_get(SymbolTable *tbl, const struct Symbol *symbol);
+
 /* searches for symbol in tbl and returns pointer to it's value.
  * Otherwise, returns NULL */
 SymbolValue *symtbl_find(const SymbolTable *tbl, const struct Symbol *symbol);

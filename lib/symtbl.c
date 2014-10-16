@@ -41,19 +41,33 @@ SymbolValue *symtbl_find(const SymbolTable *tbl, const Symbol *s)
 	return NULL;
 }
 
-SymbolValue *symtbl_add_unique(SymbolTable *tbl, const Symbol *s)
+static SymbolValue *add(SymbolTable *tbl, SymbolSlistHead *list, const Symbol *s)
 {
-	SymbolEntry *e;
-
-	unsigned char idx = symbol_hash(s);
-	SymbolSlistHead *list = &tbl->heads[idx];
-	if(list_find(list, s))
-		return NULL;
-	e = mm_alloc(SymbolEntry);
+	SymbolEntry *e = mm_alloc(SymbolEntry);
 	e->symbol = s;
 	SLIST_INSERT_HEAD(list, e, le);
 	++tbl->size;
 	return &e->value;
+}
+
+SymbolValue *symtbl_add_unique(SymbolTable *tbl, const Symbol *symbol)
+{
+	unsigned char idx = symbol_hash(symbol);
+	SymbolSlistHead *list = &tbl->heads[idx];
+	SymbolEntry *ent = list_find(list, symbol);
+	if(ent)
+		return NULL;
+	return add(tbl, list, symbol);
+}
+
+SymbolValue *symtbl_add_or_get(SymbolTable *tbl, const Symbol *symbol)
+{
+	unsigned char idx = symbol_hash(symbol);
+	SymbolSlistHead *list = &tbl->heads[idx];
+	SymbolEntry *ent = list_find(list, symbol);
+	if(ent)
+		return &ent->value;
+	return add(tbl, list, symbol);
 }
 
 void symtbl_clear(SymbolTable *tbl)

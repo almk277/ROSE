@@ -22,6 +22,7 @@ static SymbolTable label_tbl  = SYMBOLTABLE_INITIALIZER; /* labels */
 static SymbolTable exp_tbl    = SYMBOLTABLE_INITIALIZER; /* export table */
 static SymbolTable var_tbl    = SYMBOLTABLE_INITIALIZER; /* method variables */
 static SymbolTable array_tbl  = SYMBOLTABLE_INITIALIZER; /* arrays */
+static SymbolTable sym_tbl    = SYMBOLTABLE_INITIALIZER; /* symbols */
 
 /* all sections */
 static RMDModule module_sect[256];                          /* #mtbl */
@@ -115,7 +116,11 @@ void data_add(const Symbol *name)
 
 uint16_t sym_add(const Symbol *sym)
 {
-	return storage_add_symbol(&sym_sect, sym);
+	SymbolValue *v = symtbl_find(&sym_tbl, sym);
+	if(v)
+		return v->i;
+	v = symtbl_add_unique(&sym_tbl, sym);
+	return v->i = storage_add_symbol(&sym_sect, sym);
 }
 
 void sym_write()
@@ -351,7 +356,7 @@ void text_emit_symbol(char type, Symbol *symbol)
 
 		case 'D': text_put1byte(sym_get_idx(&data_tbl, symbol)); break;
 		case 'P': text_put1byte(sym_get_idx(&proc_tbl, symbol)); break;
-		case 'S': text_put2byte(0); break; /* TODO */
+		case 'S': text_put2byte(sym_get_idx(&sym_tbl, symbol)); break;
 		case 'A': text_put4byte(sym_get_or_die(&array_tbl, symbol)->u32); break;
 		case 'M': text_put1byte(sym_get_idx(&module_tbl, symbol)); break;
 		case 'I': text_put1byte(sym_get_idx(&imp_tbl, symbol)); break;
