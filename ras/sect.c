@@ -1,6 +1,6 @@
 #include "sect.h"
 #include "print.h"
-#include "hash.h"
+#include "symtbl.h"
 #include "storage.h"
 #include "rmd.h"
 #include "mm.h"
@@ -14,14 +14,14 @@
 #define ROSE_VERSION_MIN   0
 
 /* all names */
-static Hash data_hash;   /* module data */
-static Hash module_hash; /* imported modules */
-static Hash imp_hash;    /* imported methods */
-static Hash ptbl_hash;   /* procedures */
-static Hash label_hash;  /* labels */
-static Hash exp_hash;    /* export table */
-static Hash var_hash;    /* current method variables */
-static Hash array_hash;  /* arrays */
+static SymbolTable data_tbl   = SYMBOLTABLE_INITIALIZER; /* module data */
+static SymbolTable module_tbl = SYMBOLTABLE_INITIALIZER; /* imported modules */
+static SymbolTable imp_tbl    = SYMBOLTABLE_INITIALIZER; /* imported methods */
+static SymbolTable proc_tbl   = SYMBOLTABLE_INITIALIZER; /* procedures */
+static SymbolTable label_tbl  = SYMBOLTABLE_INITIALIZER; /* labels */
+static SymbolTable exp_tbl    = SYMBOLTABLE_INITIALIZER; /* export table */
+static SymbolTable var_tbl    = SYMBOLTABLE_INITIALIZER; /* method variables */
+static SymbolTable array_tbl  = SYMBOLTABLE_INITIALIZER; /* arrays */
 
 /* all sections */
 static RMDModule module_sect[256];                          /* #mtbl */
@@ -48,11 +48,11 @@ typedef struct Reference {
 	SLIST_ENTRY(Reference) le;   /* list entry */
 } Reference;
 
-SLIST_HEAD(RefList, Reference) ref_head;
+static SLIST_HEAD(RefList, Reference) ref_head;
 static MM_DECL(Reference, 16);
 
-HashEntry *current_sub = 0;
-RMDModule *current_import;
+static SymbolValue *current_sub = 0;
+static RMDModule *current_import;
 
 RMDHeader header = {
 	{ /* ident */
@@ -74,6 +74,34 @@ RMDHeader header = {
 #define text_put2byte(byte) storage_put2byte(&text_sect, byte)
 #define text_put4byte(byte) storage_put4byte(&text_sect, byte)
 
+static SymbolValue *sym_add_uniq(SymbolTable *tbl, const Symbol *sym)
+{
+	SymbolValue *v = symtbl_add_unique(tbl, sym);
+	if(!v)
+		error_symbol(sym, "symbol is defined already");
+	return v;
+}
+
+static SymbolValue *sym_index(SymbolTable *tbl, const Symbol *sym)
+{
+	SymbolValue *v = sym_add_uniq(tbl, sym);
+	v->i = symtbl_size(tbl) - 1;
+	return v;
+}
+
+static SymbolValue *sym_get_or_die(const SymbolTable *tbl, const Symbol *sym)
+{
+	SymbolValue *val = symtbl_find(tbl, sym);
+	if(!val)
+		error_symbol(sym, "symbol not found");
+	return val;
+}
+
+static int sym_get_idx(const SymbolTable *tbl, const Symbol *sym)
+{
+	return sym_get_or_die(tbl, sym)->i;
+}
+
 static void check_current_sub()
 {
 	if(!current_sub)
@@ -82,7 +110,7 @@ static void check_current_sub()
 
 void data_add(const Symbol *name)
 {
-	hash_add(&data_hash, name);
+	sym_index(&data_tbl, name);
 }
 
 uint16_t sym_add(const Symbol *sym)
@@ -109,8 +137,8 @@ static void parse_version(const char *s, RMDVersion *ver)
 
 void module_add(const Symbol *name)
 {
-	HashEntry *e = hash_add(&module_hash, name);
-	current_import = &module_sect[e->data.u8];
+	SymbolValue *v = sym_index(&module_tbl, name);
+	current_import = &module_sect[v->i];
 	current_import->name = sym_add(name);
 	current_import->version.maj = current_import->version.min = 0;
 }
@@ -120,29 +148,20 @@ void module_set_version(const char *version)
 	parse_version(version, &current_import->version);
 }
 
-static int module_find(const Symbol *name)
-{
-	return hash_get(&module_hash, name);
-}
-
 void module_write()
 {
-	if(fwrite(module_sect, sizeof(RMDModule), module_hash.count, output)
-			!= module_hash.count)
+	const int size = symtbl_size(&module_tbl);
+	if(fwrite(module_sect, sizeof(RMDModule), size, output) != size)
 		file_write_error();
 }
 
 void imp_add(const Symbol *fullname)
 {
- 	HashEntry *ent = hash_add(&imp_hash, fullname);
-	RMDImport *imp = &imp_sect[ent->data.u8];
+ 	SymbolValue *v = sym_index(&imp_tbl, fullname);
+	RMDImport *imp = &imp_sect[v->i];
 	Symbol *module, *proc;
-	int idx;
 	symbol_split_colon(fullname, &module, &proc); /* we know there is ":" */
-	idx = module_find(module);
-	if(idx < 0)
-		error_symbol(proc, "module not found");
-	imp->module = idx;
+	imp->module = sym_get_idx(&module_tbl, module);
 	imp->name = sym_add(proc);
 	imp->slot = 0;
 	symbol_delete(proc);
@@ -151,8 +170,8 @@ void imp_add(const Symbol *fullname)
 
 void imp_write()
 {
-	if(fwrite(imp_sect, sizeof(RMDImport), imp_hash.count, output)
-			!= imp_hash.count)
+	const int size = symtbl_size(&imp_tbl);
+	if(fwrite(imp_sect, sizeof(RMDImport), size, output) != size)
 		file_write_error();
 }
 
@@ -183,8 +202,8 @@ void header_write()
 
 void str_begin(const Symbol *name)
 {
-	HashEntry *ent = hash_add(&array_hash, name);
-	ent->data.u32 = array_begin(&str_sect);
+	SymbolValue *v = sym_index(&array_tbl, name);
+	v->u32 = array_begin(&str_sect);
 }
 
 void str_add_char(char c)
@@ -197,36 +216,29 @@ void str_write()
 	storage_write(&str_sect);
 }
 
-void sub_begin(HashEntry *p);
+static void sub_begin(SymbolValue *p);
 
 void ptbl_add(const Symbol *name)
 {
-	HashEntry *e;
-	RMDProcedure *p;
-
-	if(ptbl_hash.count == sizeof(ptbl_sect) / sizeof(ptbl_sect[0]))
-		error_symbol(name, "too many procedures");
-	e = hash_add(&ptbl_hash, name);
-	p = &ptbl_sect[e->data.u8];
+	SymbolValue *v = sym_index(&proc_tbl, name);
+	RMDProcedure *p = &ptbl_sect[v->i];
 	p->addr = text_sect.len;
 	p->argc = p->varc = 0;
-	sub_begin(e);
+	sub_begin(v);
 }
 
 void ptbl_write()
 {
-	if(fwrite(ptbl_sect, sizeof(RMDProcedure), ptbl_hash.count, output)
-			!= ptbl_hash.count)
+	const int size = symtbl_size(&proc_tbl);
+	if(fwrite(ptbl_sect, sizeof(RMDProcedure), size, output) != size)
 		file_write_error();
 }
 
 static RMDProcedure *add_to_var(const Symbol *name)
 {
-	uint8_t proc_idx;
 	check_current_sub();
-	hash_add(&var_hash, name);
-	proc_idx = current_sub->data.u8;
-	return &ptbl_sect[proc_idx];
+	sym_index(&var_tbl, name);
+	return &ptbl_sect[current_sub->i];
 }
 
 void var_add(const Symbol *name)
@@ -236,7 +248,7 @@ void var_add(const Symbol *name)
 
 static void var_clear()
 {
-	hash_clear(&var_hash);
+	symtbl_clear(&var_tbl);
 }
 
 void arg_add(const Symbol *name)
@@ -264,7 +276,6 @@ void text_emit_opcode(char opcode)
 	text_put1byte(opcode);
 }
 
-static const HashEntry *label_find(const Symbol *name);
 static void ref_new(Symbol *label);
 
 #define NUMDESC8  0
@@ -336,19 +347,19 @@ void text_emit_symbol(char type, Symbol *symbol)
 		case 'a':
 		case 'b':
 		case 'F': /* they all are stack variables */
-		case 'o': text_put1byte(hash_get_or_die(&var_hash, symbol)); break;
+		case 'o': text_put1byte(sym_get_idx(&var_tbl, symbol)); break;
 
-		case 'D': text_put1byte(hash_get_or_die(&data_hash, symbol)); break;
-		case 'P': text_put1byte(hash_get_or_die(&ptbl_hash, symbol)); break;
+		case 'D': text_put1byte(sym_get_idx(&data_tbl, symbol)); break;
+		case 'P': text_put1byte(sym_get_idx(&proc_tbl, symbol)); break;
 		case 'S': text_put2byte(0); break; /* TODO */
-		case 'A': text_put4byte(hash_get_or_die(&array_hash, symbol)); break;
-		case 'M': text_put1byte(hash_get_or_die(&module_hash, symbol)); break;
-		case 'I': text_put1byte(hash_get_or_die(&imp_hash, symbol)); break;
+		case 'A': text_put4byte(sym_get_or_die(&array_tbl, symbol)->u32); break;
+		case 'M': text_put1byte(sym_get_idx(&module_tbl, symbol)); break;
+		case 'I': text_put1byte(sym_get_idx(&imp_tbl, symbol)); break;
 		case 'r':
 			{
-				const HashEntry *ent = label_find(symbol);
-				if(ent) {
-					int32_t offset = ent->data.u32 - text_sect.len;
+				const SymbolValue *v = symtbl_find(&label_tbl, symbol);
+				if(v) {
+					int32_t offset = v->u32 - text_sect.len;
 					if(offset < INT16_MIN || offset > INT16_MAX)
 						error("offset %" PRIx32 " is out of range", offset);
 					text_put2byte(offset);
@@ -368,18 +379,13 @@ void text_write()
 
 void label_add(const Symbol *name)
 {
-	HashEntry *e = hash_add(&label_hash, name);
-	e->data.u32 = text_sect.len;
-}
-
-static const HashEntry *label_find(const Symbol *name)
-{
-	return hash_find(&label_hash, name);
+	SymbolValue *v = sym_add_uniq(&label_tbl, name);
+	v->u32 = text_sect.len;
 }
 
 static void label_clear()
 {
-	hash_clear(&label_hash);
+	symtbl_clear(&label_tbl);
 }
 
 static void ref_new(Symbol *label)
@@ -403,11 +409,8 @@ static void ref_delete(Reference *ref)
 static void resolve(const Reference *ref)
 {
 	int32_t offset;
-	const HashEntry *ent = label_find(ref->name);
-	if(!ent)
-		error_symbol(ref->name, "unknown label");
-
-	offset = ent->data.u32 - ref->base;
+	const SymbolValue *v = sym_get_or_die(&label_tbl, ref->name);
+	offset = v->u32 - ref->base;
 	if(offset < REF_MIN_OFS || offset > REF_MAX_OFS) {
 		fprintf(stderr, "line %d, offset %d: ", ref->lineno, offset);
 		error_symbol(ref->name, "label reference is out of range");
@@ -415,7 +418,7 @@ static void resolve(const Reference *ref)
 	*ref->value = (int16_t)offset;
 	if(verbose >= DL_NUDE) {
 		symbol_print(ref->name);
-		debug_line("  -> %"PRIu32"(%+"PRIi16")", ent->data.u32, offset);
+		debug_line("  -> %"PRIu32"(%+"PRIi16")", v->u32, offset);
 	}
 }
 
@@ -451,7 +454,7 @@ void sub_finish()
 	}
 }
 
-void sub_begin(HashEntry *p)
+static void sub_begin(SymbolValue *p)
 {
 	if(current_sub)
 		sub_finish();
@@ -460,16 +463,16 @@ void sub_begin(HashEntry *p)
 
 void exp_add(const Symbol *name)
 {
-	HashEntry *ent = hash_add(&exp_hash, name);
-	RMDExport *e = &exp_sect[ent->data.u8];
+	SymbolValue *v = sym_index(&exp_tbl, name);
+	RMDExport *e = &exp_sect[v->i];
 	e->name = sym_add(name);
-	e->idx = ent->data.u8;
+	e->idx = v->i;
 }
 
 void exp_write()
 {
-	if(fwrite(exp_sect, sizeof(RMDExport), exp_hash.count, output)
-			!= exp_hash.count)
+	const int size = symtbl_size(&exp_tbl);
+	if(fwrite(exp_sect, sizeof(RMDExport), size, output) != size)
 		file_write_error();
 }
 
@@ -477,10 +480,10 @@ void header_fill()
 {
 	if(header.name == 0)
 		error("module name was not specified");
-	header.exp  = exp_hash.count;
-	header.ptbl = ptbl_hash.count;
-	header.mtbl = module_hash.count;
-	header.imp  = imp_hash.count;
+	header.exp  = symtbl_size(&exp_tbl);
+	header.ptbl = symtbl_size(&proc_tbl);
+	header.mtbl = symtbl_size(&module_tbl);
+	header.imp  = symtbl_size(&imp_tbl);
 	header.text = text_sect.len;
 	header.sym  = sym_sect.len;
 	header.str  = str_sect.len;
@@ -494,16 +497,110 @@ void header_fill()
 #ifdef DEBUG
 /* A lot of debug output */
 
-static void data_print1(const HashEntry *ent)
+static void header_print()
 {
-	symbol_print(ent->symbol);
-	printf("(%d)  ", ent->data.u8);
+	printf("RMD-%d.%d, version %d.%d\n", header.rmd_version.maj,
+			header.rmd_version.min, header.version.maj, header.version.min);
+}
+
+static void table_print(const char *name, const SymbolTable *tbl,
+		void (*print)(const Symbol *s, const SymbolValue *v))
+{
+	printf("#%s(%d): ", name, symtbl_size(tbl));
+	symtbl_foreach(tbl, print);
+}
+
+static void data_print1(const Symbol *s, const SymbolValue *v)
+{
+	symbol_print(s);
+	printf("(%d)  ", v->i);
 }
 
 static void data_print()
 {
-	printf(".data(%d): ", data_hash.count);
-	hash_print(&data_hash, data_print1);
+	table_print("data", &data_tbl, data_print1);
+}
+
+static void module_print1(const Symbol *s, const SymbolValue *v)
+{
+	const RMDModule *m = &module_sect[v->i];
+	symbol_print(s);
+	printf("-%hhu.%hhu(%u) ", m->version.maj, m->version.min, m->name);
+
+}
+
+static void module_print()
+{
+	table_print("mtbl", &module_tbl, module_print1);
+}
+
+static void imp_print1(const Symbol *s, const SymbolValue *v)
+{
+	const RMDImport *imp = &imp_sect[v->i];
+	printf("'%d' from '%d'(", imp->name, module_sect[imp->module].name);
+	symbol_print(s);
+	printf(")  ");
+}
+
+static void imp_print()
+{
+	table_print("imp", &imp_tbl, imp_print1);
+}
+
+static void ptbl_print1(const Symbol *s, const SymbolValue *v)
+{
+	RMDProcedure *p = &ptbl_sect[v->i];
+	symbol_print(s);
+	printf(" => %u  ", p->addr);
+}
+
+static void ptbl_print()
+{
+	table_print("ptbl", &proc_tbl, ptbl_print1);
+}
+
+static void var_print1(const Symbol *s, const SymbolValue *v)
+{
+	symbol_print(s);
+	printf("(%d)  ", v->i);
+}
+
+static void var_print()
+{
+	table_print("VAR", &var_tbl, var_print1);
+}
+
+static void text_print()
+{
+	printf("#text: %u bytes\n", text_sect.len);
+}
+
+static void label_print1(const Symbol *s, const SymbolValue *v)
+{
+	symbol_print(s);
+	printf("(%lu)  ", (unsigned long)v->u32);
+}
+
+static void label_print()
+{
+	table_print("LABELS", &label_tbl, label_print1);
+}
+
+static void sub_print()
+{
+	RMDProcedure *p = &ptbl_sect[current_sub->i];
+	printf("PROC END: argc = %d, varc = %d\n", p->argc, p->varc);
+}
+
+static void exp_print1(const Symbol *s, const SymbolValue *v)
+{
+	symbol_print(s);
+	printf("(%d)  ", v->i);
+}
+
+static void exp_print()
+{
+	table_print("exp", &exp_tbl, exp_print1);
 }
 
 static void sym_print()
@@ -512,111 +609,6 @@ static void sym_print()
     storage_print_str(&sym_sect);
 }
 
-static void module_print1(const HashEntry *ent)
-{
-	const RMDModule *m = &module_sect[ent->data.u8];
-	symbol_print(ent->symbol);
-	printf("-%hhu.%hhu(%u) ", m->version.maj, m->version.min, m->name);
-
-}
-
-static void module_print()
-{
-	printf("#mtbl(%d): ", module_hash.count);
-	hash_print(&module_hash, module_print1);
-}
-
-static void imp_print1(const HashEntry *ent)
-{
-	const RMDImport *imp = &imp_sect[ent->data.u8];
-	printf("'%d' from '%d'(", imp->name, module_sect[imp->module].name);
-	symbol_print(ent->symbol);
-	printf(")  ");
-}
-
-static void imp_print()
-{
-	printf("#imp(%d):  ", imp_hash.count);
-	hash_print(&imp_hash, imp_print1);
-}
-
-static void header_print()
-{
-	printf("RMD-%d.%d, version %d.%d\n", header.rmd_version.maj,
-			header.rmd_version.min, header.version.maj, header.version.min);
-}
-
-static void ptbl_print1(const HashEntry *ent)
-{
-	RMDProcedure *p = &ptbl_sect[ent->data.u8];
-	symbol_print(ent->symbol);
-	printf(" => %u  ", p->addr);
-}
-
-static void ptbl_print()
-{
-	printf("#ptbl(%d): ", ptbl_hash.count);
-	hash_print(&ptbl_hash, ptbl_print1);
-}
-
-static void var_print1(const HashEntry *ent)
-{
-	symbol_print(ent->symbol);
-	printf("(%d)  ", ent->data.u8);
-}
-
-static void var_print()
-{
-	if(var_hash.count) {
-		printf("VAR[");
-		symbol_print(current_sub->symbol);
-		printf("](%d):  ", var_hash.count);
-		hash_print(&var_hash, var_print1);
-	}
-}
-
-static void text_print()
-{
-	printf("#text: %u bytes\n", text_sect.len);
-}
-
-static void label_print1(const HashEntry *ent)
-{
-	symbol_print(ent->symbol);
-	printf("  ");
-}
-
-static void label_print()
-{
-	if(label_hash.count) {
-		printf("LABELS[");
-		symbol_print(current_sub->symbol);
-		printf("](%d):  ", label_hash.count);
-		hash_print(&label_hash, label_print1);
-	}
-}
-
-static void sub_print()
-{
-	RMDProcedure *p = &ptbl_sect[current_sub->data.u8];
-	printf("PROC END(");
-	symbol_print(current_sub->symbol);
-	printf("): argc = %d, varc = %d\n",
-			p->argc, p->varc);
-}
-
-static void exp_print1(const HashEntry *ent)
-{
-	symbol_print(ent->symbol);
-	printf("(%d)  ", ent->data.u8);
-}
-
-static void exp_print()
-{
-	printf("#exp(%d):  ", exp_hash.count);
-	hash_print(&exp_hash, exp_print1);
-}
- 
 static void str_print()
 {
 	printf("#str(%d)  ", str_sect.len);

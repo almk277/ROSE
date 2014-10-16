@@ -3,7 +3,7 @@ CPPFLAGS += -I../include
 
 all: ras
 
-ras: main.o storage.o ras-lex.o hash.o ../lib/mm.o ../lib/symbol.o sect.o print.o
+ras: main.o storage.o ras-lex.o ../lib/symtbl.o ../lib/mm.o ../lib/symbol.o sect.o print.o
 	$(CC) $(LDFLAGS) -o $@ $^
 
 ras-lex.l: ras-head.l ras-tail.l gen.pl $(DESCR)
