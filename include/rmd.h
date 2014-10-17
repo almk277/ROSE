@@ -1,5 +1,5 @@
-#ifndef ROSE_OBJ_H
-#define ROSE_OBJ_H
+#ifndef ROSE_RMD_H
+#define ROSE_RMD_H
 
 #include <stdint.h>
 
@@ -15,7 +15,7 @@ typedef struct RMDHeader {
 	uint16_t parent;           /* parent module name        */
 	RMDVersion version;        /* module version            */
 	uint8_t flags;             /* various flags             */
-	uint8_t data_cnt;          /* data count                */
+	uint8_t datac;             /* data count                */
 	uint8_t exp;               /* export table size         */
 	uint8_t ptbl;              /* procedure table size      */
 	uint8_t mtbl;              /* module table size         */

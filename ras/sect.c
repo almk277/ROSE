@@ -485,6 +485,7 @@ void header_fill()
 {
 	if(header.name == 0)
 		error("module name was not specified");
+	header.datac = symtbl_size(&data_tbl);
 	header.exp  = symtbl_size(&exp_tbl);
 	header.ptbl = symtbl_size(&proc_tbl);
 	header.mtbl = symtbl_size(&module_tbl);
