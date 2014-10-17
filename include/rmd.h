@@ -8,11 +8,19 @@ typedef struct RMDVersion {
 	unsigned char min;
 } RMDVersion;
 
+typedef uint8_t R_Byte;
+typedef int32_t R_Word;
+
+typedef uint16_t RA_Symbol;
+typedef uint32_t RA_Array;
+typedef uint32_t RA_Text;
+typedef int16_t  RA_TextOffset;
+
 typedef struct RMDHeader {
 	unsigned char ident[4];    /* signature                 */
 	RMDVersion rmd_version;    /* ROSE version              */
-	uint16_t name;             /* module name               */
-	uint16_t parent;           /* parent module name        */
+	RA_Symbol name;            /* module name               */
+	RA_Symbol parent;          /* parent module name        */
 	RMDVersion version;        /* module version            */
 	uint8_t flags;             /* various flags             */
 	uint8_t datac;             /* data count                */
@@ -21,8 +29,8 @@ typedef struct RMDHeader {
 	uint8_t mtbl;              /* module table size         */
 	uint8_t imp;               /* import table size         */
 	uint32_t text;             /* text sector size          */
-	uint16_t sym;              /* symbol sector size        */
-	uint32_t str;              /* string sector size        */
+	RA_Symbol sym;             /* symbol sector size        */
+	RA_Array str;              /* string sector size        */
 	uint32_t size;             /* size of (module - header) */
 	uint32_t debug;            /* debug section size        */
 	char pad[16];              /* for future expanding      */
@@ -43,20 +51,20 @@ typedef struct RMDProcedure {
 
 /* #exp entry */
 typedef struct RMDExport {
-	uint16_t name;
-	uint16_t proto;
+	RA_Symbol name;
+	RA_Symbol proto;
 	uint8_t idx;
 } RMDExport;
 
 /* #mtbl entry */
 typedef struct RMDModule {
-	uint16_t name;
+	RA_Symbol name;
 	RMDVersion version;
 } RMDModule;
 
 /* #imp entry */
 typedef struct RMDImport {
-	uint16_t name;
+	RA_Symbol name;
 	uint8_t module;
 	uint8_t slot;
 } RMDImport;
