@@ -1,6 +1,8 @@
 *.o
 *.swp
 *.rmd
+*.a
+*.so
 tags
 .exrc
 ras/ras

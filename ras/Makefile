@@ -1,10 +1,11 @@
 DESCR := ../doc/isa.dsc
 CPPFLAGS += -I../include
+LIBS += -L../lib -lrose
 
 all: ras
 
-ras: main.o storage.o ras-lex.o ../lib/symtbl.o ../lib/mm.o ../lib/symbol.o sect.o print.o
-	$(CC) $(LDFLAGS) -o $@ $^
+ras: main.o storage.o ras-lex.o sect.o print.o
+	$(CC) $(LDFLAGS) -o $@ $^ $(LIBS)
 
 ras-lex.l: ras-head.l ras-tail.l gen.pl $(DESCR)
 	perl gen.pl
