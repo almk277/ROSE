@@ -486,18 +486,18 @@ void header_fill()
 	if(header.name == 0)
 		error("module name was not specified");
 	header.datac = symtbl_size(&data_tbl);
-	header.exp  = symtbl_size(&exp_tbl);
-	header.ptbl = symtbl_size(&proc_tbl);
-	header.mtbl = symtbl_size(&module_tbl);
-	header.imp  = symtbl_size(&imp_tbl);
-	header.text = text_sect.len;
-	header.sym  = sym_sect.len;
-	header.str  = str_sect.len;
-	header.size = header.exp * sizeof(RMDExport)
-		+ header.ptbl * sizeof(RMDProcedure) + header.mtbl * sizeof(RMDModule)
-		+ header.imp * sizeof(RMDImport)
-		+ header.text + header.sym + header.str;
-	header.debug = 0;
+	header.sizes.exp  = symtbl_size(&exp_tbl);
+	header.sizes.ptbl = symtbl_size(&proc_tbl);
+	header.sizes.mtbl = symtbl_size(&module_tbl);
+	header.sizes.imp  = symtbl_size(&imp_tbl);
+	header.sizes.text = text_sect.len;
+	header.sizes.sym  = sym_sect.len;
+	header.sizes.str  = str_sect.len;
+	header.size = header.sizes.exp * sizeof(RMDExport)
+		+ header.sizes.ptbl * sizeof(RMDProcedure)
+		+ header.sizes.mtbl * sizeof(RMDModule)
+		+ header.sizes.imp * sizeof(RMDImport)
+		+ header.sizes.text + header.sizes.sym + header.sizes.str;
 }
 
 #ifdef DEBUG

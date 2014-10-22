@@ -1,39 +1,52 @@
+/* Declarations for RMD - ROSE binary format */
+
 #ifndef ROSE_RMD_H
 #define ROSE_RMD_H
 
 #include <stdint.h>
 
+/* Versions */
 typedef struct RMDVersion {
 	unsigned char maj;
 	unsigned char min;
 } RMDVersion;
 
+/* Base types */
 typedef uint8_t R_Byte;
 typedef int32_t R_Word;
 
+/* Address types */
 typedef uint16_t RA_Symbol;
 typedef uint32_t RA_Array;
 typedef uint32_t RA_Text;
-typedef int16_t  RA_TextOffset;
 
+/* Other types */
+typedef int16_t  R_TextOffset;
+
+/* Information about sector sizes */
+typedef struct RMDSectorSize {
+	RA_Text text;              /* text sector size      */
+	RA_Array str;              /* string sector size    */
+	RA_Symbol sym;             /* symbol sector size    */
+	uint8_t exp;               /* export table size     */
+	uint8_t ptbl;              /* procedure table size  */
+	uint8_t mtbl;              /* module table size     */
+	uint8_t imp;               /* import table size     */
+} RMDSectorSize;
+
+/* RMD header */
 typedef struct RMDHeader {
 	unsigned char ident[4];    /* signature                 */
 	RMDVersion rmd_version;    /* ROSE version              */
 	RA_Symbol name;            /* module name               */
 	RA_Symbol parent;          /* parent module name        */
 	RMDVersion version;        /* module version            */
+	RMDSectorSize sizes;       /* sizes of all sectors      */
 	uint8_t flags;             /* various flags             */
 	uint8_t datac;             /* data count                */
-	uint8_t exp;               /* export table size         */
-	uint8_t ptbl;              /* procedure table size      */
-	uint8_t mtbl;              /* module table size         */
-	uint8_t imp;               /* import table size         */
-	uint32_t text;             /* text sector size          */
-	RA_Symbol sym;             /* symbol sector size        */
-	RA_Array str;              /* string sector size        */
 	uint32_t size;             /* size of (module - header) */
 	uint32_t debug;            /* debug section size        */
-	char pad[16];              /* for future expanding      */
+	char pad[8];               /* for future expanding      */
 } RMDHeader;
 
 /* RMD signature */
