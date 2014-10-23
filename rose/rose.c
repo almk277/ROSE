@@ -1,57 +1,28 @@
 #include "module.h"
-#include "thread.h"
+#include "symbol.h"
+#include "loader.h"
 #include <stdio.h>
-
-struct Options {
-	int disas;
-} options;
-
-int module_flags = MODULE_DEBUG;
-
-static int file_error(const char *name, int error)
-{
-	const char *msg;
-	switch(error) {
-		case RMD_FILE:
-			msg = "can not open file"; break;
-		case RMD_READ:
-			msg = "can not read file"; break;
-		case RMD_NO_MEMORY:
-			msg = "out of memory"; break;
-		case RMD_BAD_IDENT:
-			msg = "file has no ROSE signature"; break;
-		case RMD_BAD_VERSION:
-			msg = "unsupported module version"; break;
-		default:
-			msg = "unknown error";
-	}
-	fprintf(stderr, "%s: %s\n", name, msg);
-	return 1;
-}
-
-static void init(void)
-{
-	module_init();
-}
 
 int main(int argc, char *argv[])
 {
-	int err;
-	const char *fname = (argc == 1) ? "out.rmd" : argv[1];
 	Module *m;
-	Thread t;
+	const Symbol *name;
+	const RMDVersion *ver;
+	const char *err;
+	const char *file = argc > 1 ? argv[1] : "out.rmd";
+	loader_add_dir_from_file(file);
+	loader_add_dirs_from_env();
 
-	init();
-	thread_init(&t);
-   	m = module_load_file(fname, &err);
-	if(!m)
-		return file_error(fname, err);
-	printf("module '%s' with version %hhu.%hhu\n", m->name,
-			m->version[0], m->version[1]);
-
-	if(thread_start(&t, m) != THS_EXIT)
-		puts("thread interrupt");
-	module_unload(m);
+   	m = module_load(file, &err);
+	if(!m) {
+		printf("%s: %s\n", file, err);
+		return 1;
+	}
+	name = module_name(m);
+	ver = module_version(m);
+	symbol_print(module_name(m));
+	printf(" %hhu.%hhu\n", ver->maj, ver->min);
+	/*module_unload(m);*/
 	return 0;
 }
 

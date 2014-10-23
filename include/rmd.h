@@ -55,6 +55,16 @@ typedef struct RMDHeader {
 #define RMD_H_IDENT3		'D'
 #define RMD_H_IDENT4		0x1F
 
+/* Segment order:
+ * exp;
+ * ptbl;
+ * mtbl;
+ * imp;
+ * text;
+ * sym;
+ * str.
+ */
+
 /* #ptbl entry */
 typedef struct RMDProcedure {
 	uint32_t addr;

@@ -73,7 +73,7 @@ FILE *loader_find_module(const Symbol *name)
 			continue;
 		symbol_copy_to(name, buf + dlen);
 		memcpy(buf + len, suffix, sizeof suffix);
-		f = fopen(buf, "r");
+		f = fopen(buf, "rb");
 		if(f)
 			return f;
 	}

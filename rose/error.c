@@ -1,7 +1,6 @@
 #include "error.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "stack.h"
 
 void error(int code)
 {
