@@ -70,7 +70,7 @@ uint32_t storage_add_symbol(Storage *tbl, const Symbol *sym)
 {
 	uint32_t cur = tbl->len;
 	Slice *s;
-	const int len = symbol_length(sym);
+	const int len = symbol_store_length(sym);
 
 	storage_enlarge(tbl, len);
 	s = tbl->current;

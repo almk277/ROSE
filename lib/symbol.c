@@ -57,6 +57,11 @@ SymbolSize symbol_length(const Symbol *s)
 	return s->len;
 }
 
+SymbolSize symbol_store_length(const Symbol *s)
+{
+	return s->len + 1;
+}
+
 int symbol_compare(const Symbol *s1, const Symbol *s2)
 {
 	return (s1->len == s2->len) && (memcmp(s1->data, s2->data, s1->len) == 0);
@@ -83,6 +88,7 @@ void symbol_print_to_file(const Symbol *s, FILE *file)
 
 void symbol_copy_to(const Symbol *s, char *buffer)
 {
+	*buffer++ = s->len;
 	memcpy(buffer, s->data, s->len);
 }
 

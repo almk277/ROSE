@@ -18,6 +18,9 @@ void symbol_delete(Symbol *s);
 /* Returns length of symbol s */
 SymbolSize symbol_length(const Symbol *s);
 
+/* Returns number of bytes to store s */
+SymbolSize symbol_store_length(const Symbol *s);
+
 /* Compares symbols s1 and s2, returns 1 if the are equal, 0 otherwise */
 int symbol_compare(const Symbol *s1, const Symbol *s2);
 

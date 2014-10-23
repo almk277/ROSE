@@ -12,6 +12,7 @@ ras-lex.l: ras-head.l ras-tail.l gen.pl $(DESCR)
 
 debug:   CPPFLAGS += -DDEBUG
 debug:   CFLAGS += -Wall -g
+debug:   LDFLAGS += -g
 debug:   ras
 prepare: ras-lex.c
 
