@@ -1,16 +1,21 @@
 #include "storage.h"
+#include "symbol.h"
 #include "print.h"
+#include "endian.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 #include <ctype.h>
+
+/* one array length */
+#define SLICE_LEN  (2 * 1024)
 
 extern FILE *output;
 extern int verbose;
 
 struct Slice {
 	SIMPLEQ_ENTRY(Slice) entry;
-	uint32_t len;
+	RA_Array len;
 	char array[SLICE_LEN];
 };
 
@@ -23,7 +28,7 @@ static Slice *array_new()
 	return a;
 }
 
-void storage_enlarge(Storage *tbl, uint32_t size)
+void storage_enlarge(Storage *tbl, RA_Array size)
 {
 	if(!tbl->current || (SLICE_LEN - tbl->current->len) < size) {
 		tbl->current = array_new();
@@ -31,18 +36,7 @@ void storage_enlarge(Storage *tbl, uint32_t size)
 	}
 }
 
-/* copies size bytes from addr to s */
-/*
-void storage_copy(Storage *s, const void *addr, uint32_t size)
-{
-	Slice *a = s->current;
-	memcpy(&a->array[a->len], addr, size);
-	a->len += size;
-	s->len += size;
-}
-*/
-
-void storage_put1byte(Storage *s, char byte)
+void storage_put1byte(Storage *s, uint8_t byte)
 {
 	Slice *a = s->current;
 	a->array[a->len] = byte;
@@ -53,7 +47,7 @@ void storage_put1byte(Storage *s, char byte)
 void storage_put2byte(Storage *s, int16_t word)
 {
 	Slice *a = s->current;
-	*(int16_t*)&a->array[a->len] = word;
+	*(int16_t*)&a->array[a->len] = serial_16(word);
 	a->len += 2;
 	s->len += 2;
 }
@@ -61,14 +55,14 @@ void storage_put2byte(Storage *s, int16_t word)
 void storage_put4byte(Storage *s, int32_t word)
 {
 	Slice *a = s->current;
-	*(int32_t*)&a->array[a->len] = word;
+	*(int32_t*)&a->array[a->len] = serial_32(word);
 	a->len += 4;
 	s->len += 4;
 }
 
-uint32_t storage_add_symbol(Storage *tbl, const Symbol *sym)
+RA_Array storage_add_symbol(Storage *tbl, const Symbol *sym)
 {
-	uint32_t cur = tbl->len;
+	RA_Array cur = tbl->len;
 	Slice *s;
 	const int len = symbol_store_length(sym);
 
@@ -84,7 +78,7 @@ uint32_t storage_add_symbol(Storage *tbl, const Symbol *sym)
 #ifdef DEBUG
 static void strarray_print(const Slice *a)
 {
-	uint32_t i;
+	RA_Array i;
 	for(i = 0; i != a->len; ++i) {
 		int ch = a->array[i];
 		putchar(ch ? ch : '~');
@@ -96,7 +90,7 @@ void storage_print_str(const Storage *tbl)
 	Slice *a;
 	SIMPLEQ_FOREACH(a, &tbl->head, entry) {
 		if(verbose >= DL_NUDE)
-			printf("\n (%d)- ", a->len);
+			printf("\n (%d)- ", deserial_32(a->len));
 		strarray_print(a);
 	}
 	putchar('\n');
@@ -118,20 +112,22 @@ void storage_write(const Storage *tbl)
 }
 
 static Storage *array_current_storage;
-static uint32_t *array_current_len;
+static RA_Array current_len;
+static RA_Array *current_len_addr;
 
-uint32_t array_begin(Storage *tbl)
+RA_Array array_begin(Storage *tbl)
 {
 	Slice *s;
-	uint32_t current_addr;
+	RA_Array current_addr;
 
 	array_current_storage = tbl;
-	storage_enlarge(tbl, sizeof *array_current_len);
+	storage_enlarge(tbl, sizeof(RA_Array));
 	s = tbl->current;
 	current_addr = tbl->len;
-	array_current_len = (uint32_t*)&s->array[s->len];
-	s->len += sizeof *array_current_len;
-	tbl->len += sizeof *array_current_len;
+	current_len_addr = (RA_Array*)&s->array[s->len];
+	current_len = 0;
+	s->len += sizeof(RA_Array);
+	tbl->len += sizeof(RA_Array);
 
 	return current_addr;
 }
@@ -140,6 +136,11 @@ void array_add_byte(char byte)
 {
 	storage_enlarge(array_current_storage, 1);
 	storage_put1byte(array_current_storage, byte);
-	++*array_current_len;
+	++current_len_addr;
+}
+
+void array_end()
+{
+	*current_len_addr = serial_32(current_len);
 }
 

@@ -1,15 +1,12 @@
-/* storage is list of byte arrays.
- * It grows dynamically when the size is not enough */
+/* storage is a byte queue, implemented as dynamic list of byte arrays */
 
 #ifndef STORAGE_H
 #define STORAGE_H
 
+#include "rmd.h"
 #include "queue.h"
-#include "symbol.h"
 #include <stdint.h>
-
-/* one array length */
-#define SLICE_LEN  (2 * 1024)
+struct Symbol;
 
 typedef struct Slice Slice;
 
@@ -19,7 +16,7 @@ SIMPLEQ_HEAD(QueueHead, Slice);
 typedef struct Storage {
 	struct QueueHead head;
 	Slice *current;
-	uint32_t len;
+	RA_Array len;
 } Storage;
 
 /* initializer for Storage */
@@ -27,16 +24,16 @@ typedef struct Storage {
 	{ SIMPLEQ_HEAD_INITIALIZER(table.head), 0, 0 }
 
 /* Guarantees that tbl has at least size bytes free */
-void storage_enlarge(Storage *tbl, uint32_t size);
+void storage_enlarge(Storage *tbl, RA_Array size);
 
-void storage_put1byte(Storage *s, char byte);
+void storage_put1byte(Storage *s, uint8_t byte);
 
 void storage_put2byte(Storage *s, int16_t word);
 
 void storage_put4byte(Storage *s, int32_t word);
 
 /* adds symbol to storage tbl */
-uint32_t storage_add_symbol(Storage *tbl, const Symbol *symbol);
+RA_Array storage_add_symbol(Storage *tbl, const struct Symbol *symbol);
 
 /* prints tbl as string storage */
 void storage_print_str(const Storage *tbl);
@@ -47,9 +44,11 @@ char *storage_current(const Storage *tbl);
 /* dumps storage to file */
 void storage_write(const Storage *tbl);
 
-uint32_t array_begin(Storage *tbl);
+RA_Array array_begin(Storage *tbl);
 
 void array_add_byte(char byte);
+
+void array_end(void);
 
 #endif
 

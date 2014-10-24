@@ -1,6 +1,6 @@
 store procedure size;
 remove symbols when clearing symbol table;
 fix CLI options handling;
-endianness;
 prelink;
-remove Perl dependency.
+remove Perl dependency;
+make code not to depend on operand sizes.

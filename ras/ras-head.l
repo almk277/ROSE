@@ -58,7 +58,7 @@ EXTPR  {WORD}:{WORD}
 <str>{WORD}    str_begin(YSTRING); dl("string"); BEGIN strsect;
 <strsect>\n    /* allowed */
 <strsect>\"    BEGIN string;
-<strsect>;     BEGIN INITIAL;
+<strsect>;     str_end(); BEGIN INITIAL;
 <string>"\\"   str_add_char('\\');
 <string>\\\"   str_add_char('"');
 <string>\\n    str_add_char('\n');

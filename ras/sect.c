@@ -4,6 +4,7 @@
 #include "storage.h"
 #include "rmd.h"
 #include "mm.h"
+#include "endian.h"
 #include <string.h>
 #include <stdio.h>
 #include <inttypes.h>
@@ -184,7 +185,7 @@ void header_set_name(const Symbol *name)
 {
 	if(header.name != 0)
 		error("module has name already");
-	header.name = sym_add(name);
+	header.name = serial_16(sym_add(name));
 }
 
 void header_set_version(const char *version)
@@ -196,7 +197,7 @@ void header_set_parent(const Symbol *name)
 {
 	if(header.parent != 0)
 		error("module is inherited already");
-	header.parent = sym_add(name);
+	header.parent = serial_16(sym_add(name));
 }
 
 void header_write()
@@ -214,6 +215,11 @@ void str_begin(const Symbol *name)
 void str_add_char(char c)
 {
 	array_add_byte(c);
+}
+
+void str_end()
+{
+	array_end();
 }
 
 void str_write()
@@ -490,14 +496,14 @@ void header_fill()
 	header.sizes.ptbl = symtbl_size(&proc_tbl);
 	header.sizes.mtbl = symtbl_size(&module_tbl);
 	header.sizes.imp  = symtbl_size(&imp_tbl);
-	header.sizes.text = text_sect.len;
-	header.sizes.sym  = sym_sect.len;
-	header.sizes.str  = str_sect.len;
-	header.size = header.sizes.exp * sizeof(RMDExport)
+	header.sizes.text = serial_32(text_sect.len);
+	header.sizes.sym  = serial_16(sym_sect.len);
+	header.sizes.str  = serial_32(str_sect.len);
+	header.size = serial_32(header.sizes.exp * sizeof(RMDExport)
 		+ header.sizes.ptbl * sizeof(RMDProcedure)
 		+ header.sizes.mtbl * sizeof(RMDModule)
 		+ header.sizes.imp * sizeof(RMDImport)
-		+ header.sizes.text + header.sizes.sym + header.sizes.str;
+		+ header.sizes.text + header.sizes.sym + header.sizes.str);
 }
 
 #ifdef DEBUG
@@ -634,7 +640,7 @@ void sect_print()
 	sym_print();
 	data_print();
 	str_print();
-	printf("%d bytes written\n", sizeof(RMDHeader) + header.size);
+	printf("%d bytes written\n", sizeof(RMDHeader) + deserial_32(header.size));
 }
 
 #endif /* DEBUG */

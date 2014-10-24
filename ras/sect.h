@@ -36,6 +36,9 @@ void str_begin(const Symbol *name);
 /* adds a byte c to current #str string */
 void str_add_char(char c);
 
+/* ends #str string */
+void str_end(void);
+
 /* adds procedure name to #ptbl */
 void ptbl_add(const Symbol *name);
 
