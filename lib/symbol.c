@@ -22,16 +22,16 @@ DEFPOOL(32, 8);
 Symbol *symbol_new(const char *str, int len)
 {
 	Symbol *s;
-	if(len <= 4)
+	if(len < 4)
 		s = mm_alloc(Symbol4);
-	else if(len <= 8)
+	else if(len < 8)
 		s = mm_alloc(Symbol8);
-	else if(len <= 16)
+	else if(len < 16)
 		s = mm_alloc(Symbol16);
-	else if(len <= 32)
+	else if(len < 32)
 		s = mm_alloc(Symbol32);
 	else
-		s = malloc(sizeof(int) + len);
+		s = malloc(len + 1);
 	memcpy(s->data, str, len);
 	s->len = len;
 	return s;
@@ -40,13 +40,13 @@ Symbol *symbol_new(const char *str, int len)
 void symbol_delete(Symbol *s)
 {
 	int len = s->len;
-	if(len <= 4)
+	if(len < 4)
 		mm_free(Symbol4, s);
-	else if(len <= 8)
+	else if(len < 8)
 		mm_free(Symbol8, s);
-	else if(len <= 16)
+	else if(len < 16)
 		mm_free(Symbol16, s);
-	else if(len <= 32)
+	else if(len < 32)
 		mm_free(Symbol32, s);
 	else
 		free(s);
