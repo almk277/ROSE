@@ -44,7 +44,7 @@ Module *module_load(const char *path, const char **errstr);
 Module *module_get(const struct Symbol *name, const char **errstr);
 
 /* Unloads the module */
-//void module_unload(Module *module);
+/* void module_unload(Module *module); */
 
 #define module_name(m)	((m)->name)
 

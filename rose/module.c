@@ -64,10 +64,6 @@ static void add_to_tbl(Module *m, const Symbol *name)
 	v->p = m;
 }
 
-static void remove_from_tbl(Module *m)
-{
-}
-
 static Module *module_read(const RMDHeader *h, FILE *f, const char **errstr)
 {
 	char *content;
@@ -132,7 +128,7 @@ Module *module_load(const char *path, const char **errstr)
 	return load_header(f, errstr);
 }
 
-Module *module_get(const struct Symbol *name, const char **errstr)
+Module *module_get(const Symbol *name, const char **errstr)
 {
 	FILE *f;
 	SymbolValue *v = symtbl_find(&module_tbl, name);
@@ -146,13 +142,13 @@ Module *module_get(const struct Symbol *name, const char **errstr)
 	return load_header(f, errstr);
 }
 
+#if 0
 void module_unload(Module *module)
 {
-	remove_from_tbl(module);
+	/* remove from table */
 	free(module);
 }
 
-#if 0
 static inline void *section_address(const Module *module, uint32_t offset)
 {
 	return (char *)module + sizeof(Module) - sizeof(RMDHeader) + offset;
