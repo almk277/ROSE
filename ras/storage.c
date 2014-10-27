@@ -75,28 +75,6 @@ RA_Array storage_add_symbol(Storage *tbl, const Symbol *sym)
 	return cur;
 }
 
-#ifdef DEBUG
-static void strarray_print(const Slice *a)
-{
-	RA_Array i;
-	for(i = 0; i != a->len; ++i) {
-		int ch = a->array[i];
-		putchar(ch ? ch : '~');
-	}
-}
-
-void storage_print_str(const Storage *tbl)
-{
-	Slice *a;
-	SIMPLEQ_FOREACH(a, &tbl->head, entry) {
-		if(verbose >= DL_NUDE)
-			printf("\n (%d)- ", deserial_32(a->len));
-		strarray_print(a);
-	}
-	putchar('\n');
-}
-#endif
-
 char *storage_current(const Storage *tbl)
 {
 	Slice *a = tbl->current;

@@ -35,9 +35,6 @@ void storage_put4byte(Storage *s, int32_t word);
 /* adds symbol to storage tbl */
 RA_Array storage_add_symbol(Storage *tbl, const struct Symbol *symbol);
 
-/* prints tbl as string storage */
-void storage_print_str(const Storage *tbl);
-
 /* returns current storage position address */
 char *storage_current(const Storage *tbl);
 

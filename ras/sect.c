@@ -455,9 +455,9 @@ void sub_finish()
 		ref_resolve();
 #ifdef DEBUG
 		if(verbose >= DL_DUMP) {
+			sub_print();
 			var_print();
 			label_print();
-			sub_print();
 		}
 #endif
 		label_clear();
@@ -520,6 +520,7 @@ static void table_print(const char *name, const SymbolTable *tbl,
 {
 	printf("#%s(%d): ", name, symtbl_size(tbl));
 	symtbl_foreach(tbl, print);
+	putchar('\n');
 }
 
 static void data_print1(const Symbol *s, const SymbolValue *v)
@@ -563,7 +564,7 @@ static void ptbl_print1(const Symbol *s, const SymbolValue *v)
 {
 	RMDProcedure *p = &ptbl_sect[v->i];
 	symbol_print(s);
-	printf(" => %u  ", p->addr);
+	printf(" (%u:%u)  ", p->addr, p->size);
 }
 
 static void ptbl_print()
@@ -579,7 +580,7 @@ static void var_print1(const Symbol *s, const SymbolValue *v)
 
 static void var_print()
 {
-	table_print("VAR", &var_tbl, var_print1);
+	table_print("	VAR", &var_tbl, var_print1);
 }
 
 static void text_print()
@@ -595,13 +596,13 @@ static void label_print1(const Symbol *s, const SymbolValue *v)
 
 static void label_print()
 {
-	table_print("LABELS", &label_tbl, label_print1);
+	table_print("	LABELS", &label_tbl, label_print1);
 }
 
 static void sub_print()
 {
 	RMDProcedure *p = &ptbl_sect[current_sub->i];
-	printf("PROC END: argc = %d, varc = %d\n", p->argc, p->varc);
+	printf("PROC: argc = %d, varc = %d\n", p->argc, p->varc);
 }
 
 static void exp_print1(const Symbol *s, const SymbolValue *v)
@@ -615,10 +616,15 @@ static void exp_print()
 	table_print("exp", &exp_tbl, exp_print1);
 }
 
+static void sym_print1(const Symbol *s, const SymbolValue *v)
+{
+	symbol_print(s);
+	putchar(' ');
+}
+
 static void sym_print()
 {
-    printf("#sym: ");
-    storage_print_str(&sym_sect);
+	table_print("sym", &sym_tbl, sym_print1);
 }
 
 static void str_print()
