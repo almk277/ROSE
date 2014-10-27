@@ -19,19 +19,25 @@ typedef int32_t R_Word;
 typedef uint16_t RA_Symbol;
 typedef uint32_t RA_Array;
 typedef uint32_t RA_Text;
+typedef uint8_t  RA_Stack;
+typedef uint8_t  RA_Data;
+typedef uint8_t  RA_Module;
+typedef uint8_t  RA_Proc;
+typedef uint8_t  RA_Export;
+typedef uint8_t  RA_Import;
 
 /* Other types */
 typedef int16_t  R_TextOffset;
 
 /* Information about sector sizes */
 typedef struct RMDSectorSize {
-	RA_Text text;              /* text sector size      */
-	RA_Array str;              /* string sector size    */
-	RA_Symbol sym;             /* symbol sector size    */
-	uint8_t exp;               /* export table size     */
-	uint8_t ptbl;              /* procedure table size  */
-	uint8_t mtbl;              /* module table size     */
-	uint8_t imp;               /* import table size     */
+	RA_Text text;    /* text sector size      */
+	RA_Array str;    /* string sector size    */
+	RA_Symbol sym;   /* symbol sector size    */
+	RA_Export exp;   /* export table size     */
+	RA_Proc ptbl;    /* procedure table size  */
+	RA_Module mtbl;  /* module table size     */
+	RA_Import imp;   /* import table size     */
 } RMDSectorSize;
 
 /* RMD header */
@@ -42,8 +48,8 @@ typedef struct RMDHeader {
 	RA_Symbol parent;          /* parent module name        */
 	RMDVersion version;        /* module version            */
 	RMDSectorSize sizes;       /* sizes of all sectors      */
-	uint8_t flags;             /* various flags             */
-	uint8_t datac;             /* data count                */
+	unsigned char flags;       /* various flags             */
+	RA_Data datac;             /* data count                */
 	uint32_t size;             /* size of (module - header) */
 	uint32_t debug;            /* debug section size        */
 	char pad[8];               /* for future expanding      */
@@ -67,16 +73,17 @@ typedef struct RMDHeader {
 
 /* #ptbl entry */
 typedef struct RMDProcedure {
-	uint32_t addr;
-	uint8_t argc;
-	uint8_t varc;
+	RA_Text addr;
+	RA_Text size;
+	RA_Stack argc;
+	RA_Stack varc;
 } RMDProcedure;
 
 /* #exp entry */
 typedef struct RMDExport {
 	RA_Symbol name;
 	RA_Symbol proto;
-	uint8_t idx;
+	RA_Proc idx;
 } RMDExport;
 
 /* #mtbl entry */
@@ -88,13 +95,13 @@ typedef struct RMDModule {
 /* #imp entry */
 typedef struct RMDImport {
 	RA_Symbol name;
-	uint8_t module;
-	uint8_t slot;
+	RA_Module module;
+	RA_Export slot;
 } RMDImport;
 
 /* #str entry */
 typedef struct RMDString {
-	uint32_t len;
+	RA_Array len;
 	char str[1];
 } RMDString;
 

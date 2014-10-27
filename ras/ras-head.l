@@ -2,12 +2,14 @@
 #include "print.h"
 #include "sect.h"
 #include "symbol.h"
+#include "rmd.h"
 #define YSTRING symbol_new(yytext, yyleng)
 #define dl(str) debug_line(str ": %s", yytext)
 static void emit_instruction(int len, char opcode, const char *argstring);
 static void end_instruction(void);
 static const char *args;
-uint32_t instr_start;
+RA_Text instr_start;
+RA_Text sub_len;
 }
 
 SYM    [a-zA-Z0-9_]

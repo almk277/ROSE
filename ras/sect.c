@@ -37,7 +37,8 @@ static Storage text_sect = STORAGE_INITIALIZER(text_sect);  /* #text */
 extern FILE *output;
 extern int yylineno;
 extern int verbose;
-extern uint32_t instr_start;
+extern RA_Text instr_start;
+extern RA_Text sub_len;
 
 #define REF_SIZE  2
 #define REF_MIN_OFS INT16_MIN
@@ -145,7 +146,7 @@ void module_add(const Symbol *name)
 {
 	SymbolValue *v = sym_index(&module_tbl, name);
 	current_import = &module_sect[v->i];
-	current_import->name = sym_add(name);
+	current_import->name = serial_16(sym_add(name));
 	current_import->version.maj = current_import->version.min = 0;
 }
 
@@ -168,7 +169,7 @@ void imp_add(const Symbol *fullname)
 	Symbol *module, *proc;
 	symbol_split_colon(fullname, &module, &proc); /* we know there is ":" */
 	imp->module = sym_get_idx(&module_tbl, module);
-	imp->name = sym_add(proc);
+	imp->name = serial_16(sym_add(proc));
 	imp->slot = 0;
 	symbol_delete(proc);
 	symbol_delete(module);
@@ -233,7 +234,7 @@ void ptbl_add(const Symbol *name)
 {
 	SymbolValue *v = sym_index(&proc_tbl, name);
 	RMDProcedure *p = &ptbl_sect[v->i];
-	p->addr = text_sect.len;
+	p->addr = serial_32(text_sect.len);
 	p->argc = p->varc = 0;
 	sub_begin(v);
 }
@@ -462,6 +463,7 @@ void sub_finish()
 #endif
 		label_clear();
 		var_clear();
+		ptbl_sect[current_sub->i].size = serial_32(sub_len);
 	}
 }
 
@@ -470,13 +472,14 @@ static void sub_begin(SymbolValue *p)
 	if(current_sub)
 		sub_finish();
 	current_sub = p;
+	sub_len = 0;
 }
 
 void exp_add(const Symbol *name)
 {
 	SymbolValue *v = sym_index(&exp_tbl, name);
 	RMDExport *e = &exp_sect[v->i];
-	e->name = sym_add(name);
+	e->name = serial_16(sym_add(name));
 	e->idx = v->i;
 }
 

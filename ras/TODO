@@ -1,4 +1,3 @@
-store procedure size;
 remove symbols when clearing symbol table;
 fix CLI options handling;
 prelink;
