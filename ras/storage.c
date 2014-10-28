@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include <ctype.h>
 
 /* one array length */
 #define SLICE_LEN  (2 * 1024)
@@ -36,7 +35,7 @@ void storage_enlarge(Storage *tbl, RA_Array size)
 	}
 }
 
-void storage_put1byte(Storage *s, uint8_t byte)
+void storage_put1byte(Storage *s, int8_t byte)
 {
 	Slice *a = s->current;
 	a->array[a->len] = byte;
@@ -64,7 +63,7 @@ RA_Array storage_add_symbol(Storage *tbl, const Symbol *sym)
 {
 	RA_Array cur = tbl->len;
 	Slice *s;
-	const int len = symbol_store_length(sym);
+	const SymbolSize len = symbol_store_length(sym);
 
 	storage_enlarge(tbl, len);
 	s = tbl->current;
@@ -114,7 +113,7 @@ void array_add_byte(char byte)
 {
 	storage_enlarge(array_current_storage, 1);
 	storage_put1byte(array_current_storage, byte);
-	++current_len_addr;
+	++current_len;
 }
 
 void array_end()

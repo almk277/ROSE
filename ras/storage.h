@@ -26,7 +26,7 @@ typedef struct Storage {
 /* Guarantees that tbl has at least size bytes free */
 void storage_enlarge(Storage *tbl, RA_Array size);
 
-void storage_put1byte(Storage *s, uint8_t byte);
+void storage_put1byte(Storage *s, int8_t byte);
 
 void storage_put2byte(Storage *s, int16_t word);
 
@@ -41,10 +41,13 @@ char *storage_current(const Storage *tbl);
 /* dumps storage to file */
 void storage_write(const Storage *tbl);
 
+/* Begins new array in tbl. Returns it's start offset */
 RA_Array array_begin(Storage *tbl);
 
+/* adds byte to current array */
 void array_add_byte(char byte);
 
+/* ends current array */
 void array_end(void);
 
 #endif
