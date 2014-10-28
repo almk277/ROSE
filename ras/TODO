@@ -1,5 +1,4 @@
 remove symbols when clearing symbol table;
-fix CLI options handling;
 prelink;
 remove Perl dependency;
 make code not to depend on operand sizes.

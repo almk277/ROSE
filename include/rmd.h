@@ -19,15 +19,13 @@ typedef int32_t R_Word;
 typedef uint16_t RA_Symbol;
 typedef uint32_t RA_Array;
 typedef uint32_t RA_Text;
+typedef int16_t  RA_TextOffset;
 typedef uint8_t  RA_Stack;
 typedef uint8_t  RA_Data;
 typedef uint8_t  RA_Module;
 typedef uint8_t  RA_Proc;
 typedef uint8_t  RA_Export;
 typedef uint8_t  RA_Import;
-
-/* Other types */
-typedef int16_t  R_TextOffset;
 
 /* Information about sector sizes */
 typedef struct RMDSectorSize {

@@ -2,7 +2,7 @@ CPPFLAGS += -I../include
 
 all: librose.a
 
-librose.a: symtbl.o mm.o symbol.o loader.o
+librose.a: symtbl.o mm.o symbol.o loader.o cmdopt.o
 	$(AR) crs $@ $^
 
 debug:   CPPFLAGS += -DDEBUG

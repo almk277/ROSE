@@ -16,51 +16,70 @@ void *(*mm_on_error)(mmPoolStruct *) = mm_error;
 
 int verbose = DL_NONE;
 static const char *input_name = 0;
-const char *output_name = 0;
+const char *output_name = "out.rmd";
 
 FILE *output;
 /* from generated ras-lex.c */
 extern FILE *yyin;
 extern int yylex(void);
 
-static void usage(const char *progname)
+static void usage(const char *progname, const struct cmdopt opts[])
 {
-	fprintf(stdout, "Usage:\n"
-			"%s [OPTIONS] FILE.ras\n",
-			progname);
-	fputs(
-			"Options are:\n"
-			"  -help        -- this help message\n"
-			"  -output=name -- create file 'name' instead of FILE.rmd\n"
-			"  -verbose[=n] -- verbose mode, n is level (1..3)\n"
-		, stdout);
+	puts("ROSE assembler. Usage:");
+	printf("%s [OPTIONS] <filename>\n", progname);
+	puts("Options are:");
+	cmdopt_print(opts);
+}
+
+static void set_input(const char *name)
+{
+	input_name = name;
+}
+
+static void set_output(const char *name)
+{
+	if(!name) {
+		puts("output name omitted");
+		exit(1);
+	}
+	output_name = name;
+}
+
+static void set_verbose(const char *v)
+{
+	if(v) {
+		if(sscanf(v, "%d", &verbose) != 1 || verbose < 0 || verbose > 3) {
+			puts("-verbose: integer [0..3] expected");
+			exit(1);
+		}
+	} else
+		verbose = 1;
 }
 
 static void parse_cmd(int argc, char *argv[])
 {
 	int help = 0;
-	struct cmdopt opts[] = {
-		{ "help", CMDOPT_NONE, &help },
-		{ "output", CMDOPT_STR, &output_name },
-		{ "verbose", CMDOPT_LONG1, &verbose },
-		{ NULL, 0, NULL }
+	const struct cmdopt opts[] = {
+		{ "help", &help, NULL, "this help message" },
+		{ "output", NULL, set_output, "output file name ('out.rmd' by default)" },
+		{ "verbose", NULL, set_verbose, "verbosity level (0..3)" },
+		{ NULL, NULL, set_input }
 	};
 
-	int file_idx = cmdopt(argc, argv, opts);
-	if(help) {
-		fputs("ROSE assembler. ", stdout);
-		usage(argv[0]);
+	int err = cmdopt_parse(argc, argv, opts);
+	if(err) {
+		printf("unknown option: %s\n", argv[err]);
 		exit(1);
 	}
-	if(file_idx <= 0) {
-		if(file_idx == 0)
-			printf("%s: no input file specified. ", argv[0]);
+	if(help) {
+		usage(argv[0], opts);
+		exit(0);
+	}
+	if(!input_name) {
+		printf("%s: no input file specified. ", argv[0]);
 		puts("See -help for details."); 
 		exit(1);
 	}
-	input_name = argv[file_idx];
-	if(!output_name)
-		output_name = "out.rmd";
 }
 
 static FILE *fopen_and_check(const char *name, const char *mode)
@@ -90,7 +109,7 @@ int main(int argc, char *argv[])
 	header_fill();
 	sect_print();
 
-	output = fopen_and_check(output_name, "w");
+	output = fopen_and_check(output_name, "wb");
 	sect_write();
 	fclose_and_check(output_name, output);
 
