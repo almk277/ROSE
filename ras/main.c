@@ -32,9 +32,7 @@ static void usage(const char *progname)
 			"Options are:\n"
 			"  -help        -- this help message\n"
 			"  -output=name -- create file 'name' instead of FILE.rmd\n"
-#ifdef DEBUG
 			"  -verbose[=n] -- verbose mode, n is level (1..3)\n"
-#endif
 		, stdout);
 }
 
@@ -44,9 +42,7 @@ static void parse_cmd(int argc, char *argv[])
 	struct cmdopt opts[] = {
 		{ "help", CMDOPT_NONE, &help },
 		{ "output", CMDOPT_STR, &output_name },
-#ifdef DEBUG
 		{ "verbose", CMDOPT_LONG1, &verbose },
-#endif
 		{ NULL, 0, NULL }
 	};
 

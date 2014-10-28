@@ -27,7 +27,6 @@ void error_symbol(const Symbol *sym, const char *msg)
 	exit(1);
 }
 
-#ifdef DEBUG
 void debug_line(const char *fmt, ...)
 {
 	if(verbose >= DL_PERLINE) {
@@ -39,7 +38,6 @@ void debug_line(const char *fmt, ...)
 		putchar('\n');
 	}
 }
-#endif
 
 void file_error(const char *name)
 {

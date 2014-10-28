@@ -22,12 +22,8 @@ void error_symbol(const struct Symbol *sym, const char *msg);
 
 /* prints information about current source line
  * if requested by verbosity level */
-#ifdef DEBUG
 C_ATTR_PRINTF(1, 2)
 void debug_line(const char *fmt, ...);
-#else
-#define debug_line(fmt, ...)
-#endif
 
 /* prints information about file 'name' error */
 C_ATTR_NORETURN

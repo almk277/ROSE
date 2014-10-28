@@ -450,13 +450,11 @@ void sub_finish()
 {
 	if(current_sub) {
 		ref_resolve();
-#ifdef DEBUG
 		if(verbose >= DL_DUMP) {
 			sub_print();
 			var_print();
 			label_print();
 		}
-#endif
 		label_clear();
 		var_clear();
 		ptbl_sect[current_sub->i].size = serial_32(sub_len);
@@ -504,9 +502,6 @@ void header_fill()
 		+ header.sizes.imp * sizeof(RMDImport)
 		+ header.sizes.text + header.sizes.sym + header.sizes.str);
 }
-
-#ifdef DEBUG
-/* A lot of debug output */
 
 static void header_print()
 {
@@ -647,8 +642,6 @@ void sect_print()
 	str_print();
 	printf("%d bytes written\n", sizeof(RMDHeader) + deserial_32(header.size));
 }
-
-#endif /* DEBUG */
 
 void sect_init()
 {

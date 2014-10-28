@@ -70,11 +70,7 @@ void label_add(const struct Symbol *name);
 void exp_add(const struct Symbol *name);
 
 /* print out debug info about all sections */
-#ifdef DEBUG
 void sect_print(void);
-#else
-#define sect_print()
-#endif
 
 /* initializes sections */
 void sect_init(void);
