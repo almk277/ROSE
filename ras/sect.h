@@ -3,35 +3,35 @@
 #ifndef SECT_H
 #define SECT_H
 
-#include <stdint.h>
-#include "symbol.h"
+#include "rmd.h"
+struct Symbol;
 
 /* adds data with name */
-void data_add(const Symbol *name);
+void data_add(const struct Symbol *name);
 
 /* adds module with name to #mtbl */
-void module_add(const Symbol *name);
+void module_add(const struct Symbol *name);
 
 /* sets version for last imported module */
 void module_set_version(const char *version);
 
 /* adds extern name to #imp */
-void imp_add(const Symbol *name);
+void imp_add(const struct Symbol *name);
 
 /* sets module name */
-void header_set_name(const Symbol *name);
+void header_set_name(const struct Symbol *name);
 
 /* sets module version */
 void header_set_version(const char *version);
 
 /* sets module parent */
-void header_set_parent(const Symbol *name);
+void header_set_parent(const struct Symbol *name);
 
 /* fills module header with current values */
 void header_fill(void);
 
 /* begins new #str string */
-void str_begin(const Symbol *name);
+void str_begin(const struct Symbol *name);
 
 /* adds a byte c to current #str string */
 void str_add_char(char c);
@@ -40,18 +40,19 @@ void str_add_char(char c);
 void str_end(void);
 
 /* adds procedure name to #ptbl */
-void ptbl_add(const Symbol *name);
+void ptbl_add(const struct Symbol *name);
 
 /* adds argument with name */
-void arg_add(const Symbol *name);
+void arg_add(const struct Symbol *name);
 
 /* adds variable with name */
-void var_add(const Symbol *name);
+void var_add(const struct Symbol *name);
 
 /* provides size bytes avaliable in text storage */
-void text_enlarge(int size);
+void text_enlarge(RA_Text size);
 
-uint32_t text_len(void);
+/* returns current text address */
+RA_Text text_addr(void);
 
 /* adds new operation code to #text */
 void text_emit_opcode(char code);
@@ -60,13 +61,13 @@ void text_emit_opcode(char code);
 void text_emit_const(char type, const char *c);
 
 /* emits instruction operand of given type with given name */
-void text_emit_symbol(char type, Symbol *name);
+void text_emit_symbol(char type, struct Symbol *name);
 
 /* stores label with given name */
-void label_add(const Symbol *name);
+void label_add(const struct Symbol *name);
 
 /* adds procedure name to #exp */
-void exp_add(const Symbol *name);
+void exp_add(const struct Symbol *name);
 
 /* print out debug info about all sections */
 #ifdef DEBUG

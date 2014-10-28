@@ -20,7 +20,7 @@ static void emit_instruction(int len, char opcode, const char *argstring)
 	debug_line("instruction %s", yytext);
 }
 
-static void end_instruction(void)
+static void end_instruction()
 {
 	if(*args && *args != '-')
 		error("not enough arguments");

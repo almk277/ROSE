@@ -1,5 +1,6 @@
 #include "sect.h"
 #include "print.h"
+#include "symbol.h"
 #include "symtbl.h"
 #include "storage.h"
 #include "rmd.h"
@@ -46,8 +47,8 @@ extern RA_Text sub_len;
 typedef struct Reference {
 	Symbol *name;                /* referenced label */
 	int lineno;                  /* reference source line */
-	uint32_t base;               /* reference base address */
-	int16_t *value;              /* reference value address */
+	RA_Text base;                /* reference base address */
+	RA_TextOffset *value;        /* reference value address */
 	SLIST_ENTRY(Reference) le;   /* list entry */
 } Reference;
 
@@ -268,17 +269,12 @@ void arg_add(const Symbol *name)
 	++add_to_var(name)->argc;
 }
 
-void text_enlarge(int size)
+void text_enlarge(RA_Text size)
 {
 	storage_enlarge(&text_sect, size);
 }
 
-char *text_addr()
-{
-	return storage_current(&text_sect);
-}
-
-uint32_t text_len()
+RA_Text text_addr()
 {
 	return text_sect.len;
 }
@@ -408,7 +404,7 @@ static void ref_new(Symbol *label)
 	storage_enlarge(&text_sect, REF_SIZE);
 	text_put2byte(0);
 	r->base = instr_start;
-	r->value = (int16_t*)text_addr();
+	r->value = (RA_TextOffset*)storage_current(&text_sect);
 	SLIST_INSERT_HEAD(&ref_head, r, le);
 }
 
@@ -427,7 +423,7 @@ static void resolve(const Reference *ref)
 		fprintf(stderr, "line %d, offset %d: ", ref->lineno, offset);
 		error_symbol(ref->name, "label reference is out of range");
 	}
-	*ref->value = (int16_t)offset;
+	*ref->value = (RA_TextOffset)offset;
 	if(verbose >= DL_NUDE) {
 		symbol_print(ref->name);
 		debug_line("  -> %"PRIu32"(%+"PRIi16")", v->u32, offset);
