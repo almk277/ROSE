@@ -103,3 +103,11 @@ int symbol_split_colon(const Symbol *s, Symbol **s1, Symbol **s2)
 	return 1;
 }
 
+static const char s_empty[] = { 0 };
+static const char s_main[] = { 4, 'm', 'a', 'i', 'n' };
+
+const struct SymbolStore symbol_store = {
+	(const Symbol*)&s_empty,
+	(const Symbol*)&s_main
+};
+

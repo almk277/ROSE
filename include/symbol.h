@@ -40,5 +40,12 @@ void symbol_copy_to(const Symbol *s, char *buffer);
  * Returns 1 if success (there is ":"), 0 otherwise */
 int symbol_split_colon(const Symbol *s, Symbol **s1, Symbol **s2);
 
+struct SymbolStore {
+	const Symbol *empty;
+	const Symbol *main;
+};
+
+extern const struct SymbolStore symbol_store;
+
 #endif
 
