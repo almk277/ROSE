@@ -2,8 +2,8 @@ There is segmented memory model. Segments are:
         GLOBAL:
 	*  .heap - area for dynamic memory allocation;
         THREAD-LOCAL:
-	*  .stack - procedure arguments and local variables;
-	*  .proc  - internal procedure stack;
+	*  .varstack - procedure arguments and local variables;
+	*  .procstack  - internal procedure stack;
         MODULE-LOCAL:
 	*  .ptbl - procedure table;
 	*  .mtbl - module table;

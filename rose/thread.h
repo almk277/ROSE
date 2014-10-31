@@ -1,24 +1,11 @@
 #ifndef ROSE_THREAD_H
 #define ROSE_THREAD_H
 
-#include "stack.h"
-#include "module.h"
-
-typedef struct Thread Thread;
-
-struct Thread {
-	Stack stack;
-	Stack proc;
-	Module *module;
-	Text *text;
-	int status;
-	uint8_t operand;
-	Proc *current_proc;
-};
-
-void thread_init(Thread *t);
-
-void thread_debug(const Thread *t);
+#include "rmd.h"
+#include "segment.h"
+#include <signal.h>
+struct Symbol;
+struct Module;
 
 enum ThreadStatus {
 	THS_RUNNING = 0,
@@ -27,15 +14,31 @@ enum ThreadStatus {
 	THS_INV_OPCODE,
 };
 
-int thread_start(Thread *t, Module *m);
+typedef struct ActivRecord {
+	struct Module *module;
+	R_Byte *retaddr;
+	R_Word *varbase;
+} ActivRecord;
 
-void thread_set_module(Thread *t, Module *m);
+typedef struct Thread {
+	R_Word vstack[2048];
+	R_Word *vars;
+	ActivRecord pstack[32];
+	ActivRecord *procs;
+	struct Module *module;
+	Text *text;
+	const R_Byte *pc;
+	//volatile sig_atomic_t status;
+	//Proc *current_proc;
+} Thread;
 
-void thread_proc_call(Thread *t, Module *m, uint8_t idx);
+void thread_init(Thread *t);
 
-void thread_proc_ret(Thread *t, int retval);
+void thread_set_module(Thread *t, struct Module *m);
 
-void thread_debug_start(Thread *t, Module *m);
+int thread_jump_to(Thread *t, struct Module *m, const struct Symbol *proc);
+
+int thread_run(Thread *t);
 
 #endif
 

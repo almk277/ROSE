@@ -7,7 +7,7 @@ LIBS += -L../lib -lrose
 
 all: rose
 
-rose: rose.o module.o
+rose: rose.o module.o thread.o cpu.o
 	$(CC) $(LDFLAGS) -o $@ $^ $(LIBS)
 
 isa_desc.c: ../doc/isa.dsc

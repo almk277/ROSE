@@ -33,6 +33,9 @@ typedef struct Sym {
 	RA_Symbol size;
 } Sym;
 
+const struct Symbol *sym_get(const Sym *seg, RA_Symbol sym);
+#define sym_get(seg, sym)	((const struct Symbol*)&(seg)->start[(sym)])
+
 typedef struct Str {
 	const char *start;
 	RA_Array size;

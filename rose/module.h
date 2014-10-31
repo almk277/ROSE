@@ -50,8 +50,7 @@ Module *module_get(const struct Symbol *name, const char **errstr);
 
 #define module_version(m) (&(m)->version)
 
-R_Byte module_find_proc(const Module *m,
-		const struct Symbol *name, R_Byte hint);
+int module_find_proc(const Module *m, const struct Symbol *name, RA_Export *proc);
 
 const R_Byte *module_addr_proc(const Module *m, R_Byte idx);
 

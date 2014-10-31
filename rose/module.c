@@ -130,16 +130,38 @@ Module *module_load(const char *path, const char **errstr)
 
 Module *module_get(const Symbol *name, const char **errstr)
 {
+	SymbolValue *v;
 	FILE *f;
-	SymbolValue *v = symtbl_find(&module_tbl, name);
+
+   	v = symtbl_find(&module_tbl, name);
 	if(v)
 		return v->p;
+
 	f = loader_find_module(name);
-	if(!f) {
-		*errstr = "can not find module";
-		return NULL;
+	if(f)
+		return load_header(f, errstr);
+
+	*errstr = "can not find module";
+	return NULL;
+}
+
+int module_find_proc(const Module *m, const Symbol *name, RA_Export *proc)
+{
+	int i;
+	const Exp *exp = &m->seg.exp;
+	const Sym *sym = &m->seg.sym;
+	const Symbol *tryname = sym_get(sym, *proc);
+	if(symbol_compare(name, tryname))
+		return 1;
+	for(i = 0; i != exp->size; ++i) {
+		const RMDExport *e = &exp->start[i];
+		tryname = sym_get(sym, e->name);
+		if(symbol_compare(name, tryname)) {
+			*proc = i;
+			return 1;
+		}
 	}
-	return load_header(f, errstr);
+	return 0;
 }
 
 #if 0
@@ -159,17 +181,6 @@ static Module *create_module(RMDHeader *h, FILE *f, int *error)
 	module->mtbl = (Module **)((char *)module + sizeof(Module) + h->size);
 	memset(module->mtbl, 0, h->mtbl * sizeof(Module *));
 	return module;
-}
-
-int module_find_proc(const Module *m, const char *name)
-{
-	int i;
-	for(i = 0; i != m->seg.exp.size; ++i) {
-		RMDExport *e = exp_get(&m->seg.exp, i);
-		if(strcmp(sym_get(&m->seg.sym, e->name), name) == 0)
-			return exp_get_ptbl_idx(&m->seg.exp, i);
-	}
-	return -1;
 }
 
 int module_find_external_proc(Module *module, int idx, Module **m)
