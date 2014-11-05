@@ -1,5 +1,6 @@
 #include "symbol.h"
 #include "mm.h"
+#include "endian.h"
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,9 +11,11 @@ struct Symbol {
 	char data[1];
 };
 
+#define LEN (sizeof(SymbolSize))
+
 #define DEFPOOL(size, count) \
 	typedef Symbol Symbol ## size; \
-	static mmPoolStruct MM_POOL(Symbol ## size) = { 0, count, size + 1 };
+	static mmPoolStruct MM_POOL(Symbol ## size) = { 0, count, size + LEN };
 
 DEFPOOL(4,  64);
 DEFPOOL(8,  32);
@@ -31,7 +34,7 @@ Symbol *symbol_new(const char *str, int len)
 	else if(len < 32)
 		s = mm_alloc(Symbol32);
 	else
-		s = malloc(len + 1);
+		s = malloc(len + LEN);
 	memcpy(s->data, str, len);
 	s->len = len;
 	return s;
@@ -59,7 +62,7 @@ SymbolSize symbol_length(const Symbol *s)
 
 SymbolSize symbol_store_length(const Symbol *s)
 {
-	return s->len + 1;
+	return s->len + LEN;
 }
 
 int symbol_compare(const Symbol *s1, const Symbol *s2)
@@ -88,7 +91,8 @@ void symbol_print_to_file(const Symbol *s, FILE *file)
 
 void symbol_copy_to(const Symbol *s, char *buffer)
 {
-	*buffer++ = s->len;
+	*(SymbolSize*)buffer = serial(s->len);
+	buffer += LEN;
 	memcpy(buffer, s->data, s->len);
 }
 
