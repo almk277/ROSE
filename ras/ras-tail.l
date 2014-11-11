@@ -12,7 +12,7 @@
 static void emit_instruction(int len, char opcode, const char *argstring)
 {
 	BEGIN instruction;
-	instr_start = text_len();
+	instr_start = text_addr();
 	text_enlarge(len);
 	sub_len += len;
 	text_emit_opcode(opcode);
