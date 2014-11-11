@@ -2,6 +2,7 @@
 #define SYMBOL_H
 
 #include <stdio.h>
+#include "compiler.h"
 
 /* Symbol is a short atomic string */
 typedef struct Symbol Symbol;
@@ -10,21 +11,26 @@ typedef struct Symbol Symbol;
 typedef unsigned char SymbolSize;
 
 /* Creates new symbol of len size and copies str into it */
+C_ATTR_MALLOC
 Symbol *symbol_new(const char *str, int len);
 
 /* Deletes symbol s */
 void symbol_delete(Symbol *s);
 
 /* Returns length of symbol s */
+C_ATTR_CONST
 SymbolSize symbol_length(const Symbol *s);
 
 /* Returns number of bytes to store s */
+C_ATTR_CONST
 SymbolSize symbol_store_length(const Symbol *s);
 
 /* Compares symbols s1 and s2, returns 1 if the are equal, 0 otherwise */
+C_ATTR_CONST
 int symbol_compare(const Symbol *s1, const Symbol *s2);
 
 /* Returns hash byte for symbol s */
+C_ATTR_CONST
 unsigned char symbol_hash(const Symbol *s);
 
 /* Prints symbol to standard output */

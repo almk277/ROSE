@@ -4,6 +4,7 @@
 #define SYMTBL_H
 
 #include <stdint.h>
+#include "compiler.h"
 
 struct Symbol;
 
@@ -25,6 +26,7 @@ typedef union SymbolValue {
 void symtbl_init(SymbolTable *tbl);
 
 /* returns number of elements in tbl */
+C_ATTR_CONST
 int symtbl_size(const SymbolTable *tbl);
 
 /* adds symbol to tbl, if not there yet, and returns pointer to it's value.
@@ -36,6 +38,7 @@ SymbolValue *symtbl_add_or_get(SymbolTable *tbl, const struct Symbol *symbol);
 
 /* searches for symbol in tbl and returns pointer to it's value.
  * Otherwise, returns NULL */
+C_ATTR_PURE
 SymbolValue *symtbl_find(const SymbolTable *tbl, const struct Symbol *symbol);
 
 /* clears tbl */

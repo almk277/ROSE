@@ -62,12 +62,12 @@ int loader_add_dir_from_file(const char *fname)
 FILE *loader_find_module(const Symbol *name)
 {
 	StdPath *ent;
+	const int flen = symbol_length(name);
 	SIMPLEQ_FOREACH(ent, &stdpath_list, pe) {
 		FILE *f;
 		static const char suffix[] = ".rmd";
 		char *const buf = ent->buffer;
 		const int dlen = ent->length;
-		const int flen = symbol_length(name);
 		const int len = dlen + flen;
 		if(len + sizeof suffix > 255)
 			continue;

@@ -646,9 +646,7 @@ void sect_print()
 void sect_init()
 {
 	/* symbol may not have an address of 0 */
-	Symbol *empty = symbol_new("", 1);
-	sym_add(empty);
-	symbol_delete(empty);
+	sym_add(symbol_store.empty);
 }
 
 void sect_finish()
