@@ -13,7 +13,7 @@ barr.new   ai        94    $1 = new array[$2]
 barr.putb  vai       92    $2[$3] = $1
 barr.putw  vai       93    $2[$3] = $1
 call       P         40    call $1
-dbg.byte   i         01    prints $1 & 0xFF
+dbg.byte   c         01    prints $1 & 0xFF
 dbg.str    a         02    prints $1
 dispatch   oS        45    call $1.$2
 exit       -         05    stops the program
