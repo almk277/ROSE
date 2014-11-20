@@ -38,7 +38,7 @@ void thread_set_module(Thread *t, struct Module *m);
 
 int thread_jump_to(Thread *t, struct Module *m, const struct Symbol *proc);
 
-int thread_run(Thread *t);
+void thread_run(Thread *t);
 
 #endif
 

@@ -12,7 +12,7 @@ rose: rose.o module.o thread.o cpu.o
 
 cpu.o: instr.h
 
-instr.h: ../doc/isa.dsc gen.pl
+instr.h: ../doc/isa.dsc gen.pl cpu.c
 	perl gen.pl
 
 clean:
@@ -25,13 +25,3 @@ depend:
 	@gcc $(CPPFLAGS) -MM *.c
 
 # DEPENDENCIES
-cpu.o: cpu.c thread.h ../include/rmd.h segment.h instr.h
-debug.o: debug.c debug.h ../include/compiler.h segment.h \
- ../include/rmd.h
-error.o: error.c error.h
-module.o: module.c module.h ../include/rmd.h segment.h ../include/mm.h \
- ../include/compiler.h ../include/symbol.h ../include/symtbl.h \
- ../include/queue.h ../include/loader.h
-rose.o: rose.c module.h ../include/rmd.h segment.h thread.h \
- ../include/symbol.h ../include/compiler.h cpu.h ../include/loader.h
-thread.o: thread.c thread.h ../include/rmd.h segment.h module.h

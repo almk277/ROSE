@@ -1,7 +1,6 @@
 #include "thread.h"
 #include "module.h"
 /*#include "compiler.h"*/
-/*#include "isa.c"*/
 
 void thread_init(Thread *t)
 {
@@ -25,11 +24,6 @@ int thread_jump_to(Thread *t, struct Module *m, const struct Symbol *proc)
 		thread_set_module(t, m);
 		return 1;
 	}
-	return 0;
-}
-
-int thread_run(Thread *t)
-{
 	return 0;
 }
 

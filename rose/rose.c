@@ -1,7 +1,6 @@
 #include "module.h"
 #include "thread.h"
 #include "symbol.h"
-#include "cpu.h"
 #include "loader.h"
 #include <stdio.h>
 
@@ -24,7 +23,7 @@ int main(int argc, char *argv[])
 		printf("%s: procedure 'main' not found\n", file);
 		return 1;
 	}
-	cpu_run(&t);
+	thread_run(&t);
 
 	return 0;
 }

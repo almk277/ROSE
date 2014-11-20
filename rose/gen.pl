@@ -3,7 +3,6 @@ use strict;
 
 # This script reads ROSE ISA documentation file and generates instruction names
 
-my $op_name = "../doc/operand.dsc";
 my $dsc_name = "../doc/isa.dsc";
 my $cpu_name = "cpu.c";
 my $opcodes_name = "instr.h";
@@ -34,9 +33,9 @@ while(<DSC>) {
 		my $code = $3; # instruction code string
 		defined($codedefined{$code}) and die "opcode $code defined twice\n";
 		$codedefined{$code} = 1;
-		defined($codeused{$name}) or push @nonimplemented, $name;
 		$name =~ tr/\./_/;
 		print OP "\tI_$name = 0x$code,\n";
+		defined($codeused{$name}) or push @nonimplemented, $name;
 	} else {
 		die "$dsc_name: Can not parse string: '$_'\n";
 	}
