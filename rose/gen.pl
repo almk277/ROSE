@@ -1,99 +1,49 @@
 #! /usr/bin/perl -w
-
-# This script reads ROSE ISA documentation file and generates C sources:
-#   isa_desc.c is ISA implementation;
-#   isa_tbl.c is ISA table.
-
 use strict;
 
-# Returns a string with a C-function stub
-# Arguments are instruction name and comment.
-sub func_stub
-{
-	my ($name, $comment) = @_;
-	return
-"/* $comment */
-static void isa_$name(Thread *t)
-{
-	NOT_IMPLEMENTED(\"$name\");
-}
+# This script reads ROSE ISA documentation file and generates instruction names
 
-";
-}
-
+my $op_name = "../doc/operand.dsc";
 my $dsc_name = "../doc/isa.dsc";
-my $func_name = "isa_desc.c";
-my $tbl_name = "isa_tbl.c";
-my $dbg_name = "isa_dbg.c";
-my $dbgtbl_name = "dbg_tbl.c";
-my $disas_name = "disas_tbl.c";
-my (%funclist, %dbglist);
-my (@names, @codes);
+my $cpu_name = "cpu.c";
+my $opcodes_name = "instr.h";
+my $op_enum_name = "Instuctions";
+my %name2code;
+my %codedefined;
+my %codeused;
+my (@names, @nonimplemented);
 
-open(FUNC, "$func_name") or die("$func_name: $!\n");
-while(<FUNC>) {
-	/isa_(\w+)\s*\(/ and $funclist{$1} = 1;
+# let's see what opcodes are used already
+open(CPU, "$cpu_name") or die("$cpu_name: $!\n");
+while(<CPU>) {
+# opcodes should be used in a form: "case I_foo:"
+	/case I_(\w+)\:/ and $codeused{$1} = 1;
 }
-close(FUNC);
+close(CPU);
 
-open(DBG, "$dbg_name") or die("$dbg_name: $!\n");
-while(<DBG>) {
-	/dbg_(\w+)\s*\(/ and $dbglist{$1} = 1;
-}
-close(DBG);
-
-open(FUNC, ">>$func_name") or die("$func_name: $!\n");
 open(DSC, "$dsc_name") or die("$dsc_name: $!\n");
+open(OP, ">$opcodes_name") or die("$opcodes_name: $!\n");
+print OP "/* auto-generated; do not edit */\n";
+print OP "enum $op_enum_name {\n";
 while(<DSC>) {
 	next if /^#/; # skip comments
 	next unless /\S/; # skip empty lines
-	while(/\\$/) { # concatenate strings
-		chomp; chop;
-		my $next = <DSC>;
-		$next =~ s/^\s*//;
-		$_ .= $next;
-	}
-	if(/(\w+)\s+(\w)\s+(0[xX][\dA-F]{2})\s+(.*)$/) {
-		my $idx = hex $3; # instruction code
-		defined($names[$idx]) and die "$1 and $names[$idx] have opcode $idx";
-		$names[$idx] = $1;
-		$codes[$idx] = $2;
-		if(!defined($funclist{$1})) {
-			print FUNC func_stub($1, "[$2] $4");
-		}
+	chomp;
+	if(/([\w\.]+)\s+([\w-])+\s+([\dA-F]{2})\s+(.*)$/) {
+		my $name = $1; #instruction name
+		my $code = $3; # instruction code string
+		defined($codedefined{$code}) and die "opcode $code defined twice\n";
+		$codedefined{$code} = 1;
+		defined($codeused{$name}) or push @nonimplemented, $name;
+		$name =~ tr/\./_/;
+		print OP "\tI_$name = 0x$code,\n";
 	} else {
-		die "$dsc_name: Can not parse string: $_\n";
+		die "$dsc_name: Can not parse string: '$_'\n";
 	}
 }
+print OP "};\n\n";
+close(OP) or die("$opcodes_name: $!\n");
 close(DSC);
-close(FUNC) or die("$func_name: $!\n");
 
-# Create instruction and debug tables
-open(TBL, ">$tbl_name") or die("$tbl_name: $!\n");
-open(DBG, ">$dbgtbl_name") or die("$dbgtbl_name: $!\n");
-open(DIS, ">$disas_name") or die("$disas_name: $!\n");
-for(my $i = 0; $i != 256; ++$i) {
-	my ($out, $dbg, $name, $code);
-	if(defined($names[$i])) {
-		$out = "isa_$names[$i]";
-		$name = "\"$names[$i]\"";
-		$code = "OPER_$codes[$i]";
-		if(defined($dbglist{$names[$i]})) {
-			$dbg = "dbg_$names[$i]";
-		} else {
-			$dbg = $out;
-		}
-	} else {
-		$out = "NO_INSTR";
-		$dbg = "DBG_NO_INSTR";
-		$name = "DIS_NO_INSTR";
-		$code = "OPER_none";
-	}
-	printf TBL "%-15s /* 0x%.2X */\n", $out . ",", $i;
-	printf DBG "%-15s /* 0x%.2X */\n", $dbg . ",", $i;
-	printf DIS "{ %-15s %-12s }, /* 0x%.2X */\n", $name . ",", $code, $i;
-}
-close(DIS) or die("$disas_name: $!\n");
-close(DBG) or die("$tbl_name: $!\n");
-close(TBL) or die("$dbg_name: $!\n");
-
+@nonimplemented and print "Warning! " .
+	"The following instructions are not implemented: @nonimplemented\n"

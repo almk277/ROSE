@@ -49,7 +49,7 @@ while(<ISA>) {
 			if(not defined $len) { die("Unknown argument code: $c\n"); }
 			$instrlen += $len;
 		}
-		printf LEX "%-10s emit_instruction($instrlen, $3, \"$2\"); \n", $1
+		printf LEX "%-10s emit_instruction($instrlen, 0x$3, \"$2\"); \n", $1
 	} else {
 		die "Could not parse this line: '$_'"
 	}

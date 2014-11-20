@@ -10,29 +10,28 @@ all: rose
 rose: rose.o module.o thread.o cpu.o
 	$(CC) $(LDFLAGS) -o $@ $^ $(LIBS)
 
-isa_desc.c: ../doc/isa.dsc
-	./isa_gen.pl
-	touch $@
+cpu.o: instr.h
 
-isa_tbl.c: ../doc/isa.dsc
-	./isa_gen.pl
-	touch $@
-
-dbg_tbl.c: ../doc/isa.dsc
-	./isa_gen.pl
-	touch $@
-
-disas_tbl.c: ../doc/isa.dsc
-	./isa_gen.pl
-	touch $@
+instr.h: ../doc/isa.dsc gen.pl
+	perl gen.pl
 
 clean:
 	rm -f *.o rose
 
 clean-all: clean
-	rm -f isa_tbl.c
+	rm -f instr.h
 
 depend:
 	@gcc $(CPPFLAGS) -MM *.c
 
 # DEPENDENCIES
+cpu.o: cpu.c thread.h ../include/rmd.h segment.h instr.h
+debug.o: debug.c debug.h ../include/compiler.h segment.h \
+ ../include/rmd.h
+error.o: error.c error.h
+module.o: module.c module.h ../include/rmd.h segment.h ../include/mm.h \
+ ../include/compiler.h ../include/symbol.h ../include/symtbl.h \
+ ../include/queue.h ../include/loader.h
+rose.o: rose.c module.h ../include/rmd.h segment.h thread.h \
+ ../include/symbol.h ../include/compiler.h cpu.h ../include/loader.h
+thread.o: thread.c thread.h ../include/rmd.h segment.h module.h
