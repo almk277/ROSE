@@ -1,4 +1,3 @@
 remove symbols when clearing symbol table;
 prelink;
-remove Perl dependency;
 make code not to depend on operand sizes.
