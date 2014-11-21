@@ -4,8 +4,6 @@
 .sub println
 .export println
 .arg str
-.var nl
 	dbg.str str
-	int.snew nl '\n'
-	dbg.byte nl
+	dbg.byte '\n'
 	return

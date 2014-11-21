@@ -1,15 +1,15 @@
-.module hello 1.0
+# "Hello, world" from ROSE
 
-# Outputs message through constant array.
+.module hello 1.0            # module name and version
 
-.str hello_str "Hello";
+.str hello_str "Hello" ','   # string array
+	' '
+	"world" '!';
 
-.sub main
-.export main
-.var str
-.var nl
-	barr.load str hello_str
-	int.snew nl '\n'
-	dbg.str str
-	dbg.byte nl
-	exit
+.sub main                    # first procedure
+.export main                 # procedure is visible outside
+.var str                     # local variable
+	barr.load str hello_str  # initialize local byte array from constant
+	dbg.str str              # output string
+	dbg.byte '\n'            # output new line symbol
+	exit                     # finish the program
