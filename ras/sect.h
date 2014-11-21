@@ -33,8 +33,17 @@ void header_fill(void);
 /* begins new #str string */
 void str_begin(const struct Symbol *name);
 
+/* adds an escaped byte c to current #str string */
+void str_add_escaped_char(char c);
+
 /* adds a byte c to current #str string */
 void str_add_char(char c);
+
+/* adds a float s to current #str string */
+void str_add_flt(const char *s);
+
+/* adds an integer s to current #str string */
+void str_add_int(const char *s);
 
 /* ends #str string */
 void str_end(void);
@@ -57,8 +66,17 @@ RA_Text text_addr(void);
 /* adds new operation code to #text */
 void text_emit_opcode(char code);
 
-/* emits instruction operand of given type made of constant c */
-void text_emit_const(char type, const char *c);
+/* emits instruction operand of given type made of escaped character c */
+void text_emit_escaped_char(char type, char c);
+
+/* emits instruction operand of given type made of character c */
+void text_emit_char(char type, char c);
+
+/* emits instruction operand of given type made of float c */
+void text_emit_flt(char type, const char *c);
+
+/* emits instruction operand of given type made of integer c */
+void text_emit_int(char type, const char *c);
 
 /* emits instruction operand of given type with given name */
 void text_emit_symbol(char type, struct Symbol *name);

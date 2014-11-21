@@ -98,7 +98,8 @@ static void fclose_and_check(const char *name, FILE *f)
 
 int main(int argc, char *argv[])
 {
-	setlocale(LC_ALL, "");
+	/* LC_ALL influences scanf badly */
+	/*setlocale(LC_MESSAGES, "");*/
 	parse_cmd(argc, argv);
 	sect_init();
 

@@ -208,15 +208,76 @@ void header_write()
 		file_write_error();
 }
 
+enum NumberDescIdx {
+	NUMDESC8,
+	NUMDESC16,
+	NUMDESC32,
+};
+
+static const struct NumberDesc {
+	const char *fmt;
+	long min;
+	long max;
+} num_desc[] = {
+	{ "%"PRIi8,  INT8_MIN,  INT8_MAX },
+	{ "%"PRIi16, INT16_MIN, INT16_MAX },
+	{ "%"PRIi32, INT32_MIN, INT32_MAX },
+};
+
+static char escaped_char(char sym)
+{
+	switch(sym) {
+		case 'n':  return '\n';
+		case 't':  return '\t';
+		case '\\': return '\\';
+		case '\'': return '\'';
+		case '"': return '"';
+		default: return sym;
+	}
+}
+
+static long int_parse(const char *string, int code)
+{
+	long arg;
+	if(sscanf(string, num_desc[code].fmt, &arg) != 1)
+		error("%s: not an integer", string);
+	if(arg < num_desc[code].min || arg > num_desc[code].max)
+		error("%ld: number out of range", arg);
+	return arg;
+}
+
+static R_Word flt_parse(const char *string)
+{
+	float f;
+	if(sscanf(string, "%f", &f) != 1)
+		error("%s: not a float", string);
+	return *(R_Word*)&f;
+}
+
 void str_begin(const Symbol *name)
 {
 	SymbolValue *v = sym_index(&array_tbl, name);
 	v->u32 = array_begin(&str_sect);
 }
 
+void str_add_escaped_char(char c)
+{
+	array_add_byte(escaped_char(c));
+}
+
 void str_add_char(char c)
 {
 	array_add_byte(c);
+}
+
+void str_add_flt(const char *s)
+{
+	/* TODO Not implemented yet */
+}
+
+void str_add_int(const char *s)
+{
+	/* TODO Not implemented yet */
 }
 
 void str_end()
@@ -286,59 +347,45 @@ void text_emit_opcode(char opcode)
 
 static void ref_new(Symbol *label);
 
-#define NUMDESC8  0
-#define NUMDESC16 1
-#define NUMDESC32 2
-static struct NumberDesc {
-	const char *fmt;
-	long min;
-	long max;
-} num_desc[] = {
-	{ "%"PRIi8,  INT8_MIN,  INT8_MAX },
-	{ "%"PRIi16, INT16_MIN, INT16_MAX },
-	{ "%"PRIi32, INT32_MIN, INT32_MAX },
-};
-
-static char sym2num(char sym)
-{
-	switch(sym) {
-		case 'n':  return '\n';
-		case 't':  return '\t';
-		case '\\': return '\\';
-		case '\'': return '\'';
-		default: return sym;
-	}
-}
-
-static long num_parse(const char *string, int code)
-{
-	long arg;
-
-	if(string[0] == '\'') {
-	   	if(string[2] == '\'')
-			return sym2num(string[1]);
-		else if(string[1] == '\\' && string[3] == '\'')
-			return sym2num(string[2]);
-		else
-			error("%s: can not parse", string);
-	}
-
-	if(sscanf(string, num_desc[code].fmt, &arg) != 1)
-		error("%s: not a number", string);
-	if(arg < num_desc[code].min || arg > num_desc[code].max)
-		error("%ld: number out of range", arg);
-	return arg;
-}
-
-void text_emit_const(char type, const char *c)
+void text_emit_escaped_char(char type, char c)
 {
 	switch(type) {
 		case 'c':
-			text_put1byte((int8_t)num_parse(c, NUMDESC8)); break;
-		case 'w':
-			text_put4byte((int32_t)num_parse(c, NUMDESC32)); break;
+			text_put1byte(escaped_char(c)); break;
 		default:
-			error("%s: numeric constant expected", c);
+			error("'\%c': unexpected literal", c);
+	}
+}
+
+void text_emit_char(char type, char c)
+{
+	switch(type) {
+		case 'c':
+			text_put1byte(c); break;
+		default:
+			error("'%c': unexpected literal", c);
+	}
+}
+
+void text_emit_flt(char type, const char *c)
+{
+	switch(type) {
+		case 'w':
+			text_put4byte(flt_parse(c)); break;
+		default:
+			error("%s: unexpected float constant", c);
+	}
+}
+
+void text_emit_int(char type, const char *c)
+{
+	switch(type) {
+		case 'c':
+			text_put1byte((int8_t)int_parse(c, NUMDESC8)); break;
+		case 'w':
+			text_put4byte((int32_t)int_parse(c, NUMDESC32)); break;
+		default:
+			error("%s: unexpected integer constant", c);
 	}
 }
 
@@ -364,17 +411,17 @@ void text_emit_symbol(char type, Symbol *symbol)
 		case 'M': text_put1byte(sym_get_idx(&module_tbl, symbol)); break;
 		case 'I': text_put1byte(sym_get_idx(&imp_tbl, symbol)); break;
 		case 'r':
-			{
-				const SymbolValue *v = symtbl_find(&label_tbl, symbol);
-				if(v) {
-					int32_t offset = v->u32 - text_sect.len;
-					if(offset < INT16_MIN || offset > INT16_MAX)
-						error("offset %" PRIx32 " is out of range", offset);
-					text_put2byte(offset);
-				} else
-					ref_new(symbol);
-				break;
-			}
+		{
+			const SymbolValue *v = symtbl_find(&label_tbl, symbol);
+			if(v) {
+				int32_t offset = v->u32 - text_sect.len;
+				if(offset < INT16_MIN || offset > INT16_MAX)
+					error("offset %" PRIx32 " is out of range", offset);
+				text_put2byte(offset);
+			} else
+				ref_new(symbol);
+			break;
+		}
 		default:
 			error_symbol(symbol, "symbol expected");
 	}

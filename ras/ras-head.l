@@ -15,9 +15,9 @@ RA_Text sub_len;
 SYM    [a-zA-Z0-9_]
 SYM1   [a-zA-Z_]
 WORD   {SYM1}{SYM}*
-NUM    [0-9]+
-CONST  {NUM}|'.'|'\\.'
-VER    {NUM}\.{NUM}
+INT    [0-9]+
+FLT    {INT}\.{INT}
+VER    {INT}\.{INT}
 EXTPR  {WORD}:{WORD}
 
 %option yylineno nounput noyywrap
@@ -59,12 +59,13 @@ EXTPR  {WORD}:{WORD}
 \.str          BEGIN str;
 <str>{WORD}    str_begin(YSTRING); dl("string"); BEGIN strsect;
 <strsect>\n    /* allowed */
+<strsect>'\\.' str_add_escaped_char(yytext[2]);
+<strsect>'.'   str_add_char(yytext[1]);
+<strsect>{FLT} str_add_flt(yytext);
+<strsect>{INT} str_add_int(yytext);
 <strsect>\"    BEGIN string;
 <strsect>;     str_end(); BEGIN INITIAL;
-<string>"\\"   str_add_char('\\');
-<string>\\\"   str_add_char('"');
-<string>\\n    str_add_char('\n');
-<string>\\t    str_add_char('\t');
+<string>\\.    str_add_escaped_char(yytext[1]);
 <string>\"     BEGIN strsect;
 <string>.      str_add_char(*yytext);
 
