@@ -13,14 +13,15 @@ Data types are:
 	* Integer;
 	* Float;
 	* Array;
+	* Byte array;
 	* File;
 	* Object.
 
 				1.1 Integers
 
 Integers are 32-bits signed numbers.
-Constructors: #int.new, #int.snew.
-Base arithmetic operations: #int.add, #int.sub, increment #inc, decrement #dec.
+Constructors: #int.new, #int.byte.
+Base arithmetic operations: #int.add, #int.sub, increment #inc.
 Multiplication and division not implemented yet.
 
 				1.2 Floats
@@ -31,15 +32,22 @@ Arithmetic operations: #flt.add, #flt.sub, #flt.mul, #flt.div.
 
 				1.3 Arrays
 
-An array is a container with random access.
-Constructors: #arr.new, #arr.load.
+An array is a container of objects with random access.
+Constructors: #arr.new.
 It has #arr.len elements, accessible with #arr.get and #arr.put.
 
-				1.4 Files
+				1.4 Byte arrays
+
+Byte array is a container of bytes with random access.
+Constructors: #barr.new, #barr.load.
+It has #barr.len elements, accessible with #barr.getb and #barr.putb (bytes),
+and #barr.getw and #barr.putw (words).
+
+				1.5 Files
 
 Under consideration.
 
-				1.5 Objects
+				1.6 Objects
 
 An object is a module instance. Constructor: #new.
 It has a state (all variables), accessible with #load and #store.
@@ -81,4 +89,4 @@ module.
 
 			3 Miscellaneous
 
-#move, #nop, #dbg.byte, #dbg.str.
+#move, #nop, #dbg.byte, #dbg.flt, #dbg.int, #dbg.str.
