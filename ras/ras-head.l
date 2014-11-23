@@ -20,7 +20,7 @@ FLT    {INT}\.{INT}
 VER    {INT}\.{INT}
 EXTPR  {WORD}:{WORD}
 
-%option yylineno nounput noyywrap
+%option yylineno nounput noinput noyywrap
 %x instruction eol ext sub arg var exp imp impver data mod modver inh
 %x str strsect string
 

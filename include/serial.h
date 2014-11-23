@@ -1,7 +1,7 @@
 /* We serialize numbers in little endian. Support big endian as well. */
 
-#ifndef ENDIAN_H
-#define ENDIAN_H
+#ifndef SERIAL_H
+#define SERIAL_H
 
 #define ENDIAN_BIG (1L >> 1)
 

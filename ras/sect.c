@@ -5,7 +5,7 @@
 #include "storage.h"
 #include "rmd.h"
 #include "mm.h"
-#include "endian.h"
+#include "serial.h"
 #include <string.h>
 #include <stdio.h>
 #include <inttypes.h>
@@ -215,13 +215,12 @@ enum NumberDescIdx {
 };
 
 static const struct NumberDesc {
-	const char *fmt;
 	long min;
 	long max;
 } num_desc[] = {
-	{ "%"PRIi8,  INT8_MIN,  INT8_MAX },
-	{ "%"PRIi16, INT16_MIN, INT16_MAX },
-	{ "%"PRIi32, INT32_MIN, INT32_MAX },
+	{ INT8_MIN,  INT8_MAX },
+	{ INT16_MIN, INT16_MAX },
+	{ INT32_MIN, INT32_MAX },
 };
 
 static char escaped_char(char sym)
@@ -239,7 +238,7 @@ static char escaped_char(char sym)
 static long int_parse(const char *string, int code)
 {
 	long arg;
-	if(sscanf(string, num_desc[code].fmt, &arg) != 1)
+	if(sscanf(string, "%li", &arg) != 1)
 		error("%s: not an integer", string);
 	if(arg < num_desc[code].min || arg > num_desc[code].max)
 		error("%ld: number out of range", arg);
@@ -687,7 +686,8 @@ void sect_print()
 	sym_print();
 	data_print();
 	str_print();
-	printf("%d bytes written\n", sizeof(RMDHeader) + deserial_32(header.size));
+	printf("%lu bytes written\n",
+			(unsigned long)sizeof(RMDHeader) + deserial_32(header.size));
 }
 
 void sect_init()

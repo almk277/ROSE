@@ -8,7 +8,8 @@
 #define fetch_byte() (*t->pc++)
 
 #define BYTE(x) R_Byte x = fetch_byte()
-#define WORD(x) R_Word x = *((R_Word*)t->pc)++
+/* FIXME union? */
+#define WORD(x) R_Word x = (t->pc += sizeof(R_Word), *(R_Word*)(t->pc - sizeof(R_Word)))
 #define INT(x)  R_Word *x = &t->vars[fetch_byte()]
 #define FLT(x)  float *x = (float*)&t->vars[fetch_byte()]
 
@@ -20,7 +21,7 @@ void thread_run(Thread *t)
 		case I_nop:
 			break;
 		case I_exit:
-			goto out;
+			return;
 		case I_dbg_byte:
 		{
 			BYTE(op);
@@ -104,6 +105,5 @@ void thread_run(Thread *t)
 			exit(1);
 		}
 	}
-out:
 }
 

@@ -1,0 +1,23 @@
+.module answer
+
+.sub main
+.export main
+.var a
+.var b
+.var ans
+.var x
+.var y
+.var pi
+	int.byte a 1
+	int.inc a 1
+	int.new b 40
+	int.add ans a b
+	dbg.int ans
+	dbg.byte '\n'
+
+	flt.new a 6.28
+	flt.new b 2.0
+	flt.div pi a b
+	dbg.flt pi
+	dbg.byte '\n'
+	exit

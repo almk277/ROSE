@@ -29,21 +29,20 @@ int cmdopt_parse(int argc, char *const argv[], const struct cmdopt *opts)
 					if(strncmp(s, opt->option, param_len) == 0
 							&& opt->option[param_len] == '\0') {
 						handle(opt, eq + 1);
-						goto ok1;
+						goto loop;
 					}
 				return arg;
-ok1:
 			} else { /* parameter without value */
 				const struct cmdopt *opt;
 				for(opt = opts; opt->option; ++opt)
 					if(strcmp(s, opt->option) == 0) {
 						handle(opt, NULL);
-						goto ok2;
+						goto loop;
 					}
 				return arg;
-ok2:
 			}
 		}
+loop: ;
 	}
 	return 0;
 }
@@ -51,10 +50,10 @@ ok2:
 void cmdopt_print(const struct cmdopt *opts)
 {
 	const struct cmdopt *opt;
-	size_t maxlen = 0;
+	int maxlen = 0;
 	/* calculate maximum option length */
 	for(opt = opts; opt->option; ++opt) {
-		size_t len = strlen(opt->option);
+		int len = strlen(opt->option);
 		if(len > maxlen)
 			maxlen = len;
 	}
