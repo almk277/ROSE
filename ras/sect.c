@@ -519,8 +519,9 @@ void exp_add(const Symbol *name)
 {
 	SymbolValue *v = sym_index(&exp_tbl, name);
 	RMDExport *e = &exp_sect[v->i];
+	SymbolValue *p = sym_get_or_die(&proc_tbl, name);
 	e->name = serial_16(sym_add(name));
-	e->idx = v->i;
+	e->idx = p->i;
 }
 
 void exp_write()
@@ -602,7 +603,7 @@ static void imp_print()
 
 static void ptbl_print1(const Symbol *s, const SymbolValue *v)
 {
-	RMDProcedure *p = &ptbl_sect[v->i];
+	const RMDProcedure *p = &ptbl_sect[v->i];
 	symbol_print(s);
 	printf(" (%u:%u)  ", p->addr, p->size);
 }
@@ -641,14 +642,15 @@ static void label_print()
 
 static void sub_print()
 {
-	RMDProcedure *p = &ptbl_sect[current_sub->i];
+	const RMDProcedure *p = &ptbl_sect[current_sub->i];
 	printf("PROC: argc = %d, varc = %d\n", p->argc, p->varc);
 }
 
 static void exp_print1(const Symbol *s, const SymbolValue *v)
 {
+	const RMDExport *e = &exp_sect[v->i];
 	symbol_print(s);
-	printf("(%d)  ", v->i);
+	printf("(%d)  ", e->idx);
 }
 
 static void exp_print()
