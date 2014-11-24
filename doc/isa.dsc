@@ -30,12 +30,13 @@ int.new    iw        10    $1 = $2I
 int.byte   ic        11    $1 = $2I
 int.sub    iii       13    $1 = $2 - $3
 invoke     I         43    call $1::$2
-jump       r         20    jumps for $1 bytes
-jumpeq     iir       21    jumps for $3 bytes if $1 == $2
-jumpl      iir       22    jumps for $3 bytes if $1 < $2
-jumple     iir       23    jumps for $3 bytes if $1 <= $2
-jumplf     ffr       25    jumps for $3 bytes if $1 < $2
-jumpz      ir        24    jumps for $3 bytes if $1 == 0
+jmp        r         20    jumps for $1 bytes
+jmp.flt.l  ffr       25    jumps for $3 bytes if $1 < $2
+jmp.int.eq iir       22    jumps for $3 bytes if $1 == $2
+jmp.int.l  iir       23    jumps for $3 bytes if $1 < $2
+jmp.int.le iir       24    jumps for $3 bytes if $1 <= $2
+jmp.int.z  ir        21    jumps for $3 bytes if $1 == 0
+jmp.ref.eq oor       26    jumps for $3 bytes if $1 == $2
 load       sD        34    $1 = this.$2
 move       oo        30    $1 = $2
 new        oM        50    $1O = new $2

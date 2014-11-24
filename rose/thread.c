@@ -20,7 +20,7 @@ int thread_jump_to(Thread *t, struct Module *m, const struct Symbol *proc)
 	if(module_find_proc(m, proc, &hint)) {
 		const RMDExport *exp = &m->seg.exp.start[hint];
 		const RMDProcedure *ptbl_ent = &m->seg.ptbl.start[exp->idx];
-		t->pc = m->seg.text.start + ptbl_ent->addr;
+		t->pc.byte = m->seg.text.start + ptbl_ent->addr;
 		thread_set_module(t, m);
 		return 1;
 	}

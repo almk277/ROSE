@@ -2,16 +2,41 @@
 
 #include "thread.h"
 #include "instr.h"
+#include "module.h"
 #include <stdio.h>
 #include <stdlib.h>
 
-#define fetch_byte() (*t->pc++)
+#define fetch_byte(th)   (*th->pc.byte++)
+#define fetch_offset(th) (*th->pc.ofs++)
+#define fetch_word(th)   (*th->pc.word++)
+#define fetch_var(th)    (&th->vars[fetch_byte(th)])
 
-#define BYTE(x) R_Byte x = fetch_byte()
-/* FIXME union? */
-#define WORD(x) R_Word x = (t->pc += sizeof(R_Word), *(R_Word*)(t->pc - sizeof(R_Word)))
-#define INT(x)  R_Word *x = &t->vars[fetch_byte()]
-#define FLT(x)  float *x = (float*)&t->vars[fetch_byte()]
+#define SEG     (t->module->seg)
+#define BYTE(x) R_Byte x = fetch_byte(t)
+#define WORD(x) R_Word x = fetch_word(t)
+#define INT(x)  R_Word *x = fetch_var(t)
+#define FLT(x)  float *x = ((float*)fetch_var(t))
+#define OFS(x)  RA_TextOffset x = fetch_offset(t)
+#define PROC(x) RA_Proc x = fetch_byte(t)
+
+#define jump(ofs) (t->pc.byte += ofs)
+
+static void save_procedure(Thread *t)
+{
+	ActivRecord *r = ++t->procs;
+	r->module = t->module;
+	r->varbase = t->vars;
+	r->retaddr = t->pc.byte;
+}
+
+/*
+static void alloc_frame(Thread *t, const RMDProcedure *p)
+{
+	const RMDProcedure *cp = t->proc;
+	int cur_len = cp->argc + cp->varc;
+	R_Byte = 
+}
+*/
 
 void thread_run(Thread *t)
 {
@@ -98,6 +123,66 @@ void thread_run(Thread *t)
 		{
 			FLT(x); FLT(x1); FLT(x2);
 			*x = *x1 / *x2;
+			break;
+		}
+		case I_jmp:
+		{
+			OFS(ofs);
+			jump(ofs);
+			break;
+		}
+		case I_jmp_int_z:
+		{
+			INT(i); OFS(ofs);
+			if(*i == 0)
+				jump(ofs);
+			break;
+		}
+		case I_jmp_int_eq:
+		{
+			INT(i1); INT(i2); OFS(ofs);
+			if(*i1 == *i2)
+				jump(ofs);
+			break;
+		}
+		case I_jmp_int_l:
+		{
+			INT(i1); INT(i2); OFS(ofs);
+			if(*i1 < *i2)
+				jump(ofs);
+			break;
+		}
+		case I_jmp_int_le:
+		{
+			INT(i1); INT(i2); OFS(ofs);
+			if(*i1 <= *i2)
+				jump(ofs);
+			break;
+		}
+		case I_jmp_flt_l:
+		{
+			FLT(f1); FLT(f2); OFS(ofs);
+			if(*f1 <= *f2)
+				jump(ofs);
+			break;
+		}
+		case I_jmp_ref_eq:
+		{
+			WORD(r1); WORD(r2); OFS(ofs);
+			if(r1 == r2)
+				jump(ofs);
+			break;
+		}
+		case I_call:
+		{
+			/*PROC(p_idx);*/
+			/*const RMDProcedure *p = &SEG.ptbl.start[p_idx];*/
+			/*const RA_Text addr = p->addr;*/
+			save_procedure(t);
+			break;
+		}
+		case I_return:
+		{
 			break;
 		}
 		default:

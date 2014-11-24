@@ -16,7 +16,7 @@ enum ThreadStatus {
 
 typedef struct ActivRecord {
 	struct Module *module;
-	R_Byte *retaddr;
+	const R_Byte *retaddr;
 	R_Word *varbase;
 } ActivRecord;
 
@@ -26,8 +26,13 @@ typedef struct Thread {
 	ActivRecord pstack[32];
 	ActivRecord *procs;
 	struct Module *module;
+	const RMDProcedure *proc;
 	Text *text;
-	const R_Byte *pc;
+	union {
+		const R_Byte *byte;
+		const RA_TextOffset *ofs;
+		const R_Word *word;
+	} pc;
 	//volatile sig_atomic_t status;
 	//Proc *current_proc;
 } Thread;
