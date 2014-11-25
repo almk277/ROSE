@@ -38,10 +38,9 @@ static Storage text_sect = STORAGE_INITIALIZER(text_sect);  /* #text */
 extern FILE *output;
 extern int yylineno;
 extern int verbose;
-extern RA_Text instr_start;
+extern RA_Text next_instr_addr;
 extern RA_Text sub_len;
 
-#define REF_SIZE  2
 #define REF_MIN_OFS INT16_MIN
 #define REF_MAX_OFS INT16_MAX
 typedef struct Reference {
@@ -412,12 +411,12 @@ void text_emit_symbol(char type, Symbol *symbol)
 		case 'r':
 		{
 			const SymbolValue *v = symtbl_find(&label_tbl, symbol);
-			if(v) {
-				int32_t offset = v->u32 - text_sect.len;
+			if(v) { /* back reference */
+				int32_t offset = v->u32 - next_instr_addr;
 				if(offset < INT16_MIN || offset > INT16_MAX)
 					error("offset %" PRIx32 " is out of range", offset);
 				text_put2byte(offset);
-			} else
+			} else /* forward reference */
 				ref_new(symbol);
 			break;
 		}
@@ -447,10 +446,10 @@ static void ref_new(Symbol *label)
 	Reference *r = mm_alloc(Reference);
 	r->name = label;
 	r->lineno = yylineno;
-	storage_enlarge(&text_sect, REF_SIZE);
-	text_put2byte(0);
-	r->base = instr_start;
+	storage_enlarge(&text_sect, sizeof(RA_TextOffset));
+	r->base = next_instr_addr;
 	r->value = (RA_TextOffset*)storage_current(&text_sect);
+	text_put2byte(0); /* temporary offset value */
 	SLIST_INSERT_HEAD(&ref_head, r, le);
 }
 
@@ -462,17 +461,17 @@ static void ref_delete(Reference *ref)
 
 static void resolve(const Reference *ref)
 {
-	int32_t offset;
+	long offset;
 	const SymbolValue *v = sym_get_or_die(&label_tbl, ref->name);
 	offset = v->u32 - ref->base;
 	if(offset < REF_MIN_OFS || offset > REF_MAX_OFS) {
-		fprintf(stderr, "line %d, offset %d: ", ref->lineno, offset);
+		fprintf(stderr, "line %d, offset %ld: ", ref->lineno, offset);
 		error_symbol(ref->name, "label reference is out of range");
 	}
-	*ref->value = (RA_TextOffset)offset;
+	*ref->value = serial((RA_TextOffset)offset);
 	if(verbose >= DL_NUDE) {
 		symbol_print(ref->name);
-		debug_line("  -> %"PRIu32"(%+"PRIi16")", v->u32, offset);
+		debug_line("  -> %"PRIu32"(%+ld)", v->u32, offset);
 	}
 }
 

@@ -8,7 +8,7 @@
 static void emit_instruction(int len, char opcode, const char *argstring);
 static void end_instruction(void);
 static const char *args;
-RA_Text instr_start;
+RA_Text next_instr_addr;
 RA_Text sub_len;
 }
 
