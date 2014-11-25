@@ -18,11 +18,8 @@ int main(int argc, char *argv[])
 		printf("%s: %s\n", file, err);
 		return 1;
 	}
-	thread_init(&t);
-	if(!thread_jump_to(&t, m, symbol_store.main)) {
-		printf("%s: procedure 'main' not found\n", file);
+	if(thread_init(&t, m, symbol_store.main) < 0)
 		return 1;
-	}
 	thread_run(&t);
 
 	return 0;

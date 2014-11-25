@@ -24,7 +24,7 @@ typedef struct Imp {
 } Imp;
 
 typedef struct Text {
-	const unsigned char *start;
+	const R_Byte *start;
 	RA_Text size;
 } Text;
 
@@ -37,7 +37,7 @@ const struct Symbol *sym_get(const Sym *seg, RA_Symbol sym);
 #define sym_get(seg, sym)	((const struct Symbol*)&(seg)->start[(sym)])
 
 typedef struct Str {
-	const char *start;
+	const R_Byte *start;
 	RA_Array size;
 } Str;
 

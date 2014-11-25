@@ -21,22 +21,52 @@
 
 #define jump(ofs) (t->pc.byte += ofs)
 
-static void save_procedure(Thread *t)
+/* startup code in ROSE bytecode itself */
+const R_Byte startup_code[] = {
+	I_exit,
+};
+
+static void stack_overflow(void)
 {
-	ActivRecord *r = ++t->procs;
-	r->module = t->module;
-	r->varbase = t->vars;
-	r->retaddr = t->pc.byte;
+	fputs("Stack overflow!\n", stderr);
+	exit(1);
 }
 
-/*
-static void alloc_frame(Thread *t, const RMDProcedure *p)
+static int save_procedure(Thread *t, const RMDProcedure *proc)
 {
-	const RMDProcedure *cp = t->proc;
-	int cur_len = cp->argc + cp->varc;
-	R_Byte = 
+	ActivRecord *r = ++t->procs;
+	if(r > t->procs_end)
+		return -1;
+	r->module  = t->module;
+	r->proc    = proc;
+	r->varbase = t->vars;
+	r->retaddr = t->pc.byte;
+	return 0;
 }
-*/
+
+static void restore_procedure(Thread *t)
+{
+	/* do not check for underflow, because
+	 * runtime code catches excess return and causes exit */
+	const ActivRecord *r = t->procs--;
+	t->module = r->module;
+}
+
+static int alloc_frame(Thread *t, const RMDProcedure *np)
+{
+	const RMDProcedure *cp = t->procs->proc; /* current procedure descriptor */
+	int cur_len = cp->argc + cp->varc; /* current stack length */
+	/* allocate new stack frame; arguments are in current frame */
+	t->vars += cur_len - np->argc;
+	if(t->vars > t->vars_end)
+		return -1;
+	return 0;
+}
+
+static void free_frame(Thread *t)
+{
+	t->vars = t->procs->varbase;
+}
 
 void thread_run(Thread *t)
 {
@@ -175,20 +205,24 @@ void thread_run(Thread *t)
 		}
 		case I_call:
 		{
-			/*PROC(p_idx);*/
-			/*const RMDProcedure *p = &SEG.ptbl.start[p_idx];*/
-			/*const RA_Text addr = p->addr;*/
-			save_procedure(t);
+			PROC(p_idx);
+			const RMDProcedure *p = &SEG.ptbl.start[p_idx];
+			if(alloc_frame(t, p) || save_procedure(t, p))
+				stack_overflow();
+			t->pc.byte = SEG.text.start + p->addr;
 			break;
 		}
 		case I_return:
 		{
+			t->pc.byte = t->procs->retaddr;
+			free_frame(t);
+			restore_procedure(t);
 			break;
 		}
 		default:
-			fprintf(stderr, "Fatal error: no such instruction: %d\n", code);
+			fprintf(stderr, "Fatal error: no such instruction: 0x%X\n", code);
 			exit(1);
-		}
-	}
+		} /* switch */
+	} /* while */
 }
 

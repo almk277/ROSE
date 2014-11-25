@@ -3,45 +3,32 @@
 
 #include "rmd.h"
 #include "segment.h"
-#include <signal.h>
 struct Symbol;
 struct Module;
 
-enum ThreadStatus {
-	THS_RUNNING = 0,
-	THS_EXIT,
-	THS_NOENTRY,
-	THS_INV_OPCODE,
-};
-
+/* activation record */
 typedef struct ActivRecord {
-	struct Module *module;
-	const R_Byte *retaddr;
-	R_Word *varbase;
+	struct Module *module;           /* module */
+	const RMDProcedure *proc;        /* procedure */
+	const R_Byte *retaddr;           /* return address */
+	R_Word *varbase;                 /* variable frame start */
 } ActivRecord;
 
+/* thread descriptor */
 typedef struct Thread {
-	R_Word vstack[2048];
-	R_Word *vars;
-	ActivRecord pstack[32];
-	ActivRecord *procs;
-	struct Module *module;
-	const RMDProcedure *proc;
-	Text *text;
+	R_Word vstack[2048];             /* variable stack */
+	R_Word *vars, *vars_end;         /* current and end variable frames */
+	ActivRecord pstack[32];          /* activation record stack */
+	ActivRecord *procs, *procs_end;  /* current and end record frames */
+	struct Module *module;           /* current module */
 	union {
 		const R_Byte *byte;
 		const RA_TextOffset *ofs;
 		const R_Word *word;
-	} pc;
-	//volatile sig_atomic_t status;
-	//Proc *current_proc;
+	} pc;                            /* instruction pointer */
 } Thread;
 
-void thread_init(Thread *t);
-
-void thread_set_module(Thread *t, struct Module *m);
-
-int thread_jump_to(Thread *t, struct Module *m, const struct Symbol *proc);
+int thread_init(Thread *t, struct Module *m, const struct Symbol *proc);
 
 void thread_run(Thread *t);
 
