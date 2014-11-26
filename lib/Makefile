@@ -1,5 +1,3 @@
-CPPFLAGS += -I../include
-
 all: librose.a
 
 librose.a: symtbl.o mm.o symbol.o loader.o cmdopt.o

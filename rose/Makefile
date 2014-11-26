@@ -2,7 +2,7 @@
 
 CFLAGS += -Wall -g
 LDFLAGS += -g
-CPPFLAGS += -I../include
+CPPFLAGS += -I../lib
 LIBS += -L../lib -lrose
 
 all: rose

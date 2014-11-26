@@ -1,5 +1,5 @@
 DESCR := ../doc/isa.dsc
-CPPFLAGS += -I../include
+CPPFLAGS += -I../lib
 LIBS += -L../lib -lrose
 
 all: ras
