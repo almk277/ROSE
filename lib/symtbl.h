@@ -20,7 +20,7 @@ typedef union SymbolValue {
 } SymbolValue;
 
 /* static initializer for SymbolTable */
-#define SYMBOLTABLE_INITIALIZER {}
+#define SYMBOLTABLE_INITIALIZER { {}, 0 }
 
 /* initializes symbol table */
 void symtbl_init(SymbolTable *tbl);

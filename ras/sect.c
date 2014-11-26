@@ -156,7 +156,7 @@ void module_set_version(const char *version)
 
 void module_write()
 {
-	const int size = symtbl_size(&module_tbl);
+	const size_t size = symtbl_size(&module_tbl);
 	if(fwrite(module_sect, sizeof(RMDModule), size, output) != size)
 		file_write_error();
 }
@@ -176,7 +176,7 @@ void imp_add(const Symbol *fullname)
 
 void imp_write()
 {
-	const int size = symtbl_size(&imp_tbl);
+	const size_t size = symtbl_size(&imp_tbl);
 	if(fwrite(imp_sect, sizeof(RMDImport), size, output) != size)
 		file_write_error();
 }
@@ -300,7 +300,7 @@ void ptbl_add(const Symbol *name)
 
 void ptbl_write()
 {
-	const int size = symtbl_size(&proc_tbl);
+	const size_t size = symtbl_size(&proc_tbl);
 	if(fwrite(ptbl_sect, sizeof(RMDProcedure), size, output) != size)
 		file_write_error();
 }
@@ -524,7 +524,7 @@ void exp_add(const Symbol *name)
 
 void exp_write()
 {
-	const int size = symtbl_size(&exp_tbl);
+	const size_t size = symtbl_size(&exp_tbl);
 	if(fwrite(exp_sect, sizeof(RMDExport), size, output) != size)
 		file_write_error();
 }
