@@ -29,7 +29,7 @@ int.inc    ic        16    $1I = $1I + $2
 int.new    iw        10    $1 = $2I
 int.byte   ic        11    $1 = $2I
 int.sub    iii       13    $1 = $2 - $3
-invoke     I         43    call $1::$2
+invoke     I         43    call $1
 jmp        r         20    jumps for $1 bytes
 jmp.flt.l  ffr       25    jumps for $3 bytes if $1 < $2
 jmp.int.eq iir       22    jumps for $3 bytes if $1 == $2

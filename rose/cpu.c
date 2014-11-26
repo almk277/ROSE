@@ -3,6 +3,7 @@
 #include "thread.h"
 #include "instr.h"
 #include "module.h"
+#include "symbol.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -11,13 +12,14 @@
 #define fetch_word(th)   (*th->pc.word++)
 #define fetch_var(th)    (&th->vars[fetch_byte(th)])
 
-#define SEG     (t->module->seg)
+#define SEG     (&t->module->seg)
 #define BYTE(x) R_Byte x = fetch_byte(t)
 #define WORD(x) R_Word x = fetch_word(t)
 #define INT(x)  R_Word *x = fetch_var(t)
 #define FLT(x)  float *x = ((float*)fetch_var(t))
 #define OFS(x)  RA_TextOffset x = fetch_offset(t)
 #define PROC(x) RA_Proc x = fetch_byte(t)
+#define IMP(x)  RA_Import x = fetch_byte(t)
 
 #define jump(ofs) (t->pc.byte += ofs)
 
@@ -30,42 +32,6 @@ static void stack_overflow(void)
 {
 	fputs("Stack overflow!\n", stderr);
 	exit(1);
-}
-
-static int save_procedure(Thread *t, const RMDProcedure *proc)
-{
-	ActivRecord *r = ++t->procs;
-	if(r > t->procs_end)
-		return -1;
-	r->module  = t->module;
-	r->proc    = proc;
-	r->varbase = t->vars;
-	r->retaddr = t->pc.byte;
-	return 0;
-}
-
-static void restore_procedure(Thread *t)
-{
-	/* do not check for underflow, because
-	 * runtime code catches excess return and causes exit */
-	const ActivRecord *r = t->procs--;
-	t->module = r->module;
-}
-
-static int alloc_frame(Thread *t, const RMDProcedure *np)
-{
-	const RMDProcedure *cp = t->procs->proc; /* current procedure descriptor */
-	int cur_len = cp->argc + cp->varc; /* current stack length */
-	/* allocate new stack frame; arguments are in current frame */
-	t->vars += cur_len - np->argc;
-	if(t->vars > t->vars_end)
-		return -1;
-	return 0;
-}
-
-static void free_frame(Thread *t)
-{
-	t->vars = t->procs->varbase;
 }
 
 void thread_run(Thread *t)
@@ -206,17 +172,28 @@ void thread_run(Thread *t)
 		case I_call:
 		{
 			PROC(p_idx);
-			const RMDProcedure *p = &SEG.ptbl.start[p_idx];
-			if(alloc_frame(t, p) || save_procedure(t, p))
+			if(thread_call_intern(t, t->module, p_idx))
 				stack_overflow();
-			t->pc.byte = SEG.text.start + p->addr;
 			break;
 		}
 		case I_return:
 		{
-			t->pc.byte = t->procs->retaddr;
-			free_frame(t);
-			restore_procedure(t);
+			thread_return(t);
+			break;
+		}
+		case I_invoke:
+		{
+			IMP(i);
+			const Segments *const seg = &t->module->seg;
+			const RMDImport *imp = imp_get(seg, i);
+			const Symbol *procname = sym_get(seg, imp->name);
+			const RMDModule *mod = mtbl_get(seg, imp->module);
+			const Symbol *modname = sym_get(seg, mod->name);
+			Module *m = module_get_obligatory(modname);
+			RA_Export exp_idx = module_exp_get_obligatory(m, procname, imp->slot);
+			const RMDExport *exp = exp_get(&m->seg, exp_idx);
+			if(thread_call_intern(t, m, exp->idx))
+				stack_overflow();
 			break;
 		}
 		default:

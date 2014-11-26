@@ -33,13 +33,38 @@ typedef struct Sym {
 	RA_Symbol size;
 } Sym;
 
-const struct Symbol *sym_get(const Sym *seg, RA_Symbol sym);
-#define sym_get(seg, sym)	((const struct Symbol*)&(seg)->start[(sym)])
-
 typedef struct Str {
 	const R_Byte *start;
 	RA_Array size;
 } Str;
+
+typedef struct Segments {
+	Exp exp;
+	Ptbl ptbl;
+	Mtbl mtbl;
+	Imp imp;
+	Text text;
+	Sym sym;
+	Str str;
+} Segments;
+
+/* const RMDExport *exp_get(const Segments *seg, RA_Export i); */
+#define exp_get(seg, i)  (&(seg)->exp.start[i])
+
+/* const RMDProcedure *proc_get(const Segments *seg, RA_Procecure i); */
+#define ptbl_get(seg, i) (&(seg)->ptbl.start[i])
+
+/* const RMDModule *mtbl_get(const Segments *seg, RA_Module i); */
+#define mtbl_get(seg, i) (&(seg)->mtbl.start[i])
+
+/* const RMDImport *imp_get(const Segments *seg, RA_Import i); */
+#define imp_get(seg, i)  (&(seg)->imp.start[i])
+
+/* const R_Byte *text_get(const Segments *seg, RA_Text i); */
+#define text_get(seg, i) (&(seg)->text.start[i])
+
+/* const struct Symbol *sym_get(const Segments *seg, RA_Symbol i); */
+#define sym_get(seg, i)	 ((const struct Symbol*)&(seg)->sym.start[i])
 
 #endif
 

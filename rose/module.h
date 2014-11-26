@@ -10,20 +10,10 @@ struct Symbol;
 /* ROSE module descriptor */
 typedef struct Module Module;
 
-struct Segments {
-	Exp exp;
-	Ptbl ptbl;
-	Mtbl mtbl;
-	Imp imp;
-	Text text;
-	Sym sym;
-	Str str;
-};
-
 struct Module {
 	const struct Symbol *name;
 	RMDVersion version;
-	struct Segments seg;
+	Segments seg;
 };
 
 /* minimal supported version */
@@ -38,26 +28,35 @@ struct Module {
  * On error, returns NULL and sets *errstr to error string */
 Module *module_load(const char *path, const char **errstr);
 
-/* Loads a ROSE module with given name.
+/* Loads a ROSE module from file 'path'.
+ * Returns module handler.
+ * On error, prints error string and calls 'exit' */
+Module *module_load_obligatory(const char *path);
+
+/* Finds or loads a ROSE module with given name.
  * Returns module handler.
  * On error, returns NULL and sets *errstr to error string */
 Module *module_get(const struct Symbol *name, const char **errstr);
 
+/* Finds or loads a ROSE module with given name.
+ * Returns module handler.
+ * On error, prints error string and calls 'exit' */
+Module *module_get_obligatory(const struct Symbol *name);
+
 /* Unloads the module */
 /* void module_unload(Module *module); */
 
+/* returns name of the module m */
 #define module_name(m)	((m)->name)
 
+/* returns version of the module m */
 #define module_version(m) (&(m)->version)
 
-int module_find_proc(const Module *m, const struct Symbol *name, RA_Export *proc);
-
-const R_Byte *module_addr_proc(const Module *m, R_Byte idx);
-
-R_Byte module_find_module(const Module *m,
-		const struct Symbol *name);
-
-const RMDModule *module_addr_module(const Module *m, R_Byte idx);
+/* Finds in module m procedure with given name and supposed index hint.
+ * Returns index in #exp.
+ * If not found, prints error string and exits */
+RA_Export module_exp_get_obligatory(const Module *m,
+		const struct Symbol *name, RA_Export hint);
 
 #endif
 

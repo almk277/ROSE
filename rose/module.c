@@ -31,12 +31,12 @@ static int verify_rose_version(RMDVersion ver)
 
 static const Symbol *get_symbol(const Module *m, RA_Symbol idx)
 {
-	return (Symbol*)&m->seg.sym.start[idx];
+	return sym_get(&m->seg, idx);
 }
 
 static void module_set(Module *m, const RMDHeader *h, const char *addr)
 {
-	struct Segments *seg = &m->seg;
+	Segments *seg = &m->seg;
 
 #define SET_SEGMENT(name, prevname) \
 	{ \
@@ -121,11 +121,22 @@ clean:
 Module *module_load(const char *path, const char **errstr)
 {
 	FILE *f = fopen(path, "rb");
-	if(!f) {
-		*errstr = sys_error();
-		return NULL;
+	if(f)
+		return load_header(f, errstr);
+
+	*errstr = sys_error();
+	return NULL;
+}
+
+Module *module_load_obligatory(const char *path)
+{
+	const char *errstr;
+	Module *m = module_load(path, &errstr);
+	if(!m) {
+		printf("%s: %s\n", path, errstr);
+		exit(1);
 	}
-	return load_header(f, errstr);
+	return m;
 }
 
 Module *module_get(const Symbol *name, const char **errstr)
@@ -145,17 +156,30 @@ Module *module_get(const Symbol *name, const char **errstr)
 	return NULL;
 }
 
-int module_find_proc(const Module *m, const Symbol *name, RA_Export *proc)
+Module *module_get_obligatory(const Symbol *name)
+{
+	const char *errstr;
+	Module *m = module_get(name, &errstr);
+	if(!m) {
+		symbol_print(name);
+		fputs(": ", stdout);
+		puts(errstr);
+		exit(1);
+	}
+	return m;
+}
+
+static int module_exp_find(const Module *m, const Symbol *name, RA_Export *proc)
 {
 	int i;
-	const Exp *exp = &m->seg.exp;
-	const Sym *sym = &m->seg.sym;
-	const Symbol *tryname = sym_get(sym, *proc);
+	const Segments *seg = &m->seg;
+	const Exp *exp = &seg->exp;
+	const Symbol *tryname = sym_get(seg, *proc);
 	if(symbol_compare(name, tryname))
 		return 1;
 	for(i = 0; i != exp->size; ++i) {
 		const RMDExport *e = &exp->start[i];
-		tryname = sym_get(sym, e->name);
+		tryname = sym_get(seg, e->name);
 		if(symbol_compare(name, tryname)) {
 			*proc = i;
 			return 1;
@@ -164,54 +188,22 @@ int module_find_proc(const Module *m, const Symbol *name, RA_Export *proc)
 	return 0;
 }
 
-#if 0
+RA_Export module_exp_get_obligatory(const Module *m,
+		const Symbol *name, RA_Export hint)
+{
+	if(!module_exp_find(m, name, &hint)) {
+		symbol_print(module_name(m));
+		putchar('.');
+		symbol_print(name);
+		puts(": procedure not found");
+		exit(1);
+	}
+	return hint;
+}
+
 void module_unload(Module *module)
 {
-	/* remove from table */
+	/* TODO remove from table */
 	free(module);
 }
-
-static inline void *section_address(const Module *module, uint32_t offset)
-{
-	return (char *)module + sizeof(Module) - sizeof(RMDHeader) + offset;
-}
-
-static Module *create_module(RMDHeader *h, FILE *f, int *error)
-{
-	module->mtbl = (Module **)((char *)module + sizeof(Module) + h->size);
-	memset(module->mtbl, 0, h->mtbl * sizeof(Module *));
-	return module;
-}
-
-int module_find_external_proc(Module *module, int idx, Module **m)
-{
-	int ptbl_idx;
-	RMDImport *imp = imp_get(&module->seg.imp, idx);
-	const char *name = sym_get(&module->seg.sym, imp->name);
-	*m = module_get_another_module(module, imp->module);
-	ptbl_idx = module_find_proc(*m, name);
-	if(ptbl_idx == -1)
-		/* TODO: output procedure name */
-		error(ERR_NO_PROC);
-	return ptbl_idx;
-}
-
-Module *module_get_another_module(Module *module, uint8_t idx)
-{
-	Module *m = module->mtbl[idx];
-	/* if module was referenced from here - it is cached */
-	if(!m) {
-		/* module is either not referenced from this module,
-		 * or not loaded at all */
-		uint16_t name_ofs = mtbl_get_name(&module->seg.mtbl, idx);
-		const char *name = sym_get(&module->seg.sym, name_ofs);
-		m = module_find(name);
-		if(!m)
-			m = module_load(name);
-		/* anyway, cache it */
-		module->mtbl[idx] = m;
-	}
-	return m;
-}
-#endif
 
