@@ -110,7 +110,7 @@ int symbol_split_colon(const Symbol *s, Symbol **s1, Symbol **s2)
 		return 0;
 	/* split up fullname into module and procedure names */
 	*s1 = symbol_new(s->data, colon - s->data);
-	*s2 = symbol_new(colon + 1, s->data + s->len - colon);
+	*s2 = symbol_new(colon + 1, s->data + s->len - colon - 1);
 	return 1;
 }
 
