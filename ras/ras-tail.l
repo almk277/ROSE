@@ -3,6 +3,7 @@
 <instruction>'.'               text_emit_char(*args++, yytext[1]);
 <instruction>{FLT}             text_emit_flt(*args++, yytext);
 <instruction>{INT}             text_emit_int(*args++, yytext);
+<instruction>{EXTPR}           |
 <instruction>{WORD}            text_emit_symbol(*args++, YSTRING);
 
 <*>#.*                         /* comment until EOL */

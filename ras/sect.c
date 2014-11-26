@@ -412,9 +412,9 @@ void text_emit_symbol(char type, Symbol *symbol)
 		{
 			const SymbolValue *v = symtbl_find(&label_tbl, symbol);
 			if(v) { /* back reference */
-				int32_t offset = v->u32 - next_instr_addr;
-				if(offset < INT16_MIN || offset > INT16_MAX)
-					error("offset %" PRIx32 " is out of range", offset);
+				long offset = v->u32 - next_instr_addr;
+				if(offset < REF_MIN_OFS || offset > REF_MAX_OFS)
+					error("offset %ld is out of range", offset);
 				text_put2byte(offset);
 			} else /* forward reference */
 				ref_new(symbol);
