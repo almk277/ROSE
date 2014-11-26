@@ -1,9 +1,9 @@
 .PHONY: all clean
 
-all: hello.rmd print.rmd
+all: hello.rmd print.rmd answer.rmd
 
 %.rmd: %.ras
-	../ras/ras $^ -o $@
+	../ras/ras $^ -output=$@
 
 clean:
 	rm -f *.rmd
