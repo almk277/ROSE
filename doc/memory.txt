@@ -2,8 +2,8 @@ There is segmented memory model. Segments are:
         GLOBAL:
 	*  .heap - area for dynamic memory allocation;
         THREAD-LOCAL:
-	*  .varstack - procedure arguments and local variables;
-	*  .procstack  - internal procedure stack;
+	*  .vstack - procedure arguments and local variables;
+	*  .pstack  - internal procedure stack;
         MODULE-LOCAL:
 	*  .ptbl - procedure table;
 	*  .mtbl - module table;
@@ -17,27 +17,35 @@ There is segmented memory model. Segments are:
 
 All module-local segments are loaded from RMD.
 
-  .stack            Stack consists of 32-bit words.
-----------          BP points to the current stack frame.
-|  valN  |          
-|--------|          
+.vstack contains procedure arguments and local variables.
+VARS points to the current stack frame.
+Stack frame size is variable: it depends on argument and variable counts.
+Total stack frame size is up to 255 words.
+All procedure arguments are references.
+
+ .vstack            .pstack
+|--------|          |------|
+|  varN  |          | MOD  |
+|--------|          |----- |
+|  ...   |          | PROC |
+|--------|          |----- |
+|  var1  |          | VARS |
+|--------|          |----- |
+|  argL  |          | RET  | <- PROCS
+|--------|          -------
 |  ...   |
-|--------|           .proc
-|  val1  |          -------           There is also procedure stack
-|--------|          | RET | <- PSP    .proc. It's head pointer is PSP.
-|  refM  |          |-----|           This stack is not accessible by program
-|--------|          | OVP |           directly, it is used by procedure call
-|  ...   |          |-----|           instructions.
-|--------|          | ORP |
-|  ref1  |          |=====|
-|--------|          | RET |
-|  argL  |          -------
 |--------|
-|  ...   |          All procedure arguments are references.
-|--------|          Total stack frame size is up to 255 words.
-|  arg0  | <- BP    
+|  arg0  | <- VARS
 ----------
 
-You can dynamically allocate memory with 'new' and 'arrnew' instructions.
-You can not delete such objects - runtime (namely, garbage collector)
-deletes them automatically when they are no longer needed.
+procedure stack .pstack contains procedure activation records.
+PROCS points to the current stack frame.
+Stack frame size is fixed.
+This stack is not accessible by program directly, it is used
+by procedure call instructions.
+
+Memory from heap dynamically allocates with #new, #arr.new and some other
+instructions. You can not delete such objects - runtime (namely,
+garbage collector) deletes them automatically when they are no longer needed.
+Note that some some types are value types, and they constructors (#int.new, for
+example) does not use heap.

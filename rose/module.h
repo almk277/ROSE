@@ -1,4 +1,4 @@
-/* Working with ROSE module */
+/* ROSE module */
 
 #ifndef MODULE_H
 #define MODULE_H

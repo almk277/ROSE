@@ -28,7 +28,7 @@ In fact, ROSE ABI is the same as API.
 When module depends on another module M, it depends on M version as
 well. When resolving dependencies, VM searches for M with the same major
 number, and minor number greater or equal to one stored in dependency.
-Otherwise, M will not be used.
+M with other versions will not be used.
 
 New module instance (object) can be created and deleted with appropriate
 instructions. This includes new data set, but other segments are shared.

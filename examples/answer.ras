@@ -1,9 +1,7 @@
 .module answer
 
 .sub pi
-.var a
-.var b
-.var pi
+.var a b pi
 	flt.new a 6.28
 	flt.new b 2.0
 	flt.div pi a b
@@ -12,9 +10,7 @@
 	return
 
 .sub quest
-.var a
-.var b
-.var ans
+.var a b ans
 	int.byte a 1
 	int.inc a 1
 	int.new b 40

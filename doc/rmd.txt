@@ -20,14 +20,14 @@ Section #debug might be omitted.
 	* RMDver  - RMD format version;
 	* ver     - module version;
 	* parent  - parent module;
-	* dataref - number of module reference variables;
-	* dataval - number of module value variables;
+	* datac   - number of module variables;
 	* placement for all sections.
 
 #ptbl:
-	* addr   - offset in #text.
-	* argc   - number of procedure arguments;
-	* varc   - number of procedure variables.
+	* addr - offset in #text;
+	* size - procedure size;
+	* argc - number of procedure arguments;
+	* varc - number of procedure variables.
 
 #exp:
 	* name    - #sym string with procedure export name;
@@ -43,7 +43,7 @@ Section #debug might be omitted.
 	* module - #mtbl index for module exporting this procedure;
 	* slot   - index into procedure module #exp.
 
-#sym: bunch of asciiz strings.
+#sym: bunch of pascal-style strings.
 
 #str:
 	* length - length of an array in bytes;

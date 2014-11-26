@@ -58,8 +58,8 @@ Execution flow is controlled with jumps and procedure calls.
 
 				2.1 Jumps
 
-Unconditional jump: #jump.
-Conditional jumps: #jumpeq, #jumpl, #jumple, #jumplf, #jumpz.
+Unconditional jump: #jmp.
+Conditional jumps: #jmp.int.eq, #jmp.int.l, #jmp.int.le, #jmp.flt.l, #jmp.int.z, #jmp.ref.eq.
 
 				2.2 Procedure call
 
@@ -67,7 +67,7 @@ There is 3 variants of procedure call.
 
 					2.2.1 Internal call
 
-#call is used for calling procedure from the same module procedure. This is fast.
+#call is used for calling procedure from the same module. This is fast.
 
 					2.2.2 External call
 
@@ -81,7 +81,7 @@ module.
 
 				2.3 Return from procedure
 
-#return returns control flow to the last procedure invoked some call variant.
+#return returns control flow to the previous procedure.
 
 				2.4 Exit
 

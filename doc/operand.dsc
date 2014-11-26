@@ -17,5 +17,4 @@ S       2      symbol segment offset
 A       4      array segment offset
 M       1      module table entry
 I       1      import table entry
-#E       1      export table entry
 r       2      text offset
