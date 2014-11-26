@@ -39,6 +39,9 @@ void symbol_print(const Symbol *s);
 /* Prints symbol to file */
 void symbol_print_to_file(const Symbol *s, FILE *file);
 
+/* Serializes symbol to given buffer */
+void symbol_serial(const Symbol *s, char *buffer);
+
 /* Copies symbol to given buffer */
 void symbol_copy_to(const Symbol *s, char *buffer);
 

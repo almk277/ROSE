@@ -67,7 +67,7 @@ RA_Array storage_add_symbol(Storage *tbl, const Symbol *sym)
 
 	storage_enlarge(tbl, len);
 	s = tbl->current;
-	symbol_copy_to(sym, &s->array[s->len]);
+	symbol_serial(sym, &s->array[s->len]);
 	s->len += len;
 	tbl->len += len;
 

@@ -91,10 +91,15 @@ void symbol_print_to_file(const Symbol *s, FILE *file)
 	fwrite(s->data, s->len, 1, file);
 }
 
-void symbol_copy_to(const Symbol *s, char *buffer)
+void symbol_serial(const Symbol *s, char *buffer)
 {
 	*(SymbolSize*)buffer = serial(s->len);
 	buffer += LEN;
+	memcpy(buffer, s->data, s->len);
+}
+
+void symbol_copy_to(const Symbol *s, char *buffer)
+{
 	memcpy(buffer, s->data, s->len);
 }
 
