@@ -557,9 +557,12 @@ static void header_print()
 static void table_print(const char *name, const SymbolTable *tbl,
 		void (*print)(const Symbol *s, const SymbolValue *v))
 {
-	printf("#%s(%d): ", name, symtbl_size(tbl));
-	symtbl_foreach(tbl, print);
-	putchar('\n');
+	int size = symtbl_size(tbl);
+	if(size != 0) {
+		printf("#%s(%d): ", name, size);
+		symtbl_foreach(tbl, print);
+		putchar('\n');
+	}
 }
 
 static void data_print1(const Symbol *s, const SymbolValue *v)
@@ -669,8 +672,10 @@ static void sym_print()
 
 static void str_print()
 {
-	printf("#str(%d)  ", str_sect.len);
-	putchar('\n');
+	if(str_sect.len) {
+		printf("#str(%d)  ", str_sect.len);
+		putchar('\n');
+	}
 }
 
 void sect_print()
