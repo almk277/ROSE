@@ -35,28 +35,33 @@ void storage_enlarge(Storage *tbl, RA_Array size)
 	}
 }
 
-void storage_put1byte(Storage *s, int8_t byte)
+#define putN(storage, type, word) do { \
+	Slice *a = storage->current; \
+	*(type*)&a->array[a->len] = serial(word); \
+	a->len += sizeof word; \
+	s->len += sizeof word; \
+} while(0)
+
+void storage_put1byte(Storage *s, int8_t word)
 {
-	Slice *a = s->current;
-	a->array[a->len] = byte;
-	a->len += 1;
-	s->len += 1;
+	putN(s, int8_t, word);
 }
 
 void storage_put2byte(Storage *s, int16_t word)
 {
-	Slice *a = s->current;
-	*(int16_t*)&a->array[a->len] = serial_16(word);
-	a->len += 2;
-	s->len += 2;
+	putN(s, int16_t, word);
 }
 
 void storage_put4byte(Storage *s, int32_t word)
 {
-	Slice *a = s->current;
-	*(int32_t*)&a->array[a->len] = serial_32(word);
-	a->len += 4;
-	s->len += 4;
+	putN(s, int32_t, word);
+}
+
+void storage_put_error(const char *s, const char *v, int len)
+{
+	fprintf(stderr, "Internal error: storage_put(%s, %s):"
+			" value of wrong length %d\n", s, v, len);
+	abort();
 }
 
 RA_Array storage_add_symbol(Storage *tbl, const Symbol *sym)
@@ -118,6 +123,6 @@ void array_add_byte(char byte)
 
 void array_end()
 {
-	*current_len_addr = serial_32(current_len);
+	*current_len_addr = serial(current_len);
 }
 

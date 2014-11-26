@@ -26,11 +26,18 @@ typedef struct Storage {
 /* Guarantees that tbl has at least size bytes free */
 void storage_enlarge(Storage *tbl, RA_Array size);
 
-void storage_put1byte(Storage *s, int8_t byte);
-
+void storage_put1byte(Storage *s, int8_t  word);
 void storage_put2byte(Storage *s, int16_t word);
-
 void storage_put4byte(Storage *s, int32_t word);
+void storage_put_error(const char *s, const char *v, int len);
+
+/* puts the word to the storage */
+#define storage_put(storage, word) do { \
+	if(sizeof(word) == 1) storage_put1byte((storage), (word)); \
+	else if(sizeof(word) == 2) storage_put2byte((storage), (word)); \
+	else if(sizeof(word) == 4) storage_put4byte((storage), (word)); \
+	else storage_put_error(#storage, #word, sizeof(word)); \
+} while(0)
 
 /* adds symbol to storage tbl */
 RA_Array storage_add_symbol(Storage *tbl, const struct Symbol *symbol);

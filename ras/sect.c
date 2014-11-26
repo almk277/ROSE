@@ -43,6 +43,7 @@ extern RA_Text sub_len;
 
 #define REF_MIN_OFS INT16_MIN
 #define REF_MAX_OFS INT16_MAX
+
 typedef struct Reference {
 	Symbol *name;                /* referenced label */
 	int lineno;                  /* reference source line */
@@ -56,6 +57,8 @@ static MM_DECL(Reference, 16);
 
 static SymbolValue *current_sub = 0;
 static RMDModule *current_import;
+
+#define text_put(arg) storage_put(&text_sect, arg)
 
 RMDHeader header = {
 	{ /* ident */
@@ -72,10 +75,6 @@ RMDHeader header = {
 	0, /* parent */
 	{ 0, 0 } /* module version */
 };
-
-#define text_put1byte(byte) storage_put1byte(&text_sect, byte)
-#define text_put2byte(byte) storage_put2byte(&text_sect, byte)
-#define text_put4byte(byte) storage_put4byte(&text_sect, byte)
 
 static SymbolValue *sym_add_uniq(SymbolTable *tbl, const Symbol *sym)
 {
@@ -116,7 +115,7 @@ void data_add(const Symbol *name)
 	sym_index(&data_tbl, name);
 }
 
-uint16_t sym_add(const Symbol *sym)
+static RA_Symbol sym_add(const Symbol *sym)
 {
 	SymbolValue *v = symtbl_find(&sym_tbl, sym);
 	if(v)
@@ -146,7 +145,7 @@ void module_add(const Symbol *name)
 {
 	SymbolValue *v = sym_index(&module_tbl, name);
 	current_import = &module_sect[v->i];
-	current_import->name = serial_16(sym_add(name));
+	current_import->name = serial(sym_add(name));
 	current_import->version.maj = current_import->version.min = 0;
 }
 
@@ -169,7 +168,7 @@ void imp_add(const Symbol *fullname)
 	Symbol *module, *proc;
 	symbol_split_colon(fullname, &module, &proc); /* we know there is ":" */
 	imp->module = sym_get_idx(&module_tbl, module);
-	imp->name = serial_16(sym_add(proc));
+	imp->name = serial(sym_add(proc));
 	imp->slot = 0;
 	symbol_delete(proc);
 	symbol_delete(module);
@@ -186,7 +185,7 @@ void header_set_name(const Symbol *name)
 {
 	if(header.name != 0)
 		error("module has name already");
-	header.name = serial_16(sym_add(name));
+	header.name = serial(sym_add(name));
 }
 
 void header_set_version(const char *version)
@@ -198,7 +197,7 @@ void header_set_parent(const Symbol *name)
 {
 	if(header.parent != 0)
 		error("module is inherited already");
-	header.parent = serial_16(sym_add(name));
+	header.parent = serial(sym_add(name));
 }
 
 void header_write()
@@ -294,7 +293,7 @@ void ptbl_add(const Symbol *name)
 {
 	SymbolValue *v = sym_index(&proc_tbl, name);
 	RMDProcedure *p = &ptbl_sect[v->i];
-	p->addr = serial_32(text_sect.len);
+	p->addr = serial((RA_Text)text_sect.len);
 	p->argc = p->varc = 0;
 	sub_begin(v);
 }
@@ -340,7 +339,7 @@ RA_Text text_addr()
 
 void text_emit_opcode(char opcode)
 {
-	text_put1byte(opcode);
+	text_put(opcode);
 }
 
 static void ref_new(Symbol *label);
@@ -349,7 +348,7 @@ void text_emit_escaped_char(char type, char c)
 {
 	switch(type) {
 		case 'c':
-			text_put1byte(escaped_char(c)); break;
+			text_put(escaped_char(c)); break;
 		default:
 			error("'\%c': unexpected literal", c);
 	}
@@ -359,7 +358,7 @@ void text_emit_char(char type, char c)
 {
 	switch(type) {
 		case 'c':
-			text_put1byte(c); break;
+			text_put(c); break;
 		default:
 			error("'%c': unexpected literal", c);
 	}
@@ -369,7 +368,7 @@ void text_emit_flt(char type, const char *c)
 {
 	switch(type) {
 		case 'w':
-			text_put4byte(flt_parse(c)); break;
+			text_put(flt_parse(c)); break;
 		default:
 			error("%s: unexpected float constant", c);
 	}
@@ -379,9 +378,9 @@ void text_emit_int(char type, const char *c)
 {
 	switch(type) {
 		case 'c':
-			text_put1byte((int8_t)int_parse(c, NUMDESC8)); break;
+			text_put((R_Byte)int_parse(c, NUMDESC8)); break;
 		case 'w':
-			text_put4byte((int32_t)int_parse(c, NUMDESC32)); break;
+			text_put((R_Word)int_parse(c, NUMDESC32)); break;
 		default:
 			error("%s: unexpected integer constant", c);
 	}
@@ -400,14 +399,14 @@ void text_emit_symbol(char type, Symbol *symbol)
 		case 'a':
 		case 'b':
 		case 'F': /* they all are stack variables */
-		case 'o': text_put1byte(sym_get_idx(&var_tbl, symbol)); break;
+		case 'o': text_put((RA_Stack)sym_get_idx(&var_tbl, symbol)); break;
 
-		case 'D': text_put1byte(sym_get_idx(&data_tbl, symbol)); break;
-		case 'P': text_put1byte(sym_get_idx(&proc_tbl, symbol)); break;
-		case 'S': text_put2byte(sym_get_idx(&sym_tbl, symbol)); break;
-		case 'A': text_put4byte(sym_get_or_die(&array_tbl, symbol)->u32); break;
-		case 'M': text_put1byte(sym_get_idx(&module_tbl, symbol)); break;
-		case 'I': text_put1byte(sym_get_idx(&imp_tbl, symbol)); break;
+		case 'D': text_put((RA_Data)sym_get_idx(&data_tbl, symbol)); break;
+		case 'P': text_put((RA_Proc)sym_get_idx(&proc_tbl, symbol)); break;
+		case 'S': text_put((RA_Symbol)sym_get_idx(&sym_tbl, symbol)); break;
+		case 'A': text_put((RA_Array)sym_get_or_die(&array_tbl, symbol)->u32); break;
+		case 'M': text_put((RA_Module)sym_get_idx(&module_tbl, symbol)); break;
+		case 'I': text_put((RA_Import)sym_get_idx(&imp_tbl, symbol)); break;
 		case 'r':
 		{
 			const SymbolValue *v = symtbl_find(&label_tbl, symbol);
@@ -415,7 +414,7 @@ void text_emit_symbol(char type, Symbol *symbol)
 				long offset = v->u32 - next_instr_addr;
 				if(offset < REF_MIN_OFS || offset > REF_MAX_OFS)
 					error("offset %ld is out of range", offset);
-				text_put2byte(offset);
+				text_put((RA_TextOffset)offset);
 			} else /* forward reference */
 				ref_new(symbol);
 			break;
@@ -449,7 +448,7 @@ static void ref_new(Symbol *label)
 	storage_enlarge(&text_sect, sizeof(RA_TextOffset));
 	r->base = next_instr_addr;
 	r->value = (RA_TextOffset*)storage_current(&text_sect);
-	text_put2byte(0); /* temporary offset value */
+	text_put((RA_TextOffset)0); /* temporary offset value */
 	SLIST_INSERT_HEAD(&ref_head, r, le);
 }
 
@@ -502,7 +501,7 @@ void sub_finish()
 		}
 		label_clear();
 		var_clear();
-		ptbl_sect[current_sub->i].size = serial_32(sub_len);
+		ptbl_sect[current_sub->i].size = serial(sub_len);
 	}
 }
 
@@ -519,7 +518,7 @@ void exp_add(const Symbol *name)
 	SymbolValue *v = sym_index(&exp_tbl, name);
 	RMDExport *e = &exp_sect[v->i];
 	SymbolValue *p = sym_get_or_die(&proc_tbl, name);
-	e->name = serial_16(sym_add(name));
+	e->name = serial(sym_add(name));
 	e->idx = p->i;
 }
 
@@ -534,14 +533,14 @@ void header_fill()
 {
 	if(header.name == 0)
 		error("module name was not specified");
-	header.datac = symtbl_size(&data_tbl);
-	header.sizes.exp  = symtbl_size(&exp_tbl);
-	header.sizes.ptbl = symtbl_size(&proc_tbl);
-	header.sizes.mtbl = symtbl_size(&module_tbl);
-	header.sizes.imp  = symtbl_size(&imp_tbl);
-	header.sizes.text = serial_32(text_sect.len);
-	header.sizes.sym  = serial_16(sym_sect.len);
-	header.sizes.str  = serial_32(str_sect.len);
+	header.datac = serial((RA_Data)symtbl_size(&data_tbl));
+	header.sizes.exp  = serial((RA_Export)symtbl_size(&exp_tbl));
+	header.sizes.ptbl = serial((RA_Proc)symtbl_size(&proc_tbl));
+	header.sizes.mtbl = serial((RA_Module)symtbl_size(&module_tbl));
+	header.sizes.imp  = serial((RA_Import)symtbl_size(&imp_tbl));
+	header.sizes.text = serial((RA_Text)text_sect.len);
+	header.sizes.sym  = serial((RA_Symbol)sym_sect.len);
+	header.sizes.str  = serial((RA_Array)str_sect.len);
 	header.size = serial_32(header.sizes.exp * sizeof(RMDExport)
 		+ header.sizes.ptbl * sizeof(RMDProcedure)
 		+ header.sizes.mtbl * sizeof(RMDModule)

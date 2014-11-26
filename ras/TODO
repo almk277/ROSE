@@ -1,3 +1,2 @@
 remove symbols when clearing symbol table;
-prelink;
-make code not to depend on operand sizes.
+prelink.
