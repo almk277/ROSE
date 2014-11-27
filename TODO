@@ -1,0 +1,26 @@
+rose:
+	lookup caches;
+	prelink;
+	module versions;
+	endianness;
+	module unload;
+	code verification;
+	garbage collector;
+
+ras:
+	arrays of ints and floats;
+	remove symbols when clearing symbol tables;
+	prelink.
+
+lib:
+	change memory pools API;
+	ownership semantics for symbol tables;
+	serialization on big endian machine.
+
+ISA:
+	integer multiplication/division;
+	IO;
+	threads;
+	inheritance/interfaces/traits;
+	method dispatch optimizations;
+	reflection.
