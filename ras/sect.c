@@ -41,9 +41,6 @@ extern int verbose;
 extern RA_Text next_instr_addr;
 extern RA_Text sub_len;
 
-#define REF_MIN_OFS INT16_MIN
-#define REF_MAX_OFS INT16_MAX
-
 typedef struct Reference {
 	Symbol *name;                /* referenced label */
 	int lineno;                  /* reference source line */
@@ -216,7 +213,7 @@ static const struct NumberDesc {
 	long min;
 	long max;
 } num_desc[] = {
-	{ INT8_MIN,  INT8_MAX },
+	{ INT8_MIN,  INT8_MAX  },
 	{ INT16_MIN, INT16_MAX },
 	{ INT32_MIN, INT32_MAX },
 };
@@ -344,6 +341,15 @@ void text_emit_opcode(char opcode)
 
 static void ref_new(Symbol *label);
 
+static void check_offset(const Symbol *name, long offset, int lineno)
+{
+	RA_TextOffset ofs = (RA_TextOffset)offset;
+	if(ofs != offset) {
+		fprintf(stderr, "line %d, offset %ld: ", lineno, offset);
+		error_symbol(name, "label reference is out of range");
+	}
+}
+
 void text_emit_escaped_char(char type, char c)
 {
 	switch(type) {
@@ -412,8 +418,7 @@ void text_emit_symbol(char type, Symbol *symbol)
 			const SymbolValue *v = symtbl_find(&label_tbl, symbol);
 			if(v) { /* back reference */
 				long offset = v->u32 - next_instr_addr;
-				if(offset < REF_MIN_OFS || offset > REF_MAX_OFS)
-					error("offset %ld is out of range", offset);
+				check_offset(symbol, offset, yylineno);
 				text_put((RA_TextOffset)offset);
 			} else /* forward reference */
 				ref_new(symbol);
@@ -463,10 +468,7 @@ static void resolve(const Reference *ref)
 	long offset;
 	const SymbolValue *v = sym_get_or_die(&label_tbl, ref->name);
 	offset = v->u32 - ref->base;
-	if(offset < REF_MIN_OFS || offset > REF_MAX_OFS) {
-		fprintf(stderr, "line %d, offset %ld: ", ref->lineno, offset);
-		error_symbol(ref->name, "label reference is out of range");
-	}
+	check_offset(ref->name, offset, ref->lineno);
 	*ref->value = serial((RA_TextOffset)offset);
 	if(verbose >= DL_NUDE) {
 		symbol_print(ref->name);
