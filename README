@@ -11,8 +11,9 @@ Key properties are:
 	* but optionally can use additional libraries.
 
 It is planned as a whole platform:
-	* VM itself (in development);
-	* assembler (done);
+	* rose: VM itself (in development);
+	* ras: assembler (done);
 	* high-level language compiler (planned);
+	* standard library (planned);
 	* hardware-level kernel, which turns ROSE into OS
 	  (under consideration).
