@@ -1,5 +1,5 @@
-#ifndef LOADER_H
-#define LOADER_H
+#ifndef ROSE_LOADER_H
+#define ROSE_LOADER_H
 
 struct Symbol;
 #include <stdio.h>

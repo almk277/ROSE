@@ -1,7 +1,7 @@
 /* Simple hash table with symbol keys. */
 
-#ifndef SYMTBL_H
-#define SYMTBL_H
+#ifndef ROSE_SYMTBL_H
+#define ROSE_SYMTBL_H
 
 #include <stdint.h>
 #include "compiler.h"

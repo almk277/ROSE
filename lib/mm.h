@@ -30,8 +30,8 @@
 
 /*  Trivial memory pool  */
 
-#ifndef MM_H
-#define MM_H
+#ifndef ROSE_MM_H
+#define ROSE_MM_H
 
 #include "compiler.h"
 

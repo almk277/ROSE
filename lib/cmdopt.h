@@ -1,5 +1,5 @@
-#ifndef CMDOPT_H
-#define CMDOPT_H
+#ifndef ROSE_CMDOPT_H
+#define ROSE_CMDOPT_H
 
 struct cmdopt {
 	const char *option;
