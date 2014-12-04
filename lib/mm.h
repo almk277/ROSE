@@ -77,9 +77,9 @@
 
 /* Pool descriptor. Might be used in mm_on_error */
 typedef struct mm_pool_struct {
-	void *head;                   /* free chunks list head */
-	unsigned size;                /* maximum element count */
-	const unsigned int el_size;   /* element size */
+	void *head;             /* free chunks list head */
+	unsigned size;          /* maximum element count */
+	unsigned int el_size;   /* element size */
 } mmPoolStruct;
 
 /* If defined as non-null address, function with this address
@@ -94,12 +94,12 @@ extern void *(*mm_on_error)(struct mm_pool_struct *);
 	(size < sizeof(void*) ? sizeof(void*) : \
 	 (size + MM_ALIGN - 1) & ~(MM_ALIGN - 1))
 
-void mm_pool_alloc(struct mm_pool_struct *pool);
-
 C_ATTR_MALLOC
 static inline void *mm_get_chunk(struct mm_pool_struct *pool)
 {
 	void *head;
+	void mm_pool_alloc(struct mm_pool_struct *pool);
+
 
 	if(unlikely(!pool->head))
 		mm_pool_alloc(pool);
