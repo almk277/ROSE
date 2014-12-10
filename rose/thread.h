@@ -20,11 +20,17 @@ typedef struct Thread {
 	R_Word *vars, *vars_end;         /* current and end variable frames */
 	ActivRecord pstack[32];          /* activation record stack */
 	ActivRecord *procs, *procs_end;  /* current and end record frames */
-	struct Module *module;           /* current module */
 	union {
-		const R_Byte *byte;
+		const R_Byte        *byte;
+		const R_Word        *word;
 		const RA_TextOffset *ofs;
-		const R_Word *word;
+		const RA_Stack      *stack;
+		const RA_Data       *data;
+		const RA_Module     *module;
+		const RA_Proc       *proc;
+		const RA_Import     *import;
+		const RA_Symbol     *symbol;
+		const RA_Array      *array;
 	} pc;                            /* instruction pointer */
 } Thread;
 
@@ -33,8 +39,6 @@ int thread_init(Thread *t, struct Module *m, const struct Symbol *proc);
 void thread_run(Thread *t);
 
 int thread_call_intern(Thread *t, struct Module *module, RA_Proc p_idx);
-
-int thread_call_extern(Thread *t, struct Module *m, RA_Export);
 
 void thread_return(Thread *t);
 

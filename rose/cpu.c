@@ -2,26 +2,13 @@
 
 #include "thread.h"
 #include "instr.h"
+#include "fetch.h"
 #include "module.h"
 #include "symbol.h"
 #include <stdio.h>
 #include <stdlib.h>
 
-#define fetch_byte(th)   (*th->pc.byte++)
-#define fetch_offset(th) (*th->pc.ofs++)
-#define fetch_word(th)   (*th->pc.word++)
-#define fetch_var(th)    (&th->vars[fetch_byte(th)])
-
-#define SEG     (&t->module->seg)
-#define BYTE(x) R_Byte x = fetch_byte(t)
-#define WORD(x) R_Word x = fetch_word(t)
-#define INT(x)  R_Word *x = fetch_var(t)
-#define FLT(x)  float *x = ((float*)fetch_var(t))
-#define OFS(x)  RA_TextOffset x = fetch_offset(t)
-#define PROC(x) RA_Proc x = fetch_byte(t)
-#define IMP(x)  RA_Import x = fetch_byte(t)
-
-#define jump(ofs) (t->pc.byte += ofs)
+#define jump(ofs) (PC.byte += ofs)
 
 /* startup code in ROSE bytecode itself */
 const R_Byte startup_code[] = {
@@ -172,7 +159,7 @@ void thread_run(Thread *t)
 		case I_call:
 		{
 			PROC(p_idx);
-			if(thread_call_intern(t, t->module, p_idx))
+			if(thread_call_intern(t, MODULE, p_idx))
 				stack_overflow();
 			break;
 		}
@@ -184,7 +171,7 @@ void thread_run(Thread *t)
 		case I_invoke:
 		{
 			IMP(i);
-			const Segments *const seg = &t->module->seg;
+			const Segments *const seg = SEG;
 			const RMDImport *imp = imp_get(seg, i);
 			const Symbol *procname = sym_get(seg, imp->name);
 			const RMDModule *mod = mtbl_get(seg, imp->module);
