@@ -1,18 +1,13 @@
 #ifndef ROSE_OBJECT_H
 #define ROSE_OBJECT_H
 
-typedef struct Object Object;
+#include "heap.h"
+struct Module;
 
-struct Object {
-};
-
-static inline void object_init(Object *obj)
-{
-}
-
-static inline void object_delete(Object *obj)
-{
-}
+typedef struct RD_Object {
+	RefData refdata;
+	struct Module *module;
+} RD_Object;
 
 #endif
 
