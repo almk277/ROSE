@@ -200,7 +200,7 @@ void thread_run(Thread *t)
 		case I_barr_load:
 		{
 			REF(r); WORD(addr);
-			const char *source = str_get(SEG, addr);
+			const R_Byte *source = str_get(SEG, addr);
 			RD_ByteArray *a = bytearray_load(source);
 			*r = ptr_to_ref(a);
 			break;

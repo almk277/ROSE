@@ -1,8 +1,8 @@
 #include "array.h"
 #include "heap.h"
 #include "serial.h"
-#include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #define CHECKED(a, idx, body) (idx < a->size ? ((body), 0) : -1)
 
