@@ -18,7 +18,7 @@ int array_put(RD_Array *a, RA_Array idx, R_Word value);
 
 RD_ByteArray *bytearray_new(RA_Array size);
 
-RD_ByteArray *butearray_load(void *source);
+RD_ByteArray *bytearray_load(const void *source);
 
 RA_Array bytearray_length(const RD_ByteArray *array);
 
@@ -29,6 +29,8 @@ int bytearray_get_word(const RD_ByteArray *a, RA_Array idx, R_Word *value);
 int bytearray_put_byte(RD_ByteArray *a, RA_Array idx, R_Byte value);
 
 int bytearray_put_word(RD_ByteArray *a, RA_Array idx, R_Word value);
+
+void bytearray_print(const RD_ByteArray *a);
 
 #endif
 

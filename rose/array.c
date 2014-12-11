@@ -1,11 +1,16 @@
 #include "array.h"
 #include "heap.h"
+#include "serial.h"
 #include <stdlib.h>
+#include <stdio.h>
 
-#define CHECKED(a, idx, body) (idx <= a->size ? -1 : (body), 0)
+#define CHECKED(a, idx, body) (idx < a->size ? ((body), 0) : -1)
 
-#define array_byte(a, idx) (*(R_Byte*)((char*)a + sizeof(RD_ByteArray) + idx))
-#define array_word(a, idx) (*(R_Word*)((char*)a + sizeof(RD_ByteArray) + idx))
+/* RD_Array: addressing by words */
+#define array_elem(a, idx) (*(R_Word*)((R_Word*)(a + 1) + idx))
+/* RD_ByteArray: addressing by bytes */
+#define array_byte(a, idx) (*(R_Byte*)((R_Byte*)(a + 1) + idx))
+#define array_word(a, idx) (*(R_Word*)((R_Byte*)(a + 1) + idx))
 
 struct RD_Array {
 	RefData refdata;
@@ -24,10 +29,15 @@ RA_Array array_length(const RD_Array *array)
 	return array->size;
 }
 
-int array_get(const RD_Array *a, RA_Array idx, R_Word *value);
+int array_get(const RD_Array *a, RA_Array idx, R_Word *value)
+{
+	return CHECKED(a, idx, *value = array_word(a, idx));
+}
 
-int array_put(RD_Array *a, RA_Array idx, R_Word value);
-
+int array_put(RD_Array *a, RA_Array idx, R_Word value)
+{
+	return CHECKED(a, idx, array_word(a, idx) = value);
+}
 
 struct RD_ByteArray {
 	RefData refdata;
@@ -41,11 +51,11 @@ RD_ByteArray *bytearray_new(RA_Array size)
 	return a;
 }
 
-RD_ByteArray *butearray_load(void *source)
+RD_ByteArray *bytearray_load(const void *source)
 {
-	RA_Array size = *(RA_Array*)source;
+	RA_Array size = deserial(*(RA_Array*)source);
 	RD_ByteArray *a = bytearray_new(size);
-	memcpy((char*)a + sizeof(RD_ByteArray), (RA_Array*)source + 1, size);
+	memcpy(a + 1, (RA_Array*)source + 1, size);
 	return a;
 }
 
@@ -72,5 +82,10 @@ int bytearray_put_byte(RD_ByteArray *a, RA_Array idx, R_Byte value)
 int bytearray_put_word(RD_ByteArray *a, RA_Array idx, R_Word value)
 {
 	return CHECKED(a, idx, array_word(a, idx) = value);
+}
+
+void bytearray_print(const RD_ByteArray *a)
+{
+	fwrite(a + 1, a->size, 1, stdout);
 }
 

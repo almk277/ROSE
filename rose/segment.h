@@ -66,5 +66,8 @@ typedef struct Segments {
 /* const struct Symbol *sym_get(const Segments *seg, RA_Symbol i); */
 #define sym_get(seg, i)	 ((const struct Symbol*)&(seg)->sym.start[i])
 
+/* const struct char *str_get(const Segments *seg, RA_Array i); */
+#define str_get(seg, i)  (&(seg)->str.start[i])
+
 #endif
 

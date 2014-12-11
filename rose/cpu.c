@@ -4,7 +4,9 @@
 #include "instr.h"
 #include "fetch.h"
 #include "module.h"
+#include "heap.h"
 #include "symbol.h"
+#include "array.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -18,6 +20,12 @@ const R_Byte startup_code[] = {
 static void stack_overflow(void)
 {
 	fputs("Stack overflow!\n", stderr);
+	exit(1);
+}
+
+static void out_of_range(int idx)
+{
+	fprintf(stderr, "Array index (%d) out of bound\n", idx);
 	exit(1);
 }
 
@@ -181,6 +189,95 @@ void thread_run(Thread *t)
 			const RMDExport *exp = exp_get(&m->seg, exp_idx);
 			if(thread_call_intern(t, m, exp->idx))
 				stack_overflow();
+			break;
+		}
+		case I_barr_new:
+		{
+			REF(r); INT(size);
+			RD_ByteArray *a = bytearray_new(*size);
+			*r = ptr_to_ref(a);
+			break;
+		}
+		case I_barr_load:
+		{
+			REF(r); WORD(addr);
+			const char *source = str_get(SEG, addr);
+			RD_ByteArray *a = bytearray_load(source);
+			*r = ptr_to_ref(a);
+			break;
+		}
+		case I_barr_len:
+		{
+			INT(len); REF(r);
+			*len = bytearray_length(ref_to_ptr(*r));
+			break;
+		}
+		case I_dbg_str:
+		{
+			REF(r);
+			RD_ByteArray *a = ref_to_ptr(*r);
+			bytearray_print(a);
+			break;
+		}
+		case I_barr_getb:
+		{
+			INT(v); REF(r); INT(i);
+			RD_ByteArray *a = ref_to_ptr(*r);
+			if(bytearray_get_byte(a, *i, v) < 0)
+				out_of_range(*i);
+			break;
+		}
+		case I_barr_getw:
+		{
+			INT(v); REF(r); INT(i);
+			RD_ByteArray *a = ref_to_ptr(*r);
+			if(bytearray_get_word(a, *i, v) < 0)
+				out_of_range(*i);
+			break;
+		}
+		case I_barr_putb:
+		{
+			INT(v); REF(r); INT(i);
+			RD_ByteArray *a = ref_to_ptr(*r);
+			if(bytearray_put_byte(a, *i, *v) < 0)
+				out_of_range(*i);
+			break;
+		}
+		case I_barr_putw:
+		{
+			INT(v); REF(r); INT(i);
+			RD_ByteArray *a = ref_to_ptr(*r);
+			if(bytearray_put_word(a, *i, *v) < 0)
+				out_of_range(*i);
+			break;
+		}
+		case I_arr_new:
+		{
+			REF(r); INT(size);
+			RD_Array *a = array_new(*size);
+			*r = ptr_to_ref(a);
+			break;
+		}
+		case I_arr_len:
+		{
+			INT(len); REF(r);
+			*len = array_length(ref_to_ptr(*r));
+			break;
+		}
+		case I_arr_get:
+		{
+			INT(v); REF(r); INT(i);
+			RD_Array *a = ref_to_ptr(*r);
+			if(array_get(a, *i, v) < 0)
+				out_of_range(*i);
+			break;
+		}
+		case I_arr_put:
+		{
+			INT(v); REF(r); INT(i);
+			RD_Array *a = ref_to_ptr(*r);
+			if(array_put(a, *i, *v) < 0)
+				out_of_range(*i);
 			break;
 		}
 		default:

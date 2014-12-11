@@ -8,6 +8,7 @@ void heap_create(void)
 	hstart = hcur = malloc(heap_size());
 }
 
+/* TODO do we need this? */
 void heap_destroy(void)
 {
 	free(hstart);
