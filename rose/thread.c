@@ -79,3 +79,5 @@ void thread_return(Thread *t)
 	restore_procedure(t);
 }
 
+int thread_call_extern(Thread *t, struct Module *module, RA_Import p_idx);
+

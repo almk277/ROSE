@@ -40,6 +40,8 @@ void thread_run(Thread *t);
 
 int thread_call_intern(Thread *t, struct Module *module, RA_Proc p_idx);
 
+int thread_call_extern(Thread *t, struct Module *module, RA_Import p_idx);
+
 void thread_return(Thread *t);
 
 #endif
