@@ -24,10 +24,10 @@ flt.div    fff       A5    $1 = $2 / $3
 flt.mul    fff       A4    $1 = $2 * $3
 flt.new    fw        A0    $1 = $2
 flt.sub    fff       A3    $1 = $2 - $3
-int.add    iii       12    $1I = $2I + $3I
-int.inc    ic        16    $1I = $1I + $2
-int.new    iw        10    $1 = $2I
-int.byte   ic        11    $1 = $2I
+int.add    iii       12    $1 = $2 + $3
+int.inc    ic        16    $1 = $1 + $2
+int.new    iw        10    $1 = $2
+int.byte   ic        11    $1 = $2
 int.sub    iii       13    $1 = $2 - $3
 invoke     I         43    call $1
 jmp        r         20    jumps for $1 bytes
@@ -37,9 +37,9 @@ jmp.int.l  iir       23    jumps for $3 bytes if $1 < $2
 jmp.int.le iir       24    jumps for $3 bytes if $1 <= $2
 jmp.int.z  ir        21    jumps for $3 bytes if $1 == 0
 jmp.ref.eq oor       26    jumps for $3 bytes if $1 == $2
-load       sD        34    $1 = this.$2
 move       oo        30    $1 = $2
 new        oM        50    $1O = new $2
 nop        -         00    does nothing
+obj.load   sD        34    $1 = this.$2
+obj.store  sD        35    this.$2 = $1
 return     -         47    returns from current method
-store      sD        35    this.$2 = $1
