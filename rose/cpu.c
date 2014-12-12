@@ -7,6 +7,7 @@
 #include "heap.h"
 #include "symbol.h"
 #include "array.h"
+#include "object.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -278,6 +279,34 @@ void thread_run(Thread *t)
 			RD_Array *a = ref_to_ptr(*r);
 			if(array_put(a, *i, *v) < 0)
 				out_of_range(*i);
+			break;
+		}
+		case I_move:
+		{
+			INT(i1); INT(i2);
+			*i1 = *i2;
+			break;
+		}
+		case I_new:
+		{
+			REF(r); MOD(m_idx);
+			Module *m = module_get_module(MODULE, m_idx);
+			RD_Object *o = object_new(m);
+			*r = ptr_to_ref(o);
+			break;
+		}
+		case I_obj_load:
+		{
+			INT(var); DATA(d);
+			RD_Object *o = ref_to_ptr(OBJECT);
+			*var = object_load(o, d);
+			break;
+		}
+		case I_obj_store:
+		{
+			INT(var); DATA(d);
+			RD_Object *o = ref_to_ptr(OBJECT);
+			object_store(o, d, *var);
 			break;
 		}
 		default:

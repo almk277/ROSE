@@ -14,6 +14,7 @@ struct Module {
 	const struct Symbol *name;
 	RMDVersion version;
 	Segments seg;
+	RA_Data datac;
 };
 
 /* minimal supported version */
@@ -43,6 +44,8 @@ Module *module_get(const struct Symbol *name, const char **errstr);
  * On error, prints error string and calls 'exit' */
 Module *module_get_obligatory(const struct Symbol *name);
 
+Module *module_get_module(Module *m, RA_Module idx);
+
 /* Unloads the module */
 /* void module_unload(Module *module); */
 
@@ -51,6 +54,8 @@ Module *module_get_obligatory(const struct Symbol *name);
 
 /* returns version of the module m */
 #define module_version(m) (&(m)->version)
+
+#define module_data_size(m) ((m)->datac)
 
 /* Finds in module m procedure with given name and supposed index hint.
  * Returns index in #exp.

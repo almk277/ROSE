@@ -7,7 +7,7 @@ LIBS += -L../lib -lrose
 
 all: rose
 
-rose: rose.o module.o thread.o cpu.o heap.o config.o array.o
+rose: rose.o module.o thread.o cpu.o heap.o config.o array.o object.o
 	$(CC) $(LDFLAGS) -o $@ $^ $(LIBS)
 
 cpu.o: instr.h

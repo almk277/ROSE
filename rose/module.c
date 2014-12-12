@@ -56,6 +56,7 @@ static void module_set(Module *m, const RMDHeader *h, const char *addr)
 
 	m->name = get_symbol(m, h->name);
 	m->version = h->version;
+	m->datac = h->datac;
 }
 
 static void add_to_tbl(Module *m, const Symbol *name)
@@ -167,6 +168,15 @@ Module *module_get_obligatory(const Symbol *name)
 		exit(1);
 	}
 	return m;
+}
+
+Module *module_get_module(Module *m, RA_Module idx)
+{
+	const Segments *const seg = &m->seg;
+	const RMDModule *mod = mtbl_get(seg, idx);
+	const Symbol *modname = sym_get(seg, mod->name);
+	Module *other = module_get_obligatory(modname);
+	return other;
 }
 
 static int module_exp_find(const Module *m, const Symbol *name, RA_Export *proc)

@@ -9,6 +9,7 @@
 #define MODULE  (t->procs->module)
 #define SEG     (&MODULE->seg)
 #define PC      (t->pc)
+#define OBJECT  (t->vars[0])
 
 #define fetch(type)      (deserial(*PC.type++))
 #define fetch_var()      (&t->vars[fetch(stack)])
