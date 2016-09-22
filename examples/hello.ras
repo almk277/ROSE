@@ -4,12 +4,20 @@
 
 .str hello_str "Hello" ','   # string array
 	' '
-	"world" '!';
+	"world" '!' '\n';
+.str filename_str "/dev/stdout";
 
 .sub main                    # first procedure
 .export main                 # procedure is visible outside
 .var str                     # local variable
+.var filename
+.var f
+.var size
 	barr.load str hello_str  # initialize local byte array from constant
-	dbg.str str              # output string
-	dbg.byte '\n'            # output new line symbol
+	barr.len size str
+	barr.load filename filename_str
+
+	file.open f filename 1
+	file.write f str size
+	file.close f
 	exit                     # finish the program

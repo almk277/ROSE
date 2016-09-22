@@ -8,6 +8,7 @@
 #include "symbol.h"
 #include "array.h"
 #include "object.h"
+#include "file.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -305,6 +306,37 @@ void thread_run(Thread *t)
 			INT(var); DATA(d);
 			RD_Object *o = ref_to_ptr(OBJECT);
 			object_store(o, d, *var);
+			break;
+		}
+		case I_file_open:
+		{
+			REF(f); REF(name); BYTE(mode);
+			RD_ByteArray *a_name = ref_to_ptr(*name);
+			RD_File *file = file_open(a_name, mode);
+			*f = ptr_to_ref(file);
+			break;
+		}
+		case I_file_close:
+		{
+			REF(f);
+			RD_File *file = ref_to_ptr(*f);
+			file_close(file);
+			break;
+		}
+		case I_file_read:
+		{
+			REF(f); REF(buf); INT(size);
+			RD_File *file = ref_to_ptr(*f);
+			RD_ByteArray *a = ref_to_ptr(*buf);
+			file_read(file, a, *size);
+			break;
+		}
+		case I_file_write:
+		{
+			REF(f); REF(buf); INT(size);
+			RD_File *file = ref_to_ptr(*f);
+			RD_ByteArray *a = ref_to_ptr(*buf);
+			file_write(file, a, *size);
 			break;
 		}
 		default:

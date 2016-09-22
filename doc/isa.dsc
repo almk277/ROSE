@@ -17,8 +17,12 @@ dbg.byte   c         01    prints $1 & 0xFF
 dbg.flt    f         04    prints $1
 dbg.int    i         03    prints $1
 dbg.str    a         02    prints $1
-dispatch   oS        45    call $1.$2
+#dispatch   oS        45    call $1.$2
 exit       -         05    stops the program
+file.close F         B1    close($1)
+file.open  Fac       B0    $1 = open(name=$2, mode=$3)
+file.read  Fai       B2    $2 <- read(file=$1, size=$3)
+file.write Fai       B3    write(file=$1, data=$2, size=$3)
 flt.add    fff       A2    $1 = $2 + $3
 flt.div    fff       A5    $1 = $2 / $3
 flt.mul    fff       A4    $1 = $2 * $3

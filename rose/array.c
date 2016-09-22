@@ -84,6 +84,11 @@ int bytearray_put_word(RD_ByteArray *a, RA_Array idx, R_Word value)
 	return CHECKED(a, idx, array_word(a, idx) = value);
 }
 
+R_Byte *bytearray_data(RD_ByteArray *a)
+{
+	return (R_Byte*)a + sizeof(*a);
+}
+
 void bytearray_print(const RD_ByteArray *a)
 {
 	fwrite(a + 1, a->size, 1, stdout);
