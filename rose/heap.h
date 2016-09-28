@@ -8,6 +8,8 @@
 #include "rmd.h"
 #include "config.h"
 
+#define RD_null 0
+
 /*
  * On 32-bit platform, ROSE reference is native pointer.
  * On platform with bigger pointer (64-bit),

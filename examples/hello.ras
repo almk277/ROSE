@@ -5,7 +5,7 @@
 .str hello_str "Hello" ','   # string array
 	' '
 	"world" '!' '\n';
-.str filename_str "/dev/stdout";
+.str filename_str "rose:/stdout";
 
 .sub main                    # first procedure
 .export main                 # procedure is visible outside
@@ -17,7 +17,7 @@
 	barr.len size str
 	barr.load filename filename_str
 
-	file.open f filename 1
+	file.open f filename 2
 	file.write f str size
 	file.close f
 	exit                     # finish the program

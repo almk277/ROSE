@@ -32,6 +32,8 @@ int bytearray_put_word(RD_ByteArray *a, RA_Array idx, R_Word value);
 
 R_Byte *bytearray_data(RD_ByteArray *a);
 
+const R_Byte *bytearray_data_c(const RD_ByteArray *a);
+
 void bytearray_print(const RD_ByteArray *a);
 
 #endif

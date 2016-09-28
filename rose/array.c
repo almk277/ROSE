@@ -89,6 +89,11 @@ R_Byte *bytearray_data(RD_ByteArray *a)
 	return (R_Byte*)a + sizeof(*a);
 }
 
+const R_Byte *bytearray_data_c(const RD_ByteArray *a)
+{
+	return (R_Byte*)a + sizeof(*a);
+}
+
 void bytearray_print(const RD_ByteArray *a)
 {
 	fwrite(a + 1, a->size, 1, stdout);

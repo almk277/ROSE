@@ -4,8 +4,6 @@
 #include "heap.h"
 struct Module;
 
-#define RD_null 0
-
 typedef struct RD_Object {
 	RefData refdata;
 	struct Module *module;
