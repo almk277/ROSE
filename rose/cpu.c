@@ -286,7 +286,7 @@ void thread_run(Thread *t)
 			*i1 = *i2;
 			break;
 		}
-		case I_new:
+		case I_obj_new:
 		{
 			REF(r); MOD(m_idx);
 			Module *m = module_get_module(MODULE, m_idx);

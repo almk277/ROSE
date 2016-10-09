@@ -13,7 +13,6 @@ F       1      stack file variable
 o       1      stack object variable
 D       1      object variable
 P       1      procedure table entry
-S       2      symbol segment offset
 A       4      array segment offset
 M       1      module table entry
 I       1      import table entry

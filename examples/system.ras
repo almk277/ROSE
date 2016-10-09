@@ -1,0 +1,35 @@
+.module system 1 0
+.import system 1 0
+
+.str in_name
+	"rose:/stdin"
+.str out_name
+	"rose:/stdout"
+.str err_name
+	"rose:/stderr"
+
+.data file stdin
+.data file stdout
+.data file stderr
+
+.sub init
+.export init
+.arg object obj
+.var f
+.var name
+.var size
+	obj.new obj system
+
+	barr.load name in_name
+	file.open f name 01
+	obj.store f stdin
+
+	barr.load name out_name
+	file.open f name 02
+	obj.store f stdout
+
+	barr.load name in_name
+	file.open f name 02
+	obj.store f stdin
+
+	return

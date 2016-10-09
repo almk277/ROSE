@@ -1,9 +1,0 @@
-.module print
-
-# prints out a given string and a new line
-.sub println
-.export println
-.arg str
-	dbg.str str
-	dbg.byte '\n'
-	return

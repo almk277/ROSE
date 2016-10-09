@@ -17,7 +17,6 @@ dbg.byte   c         01    prints $1 & 0xFF
 dbg.flt    f         04    prints $1
 dbg.int    i         03    prints $1
 dbg.str    a         02    prints $1
-#dispatch   oS        45    call $1.$2
 exit       -         05    stops the program
 file.close F         B1    close($1)
 file.open  Fac       B0    $1 = open(name=$2, mode=$3)
@@ -39,11 +38,12 @@ jmp.flt.l  ffr       25    jumps for $3 bytes if $1 < $2
 jmp.int.eq iir       22    jumps for $3 bytes if $1 == $2
 jmp.int.l  iir       23    jumps for $3 bytes if $1 < $2
 jmp.int.le iir       24    jumps for $3 bytes if $1 <= $2
-jmp.int.z  ir        21    jumps for $3 bytes if $1 == 0
-jmp.ref.eq oor       26    jumps for $3 bytes if $1 == $2
+jmp.int.z  ir        21    jumps for $2 bytes if $1 == 0
+jmp.ref.eq oor       27    jumps for $3 bytes if $1 == $2
+jmp.ref.z  or        26    jumps for $2 bytes if $1 == 0
 move       oo        30    $1 = $2
-new        oM        50    $1O = new $2
 nop        -         00    does nothing
 obj.load   sD        34    $1 = this.$2
+obj.new    oM        50    $1O = new $2
 obj.store  sD        35    this.$2 = $1
 return     -         47    returns from current method

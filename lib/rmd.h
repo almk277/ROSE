@@ -29,13 +29,13 @@ typedef uint8_t  RA_Import;
 
 /* Information about sector sizes */
 typedef struct RMDSectorSize {
-	RA_Text text;    /* text sector size      */
-	RA_Array str;    /* string sector size    */
-	RA_Symbol sym;   /* symbol sector size    */
 	RA_Export exp;   /* export table size     */
 	RA_Proc ptbl;    /* procedure table size  */
 	RA_Module mtbl;  /* module table size     */
 	RA_Import imp;   /* import table size     */
+	RA_Text text;    /* text sector size      */
+	RA_Symbol sym;   /* symbol sector size    */
+	RA_Array str;    /* string sector size    */
 } RMDSectorSize;
 
 /* RMD header */
@@ -43,14 +43,12 @@ typedef struct RMDHeader {
 	unsigned char ident[4];    /* signature                 */
 	RMDVersion rmd_version;    /* ROSE version              */
 	RA_Symbol name;            /* module name               */
-	RA_Symbol parent;          /* parent module name        */
 	RMDVersion version;        /* module version            */
 	RMDSectorSize sizes;       /* sizes of all sectors      */
-	unsigned char flags;       /* various flags             */
 	RA_Data datac;             /* data count                */
+	unsigned char flags;       /* module flags              */
 	uint32_t size;             /* size of (module - header) */
-	uint32_t debug;            /* debug section size        */
-	char pad[8];               /* for future expanding      */
+	unsigned char pad[8];      /* for future expanding      */
 } RMDHeader;
 
 /* RMD signature */
@@ -59,30 +57,20 @@ typedef struct RMDHeader {
 #define RMD_H_IDENT3		'D'
 #define RMD_H_IDENT4		0x1F
 
-/* Segment order:
- * exp;
- * ptbl;
- * mtbl;
- * imp;
- * text;
- * sym;
- * str.
- */
+/* #exp entry */
+typedef struct RMDExport {
+	RA_Symbol name;
+	RA_Proc idx;
+} RMDExport;
 
 /* #ptbl entry */
 typedef struct RMDProcedure {
 	RA_Text addr;
 	RA_Text size;
+	RA_Symbol type;
 	RA_Stack argc;
 	RA_Stack varc;
 } RMDProcedure;
-
-/* #exp entry */
-typedef struct RMDExport {
-	RA_Symbol name;
-	RA_Symbol proto;
-	RA_Proc idx;
-} RMDExport;
 
 /* #mtbl entry */
 typedef struct RMDModule {
@@ -93,8 +81,9 @@ typedef struct RMDModule {
 /* #imp entry */
 typedef struct RMDImport {
 	RA_Symbol name;
+	RA_Symbol type;
+	RA_Export slot; // FIXME
 	RA_Module module;
-	RA_Export slot;
 } RMDImport;
 
 /* #str entry */

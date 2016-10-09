@@ -1,23 +1,25 @@
-# "Hello, world" from ROSE
+; "Hello, world" from ROSE
 
-.module hello 1.0            # module name and version
+.module hello 1 0            ; module name and version
 
-.str hello_str "Hello" ','   # string array
-	' '
-	"world" '!' '\n';
-.str filename_str "rose:/stdout";
+.str hello_str
+	"Hello" ","   ; string array
+	" "
+	"world!" "\n"
+.str filename_str
+	"rose:/stdout"
 
-.sub main                    # first procedure
-.export main                 # procedure is visible outside
-.var str                     # local variable
+.sub main                    ; first procedure
+.export main                 ; procedure is visible outside
+.var str                     ; local variable
 .var filename
 .var f
 .var size
-	barr.load str hello_str  # initialize local byte array from constant
+	barr.load str hello_str  ; initialize local byte array from constant
 	barr.len size str
 	barr.load filename filename_str
 
 	file.open f filename 2
 	file.write f str size
 	file.close f
-	exit                     # finish the program
+	exit                     ; finish the program
