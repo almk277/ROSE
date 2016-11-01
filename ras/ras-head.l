@@ -21,7 +21,7 @@ VER    {INT}\.{INT}
 EXTPR  {WORD}:{WORD}
 
 %option yylineno nounput noinput noyywrap
-%x instruction eol ext sub arg var exp imp impver data mod modver inh
+%x instruction eol ext sub arg var exp imp impver data mod modver
 %x str strsect string
 
 %%
@@ -47,9 +47,6 @@ EXTPR  {WORD}:{WORD}
 <imp>{WORD}    module_add(YSTRING); dl("import"); BEGIN impver;
 <impver>{VER}  module_set_version(yytext); dl("version"); BEGIN eol;
 <impver>\n     /* no version */ BEGIN INITIAL;
-
-\.inherits     BEGIN inh;
-<inh>{WORD}    header_set_parent(YSTRING); dl("parent"); BEGIN eol;
 
 \.module       BEGIN mod;
 <mod>{WORD}    header_set_name(YSTRING); dl("module"); BEGIN modver;

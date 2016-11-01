@@ -24,9 +24,6 @@ void header_set_name(const struct Symbol *name);
 /* sets module version */
 void header_set_version(const char *version);
 
-/* sets module parent */
-void header_set_parent(const struct Symbol *name);
-
 /* fills module header with current values */
 void header_fill(void);
 

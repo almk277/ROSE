@@ -69,7 +69,6 @@ RMDHeader header = {
 		ROSE_VERSION_MIN
 	},
 	0, /* name */
-	0, /* parent */
 	{ 0, 0 } /* module version */
 };
 
@@ -188,13 +187,6 @@ void header_set_name(const Symbol *name)
 void header_set_version(const char *version)
 {
 	parse_version(version, &header.version);
-}
-
-void header_set_parent(const Symbol *name)
-{
-	if(header.parent != 0)
-		error("module is inherited already");
-	header.parent = serial(sym_add(name));
 }
 
 void header_write()
