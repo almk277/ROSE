@@ -5,8 +5,8 @@
 *.so
 tags
 .exrc
-ras/ras
-ras/ras-lex.l
-ras/ras-lex.c
+rasm/rasm
+rasm/instr.cpp
+rasm/gen
 rose/rose
 rose/instr.h

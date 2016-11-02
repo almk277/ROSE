@@ -1,12 +1,12 @@
 .PHONY: all clean examples
 
-all: lib/librose.a ras/ras rose/rose
+all: lib/librose.a rasm/rasm rose/rose
 
 lib/librose.a:
 	cd lib && $(MAKE)
 
-ras/ras:
-	cd ras && $(MAKE)
+rasm/rasm:
+	cd rasm && $(MAKE)
 
 rose/rose:
 	cd rose && $(MAKE)
@@ -16,7 +16,7 @@ examples:
 
 clean:
 	cd lib && $(MAKE) clean
-	cd ras && $(MAKE) clean
+	cd rasm && $(MAKE) clean
 	cd rose && $(MAKE) clean
 	cd examples && $(MAKE) clean
 
