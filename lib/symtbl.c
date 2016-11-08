@@ -1,13 +1,22 @@
 #include "symtbl.h"
-#include "symbol.h"
 #include "mm.h"
 #include <stddef.h>
+#include <string.h>
 
 typedef struct SymbolEntry SymbolEntry;
 
 static MM_DECL(SymbolEntry, 32);
 #define FOREACH(idx, tbl) \
 	for(idx = 0; idx != sizeof(tbl->heads) / sizeof(tbl->heads[0]); ++idx)
+
+static unsigned char symbol_hash(Symbol *s)
+{
+	unsigned char h = 0;
+	const char *c;
+	for (c = s; *c; ++c)
+		h += *c;
+	return h;
+}
 
 void symtbl_init(SymbolTable *tbl)
 {
@@ -22,16 +31,16 @@ int symtbl_size(const SymbolTable *tbl)
 	return tbl->size;
 };
 
-static SymbolEntry *list_find(const SymbolSlistHead *head, const Symbol *s)
+static SymbolEntry *list_find(const SymbolSlistHead *head, Symbol *s)
 {
 	SymbolEntry *ent;
 	SLIST_FOREACH(ent, head, le)
-		if(symbol_compare(ent->symbol, s))
+		if(strcmp(ent->symbol, s) == 0)
 			return ent;
 	return NULL;
 }
 
-SymbolValue *symtbl_find(const SymbolTable *tbl, const Symbol *s)
+SymbolValue *symtbl_find(const SymbolTable *tbl, Symbol *s)
 {
 	unsigned char idx = symbol_hash(s);
 	const SymbolSlistHead *list = &tbl->heads[idx];
@@ -41,7 +50,7 @@ SymbolValue *symtbl_find(const SymbolTable *tbl, const Symbol *s)
 	return NULL;
 }
 
-static SymbolValue *add(SymbolTable *tbl, SymbolSlistHead *list, const Symbol *s)
+static SymbolValue *add(SymbolTable *tbl, SymbolSlistHead *list, Symbol *s)
 {
 	SymbolEntry *e = mm_alloc(SymbolEntry);
 	e->symbol = s;
@@ -50,7 +59,7 @@ static SymbolValue *add(SymbolTable *tbl, SymbolSlistHead *list, const Symbol *s
 	return &e->value;
 }
 
-SymbolValue *symtbl_add_unique(SymbolTable *tbl, const Symbol *symbol)
+SymbolValue *symtbl_add_unique(SymbolTable *tbl, Symbol *symbol)
 {
 	unsigned char idx = symbol_hash(symbol);
 	SymbolSlistHead *list = &tbl->heads[idx];
@@ -60,7 +69,7 @@ SymbolValue *symtbl_add_unique(SymbolTable *tbl, const Symbol *symbol)
 	return add(tbl, list, symbol);
 }
 
-SymbolValue *symtbl_add_or_get(SymbolTable *tbl, const Symbol *symbol)
+SymbolValue *symtbl_add_or_get(SymbolTable *tbl, Symbol *symbol)
 {
 	unsigned char idx = symbol_hash(symbol);
 	SymbolSlistHead *list = &tbl->heads[idx];
@@ -85,7 +94,7 @@ void symtbl_clear(SymbolTable *tbl)
 }
 
 void symtbl_foreach(const SymbolTable *tbl,
-		void (*fn)(const struct Symbol *sym, const SymbolValue *val))
+		void (*fn)(Symbol *sym, const SymbolValue *val))
 {
 	int i;
 	FOREACH(i, tbl) {

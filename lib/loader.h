@@ -1,7 +1,7 @@
 #ifndef ROSE_LOADER_H
 #define ROSE_LOADER_H
 
-struct Symbol;
+#include "symbol.h"
 #include <stdio.h>
 
 /* adds dir to list of module search directories.
@@ -19,7 +19,7 @@ int loader_add_dir_from_file(const char *fname);
 /* Searches for module 'name' in module search directories;
  * Returns opened file handler on success, or NULL, if not found
  * Not thread-safe! */
-FILE *loader_find_module(const struct Symbol *name);
+FILE *loader_find_module(Symbol *name);
 
 /* Prints out to stdout all search directories known so far */
 void loader_print_pathes(void);

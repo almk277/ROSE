@@ -4,37 +4,37 @@
 #include "rmd.h"
 
 typedef struct Exp {
-	const RMDExport *start;
+	RMDExport *start;
 	R_Byte size;
 } Exp;
 
 typedef struct Ptbl {
-	const RMDProcedure *start;
+	RMDProcedure *start;
 	R_Byte size;
 } Ptbl;
 
 typedef struct Mtbl {
-	const RMDModule *start;
+	RMDModule *start;
 	R_Byte size;
 } Mtbl;
 
 typedef struct Imp {
-	const RMDImport *start;
+	RMDImport *start;
 	R_Byte size;
 } Imp;
 
 typedef struct Text {
-	const R_Byte *start;
+	R_Byte *start;
 	RA_Text size;
 } Text;
 
 typedef struct Sym {
-	const char *start;
+	char *start;
 	RA_Symbol size;
 } Sym;
 
 typedef struct Str {
-	const R_Byte *start;
+	R_Byte *start;
 	RA_Array size;
 } Str;
 
@@ -63,8 +63,8 @@ typedef struct Segments {
 /* const R_Byte *text_get(const Segments *seg, RA_Text i); */
 #define text_get(seg, i) (&(seg)->text.start[i])
 
-/* const struct Symbol *sym_get(const Segments *seg, RA_Symbol i); */
-#define sym_get(seg, i)	 ((const struct Symbol*)&(seg)->sym.start[i])
+/* Symbol *sym_get(const Segments *seg, RA_Symbol i); */
+#define sym_get(seg, i)	 (&(seg)->sym.start[i])
 
 /* const struct char *str_get(const Segments *seg, RA_Array i); */
 #define str_get(seg, i)  (&(seg)->str.start[i])

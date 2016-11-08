@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
 	heap_create();
 
    	m = module_load_obligatory(file);
-	if(thread_init(&t, m, symbol_store.main) < 0)
+	if(thread_init(&t, m, "main") < 0)
 		return 1;
 	thread_run(&t);
 

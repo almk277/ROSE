@@ -59,10 +59,10 @@ int loader_add_dir_from_file(const char *fname)
 		add("./", 2);                   /* use current directory */
 }
 
-FILE *loader_find_module(const Symbol *name)
+FILE *loader_find_module(Symbol *name)
 {
 	StdPath *ent;
-	const int flen = symbol_length(name);
+	const int flen = strlen(name);
 	SIMPLEQ_FOREACH(ent, &stdpath_list, pe) {
 		FILE *f;
 		static const char suffix[] = ".rmd";
@@ -71,7 +71,7 @@ FILE *loader_find_module(const Symbol *name)
 		const int len = dlen + flen;
 		if(len + sizeof suffix > 255)
 			continue;
-		symbol_copy_to(name, buf + dlen);
+		strcpy(buf + dlen, name);
 		memcpy(buf + len, suffix, sizeof suffix);
 		f = fopen(buf, "rb");
 		if(f)

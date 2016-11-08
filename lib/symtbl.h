@@ -3,10 +3,9 @@
 #ifndef ROSE_SYMTBL_H
 #define ROSE_SYMTBL_H
 
+#include "symbol.h"
 #include <stdint.h>
 #include "compiler.h"
-
-struct Symbol;
 
 /* Symbol table itself */
 typedef struct SymbolTable SymbolTable;
@@ -31,22 +30,22 @@ int symtbl_size(const SymbolTable *tbl);
 
 /* adds symbol to tbl, if not there yet, and returns pointer to it's value.
  * Otherwise, returns NULL */
-SymbolValue *symtbl_add_unique(SymbolTable *tbl, const struct Symbol *symbol);
+SymbolValue *symtbl_add_unique(SymbolTable *tbl, Symbol *symbol);
 
 /* adds symbol to tbl, if not there yet. Returns pointer to it's value. */
-SymbolValue *symtbl_add_or_get(SymbolTable *tbl, const struct Symbol *symbol);
+SymbolValue *symtbl_add_or_get(SymbolTable *tbl, Symbol *symbol);
 
 /* searches for symbol in tbl and returns pointer to it's value.
  * Otherwise, returns NULL */
 C_ATTR_PURE
-SymbolValue *symtbl_find(const SymbolTable *tbl, const struct Symbol *symbol);
+SymbolValue *symtbl_find(const SymbolTable *tbl, Symbol *symbol);
 
 /* clears tbl */
 void symtbl_clear(SymbolTable *tbl);
 
 /* calls fn for every element in tbl */
 void symtbl_foreach(const SymbolTable *tbl,
-		void (*fn)(const struct Symbol *sym, const SymbolValue *val));
+		void (*fn)(Symbol *sym, const SymbolValue *val));
 
 
 
@@ -57,7 +56,7 @@ void symtbl_foreach(const SymbolTable *tbl,
 typedef SLIST_ENTRY(SymbolEntry) SymbolSlistEntry;
 typedef SLIST_HEAD(, SymbolEntry) SymbolSlistHead;
 struct SymbolEntry {
-	const struct Symbol *symbol;
+	Symbol *symbol;
 	SymbolValue value;
 	SymbolSlistEntry le;
 };

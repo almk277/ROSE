@@ -2,8 +2,8 @@
 #define ROSE_THREAD_H
 
 #include "rmd.h"
+#include "symbol.h"
 #include "segment.h"
-struct Symbol;
 struct Module;
 
 /* activation record */
@@ -34,7 +34,7 @@ typedef struct Thread {
 	} pc;                            /* instruction pointer */
 } Thread;
 
-int thread_init(Thread *t, struct Module *m, const struct Symbol *proc);
+int thread_init(Thread *t, struct Module *m, Symbol *proc);
 
 void thread_run(Thread *t);
 

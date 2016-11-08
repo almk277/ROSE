@@ -183,7 +183,7 @@ void thread_run(Thread *t)
 			IMP(i);
 			const Segments *const seg = SEG;
 			const RMDImport *imp = imp_get(seg, i);
-			const Symbol *procname = sym_get(seg, imp->name);
+			Symbol *procname = sym_get(seg, imp->name);
 			Module *m = module_get_module(MODULE, imp->module);
 			RA_Export exp_idx = module_exp_get_obligatory(m, procname, imp->slot);
 			const RMDExport *exp = exp_get(&m->seg, exp_idx);

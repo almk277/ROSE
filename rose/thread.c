@@ -4,7 +4,7 @@
 
 extern const R_Byte startup_code[];
 
-int thread_init(Thread *t, struct Module *m, const Symbol *proc)
+int thread_init(Thread *t, struct Module *m, Symbol *proc)
 {
 	const Segments *seg = &m->seg;
 	RA_Export exp_idx = module_exp_get_obligatory(m, proc, 0);
